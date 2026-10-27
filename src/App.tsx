@@ -485,6 +485,9 @@ export default function App() {
                 ))}
               {page === "tools" && (
                 <ToolDesk
+                  key={status.connectors
+                    .map((c) => `${c.id}:${c.connected}`)
+                    .join("|")}
                   onError={setError}
                   onTrace={setTrace}
                   onConnections={() => navigate("connectors")}
