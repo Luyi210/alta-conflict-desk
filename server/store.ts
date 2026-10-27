@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { resolve, join } from "node:path";
-import type { Run } from "../shared/types.ts";
+import type { CaseFile, Run } from "../shared/types.ts";
 
 export const dataDir = resolve(process.env.DATA_DIR || "data");
 export function prepareData(dir = dataDir) {
@@ -77,13 +77,18 @@ export class Store {
     this.db = new DatabaseSync(join(dir, "app.sqlite"));
     this.db
       .exec(`CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, createdAt TEXT NOT NULL, data TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL)`);
+      CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, createdAt TEXT NOT NULL, data TEXT NOT NULL, fingerprint TEXT NOT NULL)`);
     // A process restart cannot resume a half-finished external request safely.
     for (const run of this.list()) {
       if (run.status === "running") {
         run.status = "failed";
         run.error = "服务重启中断了核查，请新建核查重试。";
         run.completedAt = new Date().toISOString();
+        if (run.modelExecution?.status === "running") {
+          run.modelExecution.status = "failed";
+          run.modelExecution.error = run.error;
+        }
         this.save(run);
       }
     }
@@ -103,6 +108,32 @@ export class Store {
     return (
       this.db
         .prepare("SELECT data FROM runs ORDER BY createdAt DESC")
+        .all() as { data: string }[]
+    ).map((row) => JSON.parse(row.data));
+  }
+  saveCase(file: CaseFile, fingerprint: string) {
+    this.db
+      .prepare(
+        "INSERT OR REPLACE INTO cases (id,createdAt,data,fingerprint) VALUES (?, ?, ?, ?)",
+      )
+      .run(file.id, file.createdAt, JSON.stringify(file), fingerprint);
+  }
+  getCase(id: string): CaseFile | undefined {
+    const row = this.db.prepare("SELECT data FROM cases WHERE id=?").get(id) as
+      | { data: string }
+      | undefined;
+    return row ? JSON.parse(row.data) : undefined;
+  }
+  caseFingerprint(id: string): string | undefined {
+    const row = this.db
+      .prepare("SELECT fingerprint FROM cases WHERE id=?")
+      .get(id) as { fingerprint: string } | undefined;
+    return row?.fingerprint;
+  }
+  listCases(): CaseFile[] {
+    return (
+      this.db
+        .prepare("SELECT data FROM cases ORDER BY createdAt DESC, rowid DESC")
         .all() as { data: string }[]
     ).map((row) => JSON.parse(row.data));
   }

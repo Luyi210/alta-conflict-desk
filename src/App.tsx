@@ -34,8 +34,12 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { api, post } from "./api";
+import CaseWorkspace from "./CaseWorkspace";
+import CaseResults from "./CaseResults";
+import ToolDesk from "./ToolDesk";
 import type {
   AppStatus,
+  CaseView,
   Connector,
   ConnectorId,
   Entity,
@@ -44,7 +48,7 @@ import type {
   Trace,
 } from "../shared/types";
 
-type Page = "workspace" | "connectors" | "history" | "about";
+type Page = "workspace" | "tools" | "connectors" | "history" | "about";
 const cn = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(" ");
 const stamp = (value?: string) =>
@@ -138,6 +142,8 @@ export default function App() {
   const [page, setPage] = useState<Page>("workspace");
   const [status, setStatus] = useState<AppStatus>();
   const [runs, setRuns] = useState<Run[]>([]);
+  const [cases, setCases] = useState<CaseView[]>([]);
+  const [activeCase, setActiveCase] = useState<CaseView>();
   const [activeRun, setActiveRun] = useState<Run>();
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -149,12 +155,14 @@ export default function App() {
     undefined,
   );
   async function refresh() {
-    const [s, h] = await Promise.all([
+    const [s, h, c] = await Promise.all([
       api<AppStatus>("/status"),
       api<{ runs: Run[] }>("/runs"),
+      api<{ cases: CaseView[] }>("/cases"),
     ]);
     setStatus(s);
     setRuns(h.runs);
+    setCases(c.cases);
   }
   useEffect(() => {
     void refresh().catch((e) => setError(e.message));
@@ -184,6 +192,50 @@ export default function App() {
       clearTimeout(timer);
     };
   }, [activeRun?.id, activeRun?.status]);
+  useEffect(() => {
+    if (!activeCase || activeCase.status !== "running") return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = async () => {
+      try {
+        const next = await api<CaseView>(`/cases/${activeCase.id}`);
+        if (cancelled) return;
+        setActiveCase(next);
+        if (next.status !== "running") {
+          void refresh().catch((e) => setError(e.message));
+          return;
+        }
+      } catch (e) {
+        if (!cancelled) setError((e as Error).message);
+      }
+      if (!cancelled) timer = setTimeout(poll, 1200);
+    };
+    timer = setTimeout(poll, 700);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [activeCase?.id, activeCase?.status]);
+  async function openCase(id: string) {
+    try {
+      setActiveCase(await api<CaseView>(`/cases/${id}`));
+      setActiveRun(undefined);
+      navigate("workspace");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+  function updateCase(value: CaseView) {
+    setActiveCase(value);
+    void refresh().catch((e) => setError(e.message));
+  }
+  async function refreshActiveCase() {
+    if (activeCase)
+      setActiveCase(await api<CaseView>(`/cases/${activeCase.id}`));
+  }
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [page, activeCase?.id, activeRun?.id]);
   function toast(message: string) {
     setNotice(message);
     clearTimeout(noticeTimer.current);
@@ -275,8 +327,15 @@ export default function App() {
             onClick={() => navigate("workspace")}
           >
             <FileSearch size={18} />
-            收案核查
+            收案审查
             <span className="nav-dot" />
+          </button>
+          <button
+            className={cn("nav-item", page === "tools" && "active")}
+            onClick={() => navigate("tools")}
+          >
+            <SquareTerminal size={18} />
+            工具调用台
           </button>
           <button
             className={cn("nav-item", page === "connectors" && "active")}
@@ -330,7 +389,8 @@ export default function App() {
             <span>
               {
                 {
-                  workspace: "收案核查",
+                  workspace: "收案审查",
+                  tools: "工具调用台",
                   connectors: "连接器管理",
                   history: "核查记录",
                   about: "方案与使用说明",
@@ -381,32 +441,55 @@ export default function App() {
                 (activeRun ? (
                   <Results
                     run={activeRun}
-                    onBack={() => setActiveRun(undefined)}
+                    backLabel={activeCase ? "返回案件审查" : "返回案件工作台"}
+                    onBack={() => {
+                      setActiveRun(undefined);
+                      void refreshActiveCase().catch((e) =>
+                        setError(e.message),
+                      );
+                    }}
                     onUpdate={(r) => {
                       setActiveRun(r);
-                      void refresh();
+                      void refresh().catch((e) => setError(e.message));
+                      void refreshActiveCase().catch((e) =>
+                        setError(e.message),
+                      );
                     }}
                     onTrace={setTrace}
                     onError={setError}
                     toast={toast}
                   />
+                ) : activeCase ? (
+                  <CaseResults
+                    key={activeCase.id}
+                    value={activeCase}
+                    onBack={() => setActiveCase(undefined)}
+                    onUpdate={updateCase}
+                    onOpenRun={(id) => void openRun(id)}
+                    onTrace={setTrace}
+                    onError={setError}
+                  />
                 ) : (
-                  <Workspace
+                  <CaseWorkspace
                     status={status}
+                    cases={cases}
                     onConnect={connectAll}
                     connecting={busy === "connect-all"}
                     onSettings={() => navigate("connectors")}
-                    onStart={(r) => {
-                      setActiveRun(r);
-                      void refresh();
-                    }}
+                    onCreate={updateCase}
+                    onOpen={(id) => void openCase(id)}
                     onError={setError}
                     onTrace={setTrace}
                     onModelHelp={() => setModelHelp(true)}
-                    recent={runs.slice(0, 3)}
-                    onOpen={openRun}
                   />
                 ))}
+              {page === "tools" && (
+                <ToolDesk
+                  onError={setError}
+                  onTrace={setTrace}
+                  onConnections={() => navigate("connectors")}
+                />
+              )}
               {page === "connectors" && (
                 <div className="page-enter">
                   <div className="page-heading">
@@ -595,6 +678,7 @@ export default function App() {
                       className="btn primary"
                       onClick={() => {
                         setActiveRun(undefined);
+                        setActiveCase(undefined);
                         navigate("workspace");
                       }}
                     >
@@ -619,6 +703,39 @@ export default function App() {
                       </b>
                     </div>
                   </div>
+                  {cases.length > 0 && (
+                    <section
+                      className="panel case-recent"
+                      style={{ marginBottom: 24 }}
+                    >
+                      <div className="case-section-title">
+                        <h3>案件审查记录</h3>
+                        <span className="muted">{cases.length} 份</span>
+                      </div>
+                      {cases.map((item) => (
+                        <button
+                          className="case-recent-row"
+                          key={item.id}
+                          onClick={() => void openCase(item.id)}
+                        >
+                          <span>
+                            <strong>{item.name}</strong>
+                            <small>
+                              {item.parties.length} 方主体 · 待补{" "}
+                              {item.progress.openTasks} 项 · 修订{" "}
+                              {item.revision}
+                            </small>
+                          </span>
+                          <span className="badge amber">
+                            {item.decision.status === "review-recorded"
+                              ? "审查记录完备"
+                              : "待处理与复核"}
+                          </span>
+                          <ArrowRight size={17} />
+                        </button>
+                      ))}
+                    </section>
+                  )}
                   <div className="panel history-panel">
                     <div className="panel-title">
                       <h3>核查记录</h3>
@@ -663,7 +780,10 @@ export default function App() {
                                   <td>
                                     <button
                                       className="table-link"
-                                      onClick={() => void openRun(r.id)}
+                                      onClick={() => {
+                                        setActiveCase(undefined);
+                                        void openRun(r.id);
+                                      }}
                                     >
                                       {r.matterName}
                                     </button>
@@ -693,7 +813,10 @@ export default function App() {
                                     <button
                                       className="icon-btn"
                                       aria-label={`打开${r.matterName}`}
-                                      onClick={() => void openRun(r.id)}
+                                      onClick={() => {
+                                        setActiveCase(undefined);
+                                        void openRun(r.id);
+                                      }}
                                     >
                                       <ArrowUpRight size={17} />
                                     </button>
@@ -716,7 +839,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.1</span>
+          <span>v0.2</span>
         </footer>
       </div>
       {notice && (
@@ -791,519 +914,9 @@ export default function App() {
   );
 }
 
-function Workspace({
-  status,
-  onConnect,
-  connecting,
-  onSettings,
-  onStart,
-  onError,
-  onTrace,
-  onModelHelp,
-  recent,
-  onOpen,
-}: {
-  status: AppStatus;
-  onConnect: () => Promise<void>;
-  connecting: boolean;
-  onSettings: () => void;
-  onStart: (r: Run) => void;
-  onError: (e: string) => void;
-  onTrace: (t: Trace) => void;
-  onModelHelp: () => void;
-  recent: Run[];
-  onOpen: (id: string) => Promise<void>;
-}) {
-  const [matter, setMatter] = useState("澄川科技 · 跨境融资项目");
-  const [client, setClient] = useState("澄川科技有限公司（虚构）");
-  const [role, setRole] = useState("交易对方");
-  const [query, setQuery] = useState("HSBC BANK PLC");
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [selected, setSelected] = useState<Entity>();
-  const [confirmed, setConfirmed] = useState(false);
-  const [searched, setSearched] = useState(false);
-  const [searchTrace, setSearchTrace] = useState<Trace>();
-  const [searching, setSearching] = useState(false);
-  const [starting, setStarting] = useState(false);
-  const [mode, setMode] = useState<"rules" | "ai">("rules");
-  const [dataConsent, setDataConsent] = useState(false);
-  const allConnected =
-    status.connectors.filter((c) => c.connected).length === 2;
-  const gleifConnected = status.connectors.find(
-    (c) => c.id === "gleif",
-  )?.connected;
-  async function search() {
-    if (query.trim().length < 2) return;
-    onError("");
-    setSearching(true);
-    setSelected(undefined);
-    setConfirmed(false);
-    setEntities([]);
-    setSearched(false);
-    setSearchTrace(undefined);
-    try {
-      const result = await api<{ entities: Entity[]; trace: Trace }>(
-        `/entities?q=${encodeURIComponent(query.trim())}`,
-      );
-      setEntities(result.entities);
-      setSearchTrace(result.trace);
-      setSearched(true);
-    } catch (e) {
-      onError((e as Error).message);
-    } finally {
-      setSearching(false);
-    }
-  }
-  async function start() {
-    if (!selected || !confirmed || !allConnected) return;
-    onError("");
-    setStarting(true);
-    try {
-      const run = await post<Run>("/runs", {
-        matterName: matter.trim(),
-        prospectiveClient: client.trim(),
-        partyRole: role,
-        entity: selected,
-        mode,
-      });
-      onStart(run);
-    } catch (e) {
-      onError((e as Error).message);
-    } finally {
-      setStarting(false);
-    }
-  }
-  function resetQuery(value: string) {
-    setQuery(value);
-    setSelected(undefined);
-    setEntities([]);
-    setConfirmed(false);
-    setSearched(false);
-    setSearchTrace(undefined);
-  }
-  return (
-    <div className="page-enter">
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">BEFORE THE FIRST ENGAGEMENT</div>
-          <h1>接受委托之前，先看清关系。</h1>
-          <p>从企业身份到已有事项，为收案前的利益冲突核查建立一条证据链。</p>
-        </div>
-        <div className="heading-seal">
-          <ShieldCheck size={24} strokeWidth={1.3} />
-          <span>审慎 · 可追溯</span>
-        </div>
-      </div>
-      <div className="steps">
-        <div className="step current">
-          <span>01</span>
-          <div>
-            确认主体<small>识别真实法律实体</small>
-          </div>
-        </div>
-        <div className="step-line" />
-        <div className="step">
-          <span>02</span>
-          <div>
-            交叉核查<small>查询关系与事项台账</small>
-          </div>
-        </div>
-        <div className="step-line" />
-        <div className="step">
-          <span>03</span>
-          <div>
-            律师复核<small>逐条判断并保留依据</small>
-          </div>
-        </div>
-      </div>
-      <div className="intake-layout">
-        <section className="panel intake-panel">
-          <div className="panel-title">
-            <div>
-              <h2>新建收案核查</h2>
-              <p>本次核查一名对方主体及其公开母公司关系</p>
-            </div>
-            <Badge>单主体核查</Badge>
-          </div>
-          <div className="form-body">
-            <div className="form-section-title">
-              <span>01</span>事项信息
-            </div>
-            <label className="field-label" htmlFor="matter">
-              事项名称
-            </label>
-            <input
-              id="matter"
-              maxLength={160}
-              value={matter}
-              onChange={(e) => setMatter(e.target.value)}
-              placeholder="如：跨境融资项目"
-            />
-            <div className="form-row">
-              <div>
-                <label className="field-label" htmlFor="client">
-                  拟委托客户 <span>仅作事项背景</span>
-                </label>
-                <input
-                  id="client"
-                  maxLength={160}
-                  value={client}
-                  onChange={(e) => setClient(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="field-label" htmlFor="role">
-                  核查主体角色
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option>交易对方</option>
-                  <option>对方当事人</option>
-                  <option>其他相关方</option>
-                </select>
-              </div>
-            </div>
-            <div className="section-divider" />
-            <div className="form-section-title">
-              <span>02</span>确认核查主体<Badge tone="green">GLEIF</Badge>
-            </div>
-            <label className="field-label" htmlFor="entity">
-              企业法定名称或 LEI 编码
-            </label>
-            <form
-              className="search-field"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void search();
-              }}
-            >
-              <Search size={18} />
-              <input
-                id="entity"
-                disabled={searching}
-                value={query}
-                maxLength={200}
-                onChange={(e) => resetQuery(e.target.value)}
-                placeholder="输入企业名称，如 HSBC BANK PLC"
-              />
-              <button
-                type="submit"
-                className="btn primary"
-                disabled={
-                  !gleifConnected || searching || query.trim().length < 2
-                }
-              >
-                {searching ? (
-                  <Spinner text="查询中" />
-                ) : (
-                  <>
-                    查找主体
-                    <ArrowRight size={15} />
-                  </>
-                )}
-              </button>
-            </form>
-            <p className="field-hint">
-              名称相近不代表同一主体。请结合国家 / 地区、地址及 LEI 确认身份。
-            </p>
-            {!gleifConnected && (
-              <div className="source-warning">
-                <Plug size={17} />
-                <span>先连接 GLEIF，再查询真实企业身份。</span>
-                <button onClick={onSettings}>
-                  管理连接
-                  <ArrowUpRight size={14} />
-                </button>
-              </div>
-            )}
-            {searching && (
-              <div className="search-loading">
-                <LoaderCircle className="spin" size={22} />
-                <div>
-                  正在通过 MCP 查询 GLEIF…
-                  <small>从公开来源获取实时企业信息，请稍候</small>
-                </div>
-              </div>
-            )}
-            {searched && (
-              <div className="entity-results">
-                <div className="result-caption">
-                  <span>
-                    {entities.length
-                      ? `找到 ${entities.length} 个候选主体，请选择`
-                      : "当前来源未返回匹配主体"}
-                  </span>
-                  {searchTrace && (
-                    <button onClick={() => onTrace(searchTrace)}>
-                      <SquareTerminal size={13} />
-                      调用凭证
-                    </button>
-                  )}
-                </div>
-                {entities.length ? (
-                  entities.map((entity) => (
-                    <button
-                      key={entity.lei}
-                      className={cn(
-                        "entity-option",
-                        selected?.lei === entity.lei && "selected",
-                      )}
-                      onClick={() => {
-                        setSelected(entity);
-                        setConfirmed(false);
-                      }}
-                    >
-                      <span className="radio-mark">
-                        {selected?.lei === entity.lei && <span />}
-                      </span>
-                      <div>
-                        <strong>{entity.name}</strong>
-                        <span className="entity-code">{entity.lei}</span>
-                        <small>
-                          {entity.jurisdiction} ·{" "}
-                          {entity.address || "未提供地址"}
-                        </small>
-                      </div>
-                      <Badge
-                        tone={entity.status === "ACTIVE" ? "green" : "muted"}
-                      >
-                        {entity.status || "未知状态"}
-                      </Badge>
-                    </button>
-                  ))
-                ) : (
-                  <p className="no-result">
-                    请调整企业名称后重试。无结果只表示当前 LEI
-                    来源未找到记录，不代表无潜在冲突。
-                  </p>
-                )}
-              </div>
-            )}
-            {selected && (
-              <label className="confirm-check">
-                <input
-                  type="checkbox"
-                  checked={confirmed}
-                  onChange={(e) => setConfirmed(e.target.checked)}
-                />
-                <span>
-                  我已核对名称、LEI 和地区，确认这是本次核查的对方主体。
-                </span>
-              </label>
-            )}
-            <div className="section-divider" />
-            <div className="execution-row">
-              <div>
-                <span className="field-label">执行方式</span>
-                <div className="segmented">
-                  <button
-                    className={cn(mode === "rules" && "selected")}
-                    onClick={() => setMode("rules")}
-                  >
-                    <GitBranch size={14} />
-                    规则预览
-                  </button>
-                  <button
-                    className={cn(mode === "ai" && "selected")}
-                    onClick={() =>
-                      status.model.configured ? setMode("ai") : onModelHelp()
-                    }
-                  >
-                    <Sparkles size={14} />
-                    AI 辅助{!status.model.configured && <span>待配置</span>}
-                  </button>
-                </div>
-              </div>
-              <p>
-                按真实工具返回生成待复核线索
-                <br />
-                最终判断由律师完成
-              </p>
-            </div>
-            {mode === "ai" && (
-              <label className="confirm-check">
-                <input
-                  type="checkbox"
-                  checked={dataConsent}
-                  onChange={(e) => setDataConsent(e.target.checked)}
-                />
-                <span>
-                  同意将本次事项背景及命中的演示台账数据发送至已配置的模型服务。
-                </span>
-              </label>
-            )}
-          </div>
-          <div className="form-footer">
-            <span>
-              <ShieldCheck size={15} />
-              {!allConnected
-                ? "连接两组数据源后即可继续"
-                : !confirmed
-                  ? "确认主体身份后即可开始"
-                  : "将核查主体及公开母公司关系"}
-            </span>
-            <button
-              className="btn primary large"
-              disabled={
-                !allConnected ||
-                !confirmed ||
-                !matter.trim() ||
-                !client.trim() ||
-                starting ||
-                (mode === "ai" && !dataConsent)
-              }
-              onClick={() => void start()}
-            >
-              {starting ? (
-                <Spinner text="创建中" />
-              ) : (
-                <>
-                  开始核查
-                  <ArrowRight size={17} />
-                </>
-              )}
-            </button>
-          </div>
-        </section>
-        <aside className="context-column">
-          <section className="panel source-panel">
-            <div className="panel-title">
-              <h3>本次数据来源</h3>
-              <button className="text-btn" onClick={onSettings}>
-                管理
-                <ArrowUpRight size={14} />
-              </button>
-            </div>
-            {(["gleif", "ledger"] as const).map((id) => {
-              const c = status.connectors.find((c) => c.id === id);
-              const Icon = connectorInfo[id].icon;
-              return (
-                <div className="source-item" key={id}>
-                  <span className={cn("small-source-icon", id)}>
-                    <Icon />
-                  </span>
-                  <div>
-                    <strong>
-                      {id === "gleif" ? "GLEIF 企业身份" : "律所事项台账"}
-                    </strong>
-                    <small>
-                      {id === "gleif"
-                        ? "公开企业与合并母公司关系"
-                        : `${status.ledger.count} 条虚构事项 · 本地只读`}
-                    </small>
-                  </div>
-                  <span className={cn("status-dot", c?.connected && "on")} />
-                </div>
-              );
-            })}
-            <div className="source-panel-bottom">
-              {allConnected ? (
-                <span>
-                  <CheckCheck size={15} />2 个 MCP 数据源已就绪
-                </span>
-              ) : (
-                <button
-                  className="btn secondary full"
-                  disabled={connecting}
-                  onClick={() => void onConnect()}
-                >
-                  {connecting ? (
-                    <Spinner text="正在连接" />
-                  ) : (
-                    <>
-                      <Plug size={15} />
-                      连接演示数据源
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </section>
-          <section className="demo-card">
-            <div className="demo-top">
-              <span className="eyebrow small">A WORKED EXAMPLE</span>
-              <Badge>演示案例</Badge>
-            </div>
-            <div className="demo-illustration">
-              <div className="diagram-company">
-                <Building2 size={22} />
-                <span>交易对方</span>
-              </div>
-              <div className="diagram-dash" />
-              <div className="diagram-record">
-                <BookOpen size={21} />
-                <span>已有事项</span>
-              </div>
-              <span className="diagram-check">
-                <Search size={14} />
-              </span>
-            </div>
-            <h3>
-              同一个名字，
-              <br />
-              可能牵出不同的关系。
-            </h3>
-            <p>
-              查询 HSBC BANK
-              PLC，查看主体一致、关联主体及近似名称在虚构台账中的不同核查路径。
-            </p>
-            <button
-              className="text-btn"
-              onClick={() => {
-                setMatter("澄川科技 · 跨境融资项目");
-                setClient("澄川科技有限公司（虚构）");
-                resetQuery("HSBC BANK PLC");
-              }}
-            >
-              填入演示场景
-              <ArrowRight size={15} />
-            </button>
-          </section>
-          <div className="scope-note">
-            <Info size={17} />
-            <p>
-              <strong>核查边界</strong>当前只核查所选对方及 GLEIF
-              公开母公司关系，不覆盖所有集团成员、自然人、未登记 LEI
-              的企业或完整冲突规则。拟委托客户未纳入本次检索。
-            </p>
-          </div>
-        </aside>
-      </div>
-      {recent.length > 0 && (
-        <section className="recent-section">
-          <div className="section-label">
-            <h3>最近核查</h3>
-            <span>继续查看证据与复核意见</span>
-          </div>
-          <div className="recent-grid">
-            {recent.map((r) => (
-              <button
-                className="recent-card"
-                key={r.id}
-                onClick={() => void onOpen(r.id)}
-              >
-                <FileCheck2 size={20} />
-                <div>
-                  <strong>{r.matterName}</strong>
-                  <small>
-                    {stamp(r.createdAt)} · {r.findings.length} 条线索
-                  </small>
-                </div>
-                <ArrowUpRight size={17} />
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
 function Results({
   run,
+  backLabel = "返回案件工作台",
   onBack,
   onUpdate,
   onTrace,
@@ -1311,6 +924,7 @@ function Results({
   toast,
 }: {
   run: Run;
+  backLabel?: string;
   onBack: () => void;
   onUpdate: (r: Run) => void;
   onTrace: (t: Trace) => void;
@@ -1364,7 +978,7 @@ function Results({
       <div className="result-toolbar">
         <button className="text-btn" onClick={onBack}>
           <ArrowLeft size={16} />
-          新建核查
+          {backLabel}
         </button>
         <div>
           <Badge>
@@ -1984,22 +1598,26 @@ function About({ onModelHelp }: { onModelHelp: () => void }) {
           <h3>本版本已经覆盖的工作流</h3>
           <ol>
             <li>在连接器页接入 GLEIF 与本地 SQLite MCP。</li>
-            <li>输入对方名称，核对 LEI、地区和地址，选择确切主体。</li>
+            <li>添加拟委托人、交易对方和担保方，逐方查询并确认 LEI。</li>
             <li>检索主体及公开母公司关系，并与虚构台账交叉比对。</li>
             <li>查看匹配依据、来源链接和真实调用记录。</li>
-            <li>填写复核意见，标记进一步复核或排除，导出报告。</li>
+            <li>补齐材料引用，记录逐项与案件总意见，导出聚合报告。</li>
           </ol>
         </section>
         <section className="panel">
           <h3>有意控制的范围</h3>
           <p>
-            只做单名对方企业及公开母公司核查，不做完整集团图谱，不覆盖自然人身份、制裁筛查或自动冲突豁免。
+            支持同一案件最多 6
+            方企业与其公开母公司核查，保留补证、逐项复核及案件意见。不覆盖自然人身份、完整集团图谱、制裁筛查或自动冲突豁免。
           </p>
           <p>
             LEI
             和名称匹配用于产生核查线索。适用司法辖区、现有委托范围、保密义务等仍需律师判断。公司关联本身不能直接推出冲突结论。
           </p>
-          <p>拟委托客户字段仅用于记录事项背景，本版未纳入客户侧核查。</p>
+          <p>
+            每个已确认主体都会核查；未确认主体会保留为阻塞项。工具权限同时约束手动、规则和
+            AI 调用。
+          </p>
         </section>
         <section className="panel">
           <h3>真实接入与模拟数据</h3>

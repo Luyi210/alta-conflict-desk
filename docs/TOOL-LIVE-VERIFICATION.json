@@ -1,0 +1,210 @@
+{
+  "verifiedAt": "2026-10-27T07:55:51.797Z",
+  "mode": "manual-tool-desk",
+  "realMcp": true,
+  "publicNetworkService": "https://api.gleif.org/api/v1",
+  "modelRequests": 0,
+  "aiVerified": false,
+  "syntheticLedger": true,
+  "schemasFromToolsList": [
+    {
+      "name": "search_entities",
+      "description": "Search public GLEIF legal entity records by legal name or exact LEI. Only LEI-registered entities are covered. Human identity confirmation is required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "readOnly": true,
+      "enabled": true,
+      "connector": "gleif",
+      "available": true
+    },
+    {
+      "name": "get_entity",
+      "description": "Get the current public legal entity identity by its exact LEI; does not determine legal conflicts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lei": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{20}$"
+          }
+        },
+        "required": [
+          "lei"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "readOnly": true,
+      "enabled": true,
+      "connector": "gleif",
+      "available": true
+    },
+    {
+      "name": "get_relationships",
+      "description": "Read public direct and ultimate accounting-consolidation parent relationships for a LEI. Gaps are explicit; affiliation is not automatically a legal conflict.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lei": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{20}$"
+          }
+        },
+        "required": [
+          "lei"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "readOnly": true,
+      "enabled": true,
+      "connector": "gleif",
+      "available": true
+    },
+    {
+      "name": "ledger_info",
+      "description": "Read the count and provenance of the strictly synthetic local law-firm engagement ledger.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "readOnly": true,
+      "enabled": true,
+      "connector": "ledger",
+      "available": true
+    },
+    {
+      "name": "search_matters",
+      "description": "Match a confirmed entity against synthetic firm matters. Exact LEI is identity evidence; name-only or similar matches require human identity review.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 300
+          },
+          "lei": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{20}$"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "readOnly": true,
+      "enabled": true,
+      "connector": "ledger",
+      "available": true
+    }
+  ],
+  "checks": {
+    "firstConnectionHasNoInventedSchema": true,
+    "schemaValidation": "工具参数不符合 MCP schema：data/lei must match pattern \"^[A-Z0-9]{20}$\"",
+    "permissionRejection": "工具 get_entity 已禁用，请先在工具台启用",
+    "disconnectRejection": "GLEIF 企业主体尚未连接",
+    "failureRetryCreatesNewId": true,
+    "originalFailurePreserved": true
+  },
+  "testFault": "Temporary isolated SQLite table renamed then restored to verify an actual MCP error and successful retry. Production data was not modified.",
+  "calls": [
+    {
+      "id": "ec148686-3b44-4e72-8619-55aac7942d4e",
+      "connector": "gleif",
+      "tool": "get_entity",
+      "args": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      },
+      "status": "success",
+      "createdAt": "2026-10-27T07:55:49.621Z",
+      "trace": {
+        "id": "81e4d84f-ac94-4ad2-9a5a-072795a140e5",
+        "connector": "gleif",
+        "tool": "get_entity",
+        "args": {
+          "lei": "MP6I5ZYZBEU3UXPYFY54"
+        },
+        "startedAt": "2026-10-27T07:55:49.622Z",
+        "durationMs": 1763,
+        "status": "success",
+        "initiator": "user",
+        "result": {
+          "entity": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54",
+            "name": "HSBC BANK PLC",
+            "jurisdiction": "GB",
+            "status": "ACTIVE",
+            "address": "8 CANADA SQUARE, LONDON, GB",
+            "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+            "fetchedAt": "2026-10-27T07:55:51.382Z"
+          }
+        }
+      },
+      "completedAt": "2026-10-27T07:55:51.386Z"
+    },
+    {
+      "id": "e27ea7dc-44ba-4d12-bd29-a34fa12af213",
+      "connector": "ledger",
+      "tool": "ledger_info",
+      "args": {},
+      "status": "error",
+      "createdAt": "2026-10-27T07:55:51.461Z",
+      "error": "no such table: matters",
+      "trace": {
+        "id": "10a19606-5695-4ac9-88da-6a5834362927",
+        "connector": "ledger",
+        "tool": "ledger_info",
+        "args": {},
+        "startedAt": "2026-10-27T07:55:51.464Z",
+        "durationMs": 4,
+        "status": "error",
+        "initiator": "user",
+        "error": "no such table: matters"
+      },
+      "completedAt": "2026-10-27T07:55:51.469Z"
+    },
+    {
+      "id": "17fb1b00-7a64-4634-aaa5-81839b440787",
+      "connector": "ledger",
+      "tool": "ledger_info",
+      "args": {},
+      "status": "success",
+      "createdAt": "2026-10-27T07:55:51.621Z",
+      "retryOf": "e27ea7dc-44ba-4d12-bd29-a34fa12af213",
+      "trace": {
+        "id": "7e1ecaba-7857-42f1-96e3-4955321fbaff",
+        "connector": "ledger",
+        "tool": "ledger_info",
+        "args": {},
+        "startedAt": "2026-10-27T07:55:51.625Z",
+        "durationMs": 2,
+        "status": "success",
+        "initiator": "user",
+        "result": {
+          "count": 4,
+          "synthetic": true,
+          "provenance": "本地虚构律所委托台账，仅供演示；不代表任何真实客户关系。",
+          "permissions": "read-only"
+        }
+      },
+      "completedAt": "2026-10-27T07:55:51.628Z"
+    }
+  ]
+}

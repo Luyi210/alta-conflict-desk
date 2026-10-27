@@ -1,24 +1,61 @@
-# 实现边界与 API 合约
+# 实现边界与 API 合约（v0.2）
 
-所有日期 ISO8601；类型以 shared/types.ts 为准。API 响应为 JSON。错误为 `{error: string}` 并返回正确的 4xx/5xx。只绑定 127.0.0.1。所有核查、复核和调用记录持久化 SQLite，模拟台账单独文件。项目是单用户本地原型，不用真实客户数据。
+所有日期 ISO8601；类型以 `shared/types.ts` 为准。API 响应为 JSON，报告端点返回 Markdown 附件。错误为 `{error: string}` 并返回对应 4xx/5xx。只绑定 `127.0.0.1`。案件、核查、补证、复核、工具权限与调用记录持久化 SQLite，虚构台账单独文件。项目是单用户本地原型，不用真实客户数据。
 
-## API
+## 连接器与身份
+
 - GET /api/status → AppStatus
 - POST /api/connectors/:id/connect → Connector；真实 MCP initialize + tools/list
 - POST /api/connectors/:id/test → Connector；连接后实际读工具测试；失败响应有错误
 - POST /api/connectors/:id/disconnect → Connector；关闭 stdio 进程且禁止调用
 - GET /api/entities?q=... → {entities: Entity[], trace: Trace}；必须已连接 GLEIF，真实 MCP search_entities
+
+连接器测试和身份检索也经过统一工具权限入口。已暂停其依赖工具时，不能绕过权限继续查询。
+
+## 案件工作流（当前主入口）
+
+- GET /api/cases → `{cases:CaseView[]}`；含各主体当前 runs、progress、tasks、blockers。
+- POST /api/cases body `CaseInput` → `CaseView` 201；一至六个企业，至少一个已确认 LEI。角色可为拟委托人、交易对方、担保方或其他相关方。同一 LEI 和主体 id 不可重复。
+- GET /api/cases/:id → `CaseView`；按当前子核查结果派生补证、覆盖状态及旧意见失效。
+- POST /api/cases/:id/parties/:partyId/resolve body `{entity:Entity,confirmed:true}` → `CaseView`；补录身份后创建该主体的新核查，旧记录保留。
+- POST /api/cases/:id/parties/:partyId/retry → `CaseView`；已确认主体且不在运行中才可重跑，保留旧 run。
+- POST /api/cases/:id/tasks/:taskId body `{status:'open'|'resolved',note:string,reference:string}` → `CaseView`；身份/来源待办由系统管理，不能手动勾选消除；人工补证标为完成须有说明和材料引用。
+- POST /api/cases/:id/decision body `{status,note,reviewer}` → `CaseView`；status 为 `draft`、`needs-information`、`needs-partner-review`、`review-recorded`。后者仅在无系统阻塞项时允许。
+- GET /api/cases/:id/report → Markdown 附件；汇总各方覆盖、补证、线索、总意见、活动与实际工具轨迹。
+
+每个已确认主体均调用单主体核查引擎，包含拟委托人；未确认主体仍列入案件范围，形成身份缺口。跨主体命中同一内部事项时合并委托范围/保密补证。补证引用只是文本记录，不是上传文件或真实性校验。
+
+未确认身份、仍在运行、来源失败/不完整、待复核/待进一步复核线索、未补齐人工待办均阻塞 `review-recorded`。该状态仅指记录齐备，不批准收案。审查人姓名未验证，待合伙人复核不发送通知。身份补录、重跑、补证、子核查结果或复核变化后，旧意见恢复草稿，修订号递增，活动保存失效原因。
+
+## 单主体核查（兼容 v0.1，并被案件复用）
+
 - POST /api/runs body RunInput → Run（创建后后台执行，立即返回 running）；模型未配置选择 ai 应 409
 - GET /api/runs → {runs: Run[]} 最新在前
 - GET /api/runs/:id → Run；前端每 800ms 轮询直至非 running
 - POST /api/runs/:runId/findings/:findingId/review body {review:'escalated'|'dismissed'|'pending',note:string} → Run；撤回 pending 允许，其他需说明
 - GET /api/runs/:id/report → Markdown attachment，含真实来源、运行模式、范围缺口、人工复核、调用日志，不泄露环境变量
 
+单次 `/runs` 只处理 `entity` 指定的一家企业及其公开关系；`prospectiveClient` 是该次记录的背景字段，不会自行产生另一家企业的查询。**案件 `/cases` 会为包括拟委托人在内的每个已确认主体分别创建 run**，因此不能把旧单主体接口限制写成新版产品只核查对方。旧历史和报告继续保留。
+
+## 独立工具调用台
+
+- GET /api/tool-desk → `{tools:CatalogTool[],calls:ToolExecution[]}`；schema 来自真实 MCP 发现。首次未连接没有工具，断开/重启可保留上次目录且 `available:false`。
+- POST /api/tool-desk/permissions body `{connector,tool,enabled}` → `{tools:CatalogTool[]}`；持久化每项工具权限。
+- POST /api/tool-desk/calls body `{connector,tool,args}` → `ToolExecution` 201；预检通过后异步运行。未知、禁用、未连接或 schema 不合法直接返回错误，不伪装成功调用。
+- GET /api/tool-desk/calls/:id → `ToolExecution`；状态 `queued`、`running`、`success` 或 `error`，完成后附真实 trace 或错误。
+- POST /api/tool-desk/calls/:id/retry → 新 `ToolExecution` 201；仅失败记录可重试，`retryOf` 指向原记录，原记录不覆盖。
+
+参数在统一后端入口校验；权限约束后续手动、规则及模型调用。执行前再次检查权限和连接。已开始的只读调用不提供假取消；重启导致未完成调用中断时记录结果未知，可手动创建新的重试。手动调用历史与各核查自身 trace 分开保存，发起方使用 `user`、`rules` 或 `model` 标识。
+
 ## MCP 真实工具（两组独立 stdio server）
+
 - GLEIF：search_entities({query})、get_entity({lei})、get_relationships({lei})
 - 本地 SQLite 台账：search_matters({name,lei?})、ledger_info({})
 
-MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失败明确报错，不能用缓存演示结果冒充。关系读取不到/覆盖不全须成为 gaps。台账必须在服务内只读查询（数据库初始化由宿主准备）。仅已确认对方主体和其公开关系用于匹配，prospectiveClient 是本次事项背景文字，当前不提供其核查。页面和报告明确范围。
+MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失败明确报错，不能用缓存演示结果冒充。会计合并母公司关系读取不到或覆盖不全须成为 gaps，不代表不存在任何关联。台账在服务内只读查询，数据库初始化由宿主准备。案件汇总各方实际覆盖，页面和报告不将未识别主体计为已核查。
 
 ## 规则与模型
-按 LEI 精确匹配优先，exact-name/similar-name 作为身份待确认线索，不能仅凭名称自动认定直接冲突。关联企业命中也是线索，不自动判法律冲突。限定 direct-parent 和 ultimate-parent，不把无关系当成全面清白。所有记录为虚构律所委托；公众公司名称/LEI 可是真实。模型可选 OpenAI-compatible API 环境变量；未配置 rules 可完整调用 MCP 但不称为 AI 验收通过。模型配置后通过 tools/function calling 转发到相同 MCP 服务，最终结果须引用已有证据且不能替代规则事实/律师结论。支持只运行规则，无额外服务依赖。
+
+按 LEI 精确匹配优先，exact-name/similar-name 作为身份待确认线索，不能仅凭名称认定法律冲突。关联企业命中也是线索。限定 direct-parent 和 ultimate-parent，不把无关系当成全面清白。所有内部记录为虚构律所委托；公开公司名称/LEI 可以真实。辖区字段只作背景，不执行当地法律判断。
+
+模型可选 OpenAI-compatible API 环境变量。未配置时 `rules` 可实际调用 MCP，但不能称为 AI 验收通过。配置后通过 function calling 转发至同一权限和校验入口，检查允许工具、已确认主体边界、调用次数与真实引用。`Run.modelExecution` 记录状态、模型、轮次与工具调用数；配置存在不等于执行通过。当前尚未完成真实模型 API 实跑，mock 测试仅验证协议边界。

@@ -25,7 +25,7 @@ export const entitySchema = z.object({
 export const runInputSchema = z.object({
   matterName: z.string().trim().min(2).max(200),
   prospectiveClient: z.string().trim().min(2).max(200),
-  partyRole: z.enum(["对方当事人", "交易对方", "交易对手", "其他相关方"]),
+  partyRole: z.enum(["拟委托人", "对方当事人", "交易对方", "交易对手", "担保方", "其他相关方"]),
   entity: entitySchema,
   mode: z.enum(["rules", "ai"]),
 });
@@ -39,7 +39,7 @@ export const reviewSchema = z
     "请填写至少 2 字的复核理由",
   );
 export const coverageGaps = [
-  "核查仅覆盖选定对方主体及 GLEIF 披露的直接/最终母公司；拟委托人字段仅为事项背景，尚未执行其主体核查。",
+  "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
   "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
   "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。",
 ];
@@ -200,8 +200,14 @@ export class ScreeningService {
       }
       if (run.mode === "ai") {
         try {
-          run.modelSummary = await modelReview(run, (id, tool, args) =>
-            call(id, tool, args, "model"),
+          run.modelSummary = await modelReview(
+            run,
+            (id, tool, args) => call(id, tool, args, "model"),
+            {
+              tools: () => this.connectors.catalog(),
+              validateCall: (id, tool, args) => this.connectors.validateCall(id, tool, args),
+              onProgress: (state) => { run.modelExecution = state; persist(); },
+            },
           );
         } catch (err) {
           partial = true;

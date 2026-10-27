@@ -1,0 +1,160 @@
+{
+  "kind": "screenshot-walkthrough-draft",
+  "version": "0.2",
+  "continuousScreenRecording": false,
+  "mode": "rules-and-manual-mcp",
+  "aiVerified": false,
+  "audio": false,
+  "syntheticInternalData": true,
+  "persistentDisclosure": "截图演示草稿 · 非连续录屏 · 规则预览",
+  "persistentLimitation": "内部委托数据虚构 · AI 待模型 API 实跑验证",
+  "originalScreenshotsUnmodified": true,
+  "method": "Original screenshots cropped and vertically panned; title/caption overlays outside the screenshot viewport. No synthetic click or cursor animation.",
+  "sourceScreenshots": [
+    {
+      "file": "v2-01-intake.jpg",
+      "sha256": "011c9eb152beffe7b1c6eace09d257146bfbd85c28b8799be906bdf81e797c20",
+      "dimensions": [
+        1280,
+        1946
+      ]
+    },
+    {
+      "file": "v2-02-case.jpg",
+      "sha256": "4b0cba6be7ff8448b53398325ab02a755a6b6a5621a6d77e53ee87e1ca0239ab",
+      "dimensions": [
+        1280,
+        1433
+      ]
+    },
+    {
+      "file": "v2-03-tasks.jpg",
+      "sha256": "1492509776b522d3e0fec99862e95e1189ba7096beb3ddfe57e7354d40514ae1",
+      "dimensions": [
+        1280,
+        2090
+      ]
+    },
+    {
+      "file": "v2-04-review-blocked.jpg",
+      "sha256": "81ec801c1f332f1810788f44c41dd6909256736f1ebab39fb8bd904d6ae538e8",
+      "dimensions": [
+        1280,
+        1291
+      ]
+    },
+    {
+      "file": "v2-05-tools.jpg",
+      "sha256": "97d9c4440ce1a37d3486d0aab8d90df00d3bfa9cc8b75189f596bf3fa6e176a0",
+      "dimensions": [
+        1280,
+        1513
+      ]
+    },
+    {
+      "file": "v2-06-permission.jpg",
+      "sha256": "a971b98b7562609fc6da10c009d21b082160bfba5346f69511bab0e73b4daf48",
+      "dimensions": [
+        1280,
+        720
+      ]
+    },
+    {
+      "file": "v2-07-trace.jpg",
+      "sha256": "bcd624d55136d4b577579066acc8a79b1f653965be501faaef31190d9a8ec3b6",
+      "dimensions": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "image": "v2-01-intake.jpg",
+      "seconds": 9,
+      "start": 580,
+      "end": 1120,
+      "title": "01  将每一方纳入核查范围",
+      "caption": "同一案件记录拟委托人、交易对方和担保方。截图中 2 方已确认 LEI；未确认主体仍保留为身份缺口。"
+    },
+    {
+      "image": "v2-02-case.jpg",
+      "seconds": 8,
+      "start": 190,
+      "end": 610,
+      "title": "02  聚合实际核查与覆盖缺口",
+      "caption": "两方分别完成公开身份、母公司与虚构台账核查，各有 4 次真实 MCP 调用；6 条线索仍待人工复核。"
+    },
+    {
+      "image": "v2-03-tasks.jpg",
+      "seconds": 9,
+      "start": 380,
+      "end": 850,
+      "title": "03  跨主体合并补证材料",
+      "caption": "同一内部事项的补证合并为一项，关联两个主体。示例已保存核实说明和材料引用；引用不代表上传文件。"
+    },
+    {
+      "image": "v2-03-tasks.jpg",
+      "seconds": 5,
+      "start": 1280,
+      "end": 1370,
+      "title": "04  单独核实既往保密义务",
+      "caption": "既往事项继续生成保密义务待办；核实事项范围、相关义务与材料依据，不能用公司关联代替律师判断。"
+    },
+    {
+      "image": "v2-04-review-blocked.jpg",
+      "seconds": 8,
+      "start": 370,
+      "end": 560,
+      "title": "05  有缺口，就保留阻塞",
+      "caption": "身份、线索复核和补证尚未齐备，页面阻止标记“审查记录完备”。总意见由律师填写，不自动批准收案。"
+    },
+    {
+      "image": "v2-05-tools.jpg",
+      "seconds": 9,
+      "start": 300,
+      "end": 760,
+      "title": "06  独立执行真实工具查询",
+      "caption": "MCP 实际发现 5 项工具。律师可手动填写查询条件并调用；示例 search_entities 已返回，保留调用记录。"
+    },
+    {
+      "image": "v2-06-permission.jpg",
+      "seconds": 6,
+      "start": 0,
+      "end": 0,
+      "title": "07  管理单项工具使用权限",
+      "caption": "暂停“查找企业身份”后，执行按钮禁用。权限适用于后续手动、规则和模型调用；已发出的请求继续执行。"
+    },
+    {
+      "image": "v2-07-trace.jpg",
+      "seconds": 7,
+      "start": 0,
+      "end": 0,
+      "title": "08  查看可追溯的调用凭证",
+      "caption": "凭证展示真实请求参数、原始企业数据、来源与 2166 ms 耗时。这是手动 MCP 调用，尚未验证模型实跑。"
+    }
+  ],
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1440,
+        "height": 900,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      },
+      {
+        "codec_name": "mov_text",
+        "codec_type": "subtitle",
+        "r_frame_rate": "0/0"
+      }
+    ],
+    "format": {
+      "duration": "72.000000",
+      "size": "1244247"
+    }
+  }
+}

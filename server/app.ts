@@ -13,6 +13,10 @@ import {
 import { ScreeningService, runInputSchema, reviewSchema } from "./screening.ts";
 import { modelConfigured, modelName } from "./model.ts";
 import { report } from "./report.ts";
+import { CaseService } from "./cases.ts";
+import { createCaseRouter } from "./case-routes.ts";
+import { ToolDeskService } from "./tool-desk.ts";
+import { createToolDeskRouter } from "./tool-routes.ts";
 import type { ConnectorId, Entity } from "../shared/types.ts";
 
 export function createBackend(dir = dataDir) {
@@ -22,6 +26,8 @@ export function createBackend(dir = dataDir) {
     store.audit(kind, data),
   );
   const screening = new ScreeningService(store, connectors);
+  const cases = new CaseService(store, screening);
+  const toolDesk = new ToolDeskService(store, connectors);
   app.disable("x-powered-by");
   app.use((req, res, next) => {
     if (!["127.0.0.1", "localhost", "[::1]"].includes(req.hostname)) {
@@ -60,7 +66,7 @@ export function createBackend(dir = dataDir) {
         configured: modelConfigured(),
         model: modelName(),
         modeLabel: modelConfigured()
-          ? "AI 工具核查可用"
+          ? "模型已配置 · 待实际验证"
           : "规则预览 · 模型待配置",
       },
       ledger: { count: store.countLedger(), synthetic: true },
@@ -112,6 +118,8 @@ export function createBackend(dir = dataDir) {
     );
     res.type("text/markdown").send(report(run));
   });
+  app.use("/api/cases", createCaseRouter(cases));
+  app.use("/api/tool-desk", createToolDeskRouter(toolDesk));
   app.use("/api", (_req, res) => res.status(404).json({ error: "API 不存在" }));
   const dist = resolve(fileURLToPath(new URL("../", import.meta.url)), "dist");
   if (existsSync(dist)) {
@@ -128,13 +136,11 @@ export function createBackend(dir = dataDir) {
       _next: express.NextFunction,
     ) => {
       if (error instanceof ZodError) {
-        res
-          .status(400)
-          .json({
-            error: error.issues
-              .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-              .join("；"),
-          });
+        res.status(400).json({
+          error: error.issues
+            .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+            .join("；"),
+        });
         return;
       }
       const code =
@@ -145,12 +151,10 @@ export function createBackend(dir = dataDir) {
             : error.status === 400
               ? 400
               : 500;
-      res
-        .status(code)
-        .json({
-          error:
-            code === 500 ? "服务处理失败，请检查本地服务状态。" : error.message,
-        });
+      res.status(code).json({
+        error:
+          code === 500 ? "服务处理失败，请检查本地服务状态。" : error.message,
+      });
     },
   );
   return {
@@ -158,8 +162,11 @@ export function createBackend(dir = dataDir) {
     store,
     connectors,
     screening,
+    cases,
+    toolDesk,
     async close() {
       await screening.close();
+      await toolDesk.close();
       await connectors.close();
       store.close();
     },

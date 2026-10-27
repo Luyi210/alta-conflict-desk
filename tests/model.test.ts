@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { modelReview } from "../server/model.ts";
+import { Store } from "../server/store.ts";
+import { ConnectorManager } from "../server/connectors.ts";
+import { ToolDeskService } from "../server/tool-desk.ts";
 import type { Run, Trace } from "../shared/types.ts";
 
 // These tests simulate provider HTTP responses and tool results; they are NOT live AI validation.
@@ -85,7 +91,7 @@ async function withMockProvider(
     }) as typeof fetch;
     await work();
     assert.equal(responseIndex, messages.length);
-    assert.ok(received.length > 0);
+    assert.equal(received.length, messages.length);
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(previous)) {
@@ -198,4 +204,246 @@ test("mock model: completion requires allowed GLEIF and ledger calls plus citati
       assert.match(summary, /尚未作出收案判断/);
     },
   );
+});
+
+test("mock model: malformed JSON, extra parameters, and oversized batches never reach a tool", async () => {
+  const cases: { message: Message; expected: RegExp }[] = [
+    {
+      message: {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "bad-json",
+            type: "function",
+            function: { name: "gleif_get_entity", arguments: "{" },
+          },
+        ],
+      },
+      expected: /不是合法 JSON/,
+    },
+    {
+      message: {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          tool("extra", "gleif_get_entity", {
+            lei: entity.lei,
+            sql: "not permitted",
+          }),
+        ],
+      },
+      expected: /输入 schema/,
+    },
+    {
+      message: {
+        role: "assistant",
+        content: null,
+        tool_calls: Array.from({ length: 5 }, (_, i) =>
+          tool(`call-${i}`, "gleif_get_entity", { lei: entity.lei }),
+        ),
+      },
+      expected: /超过本次核查上限/,
+    },
+    {
+      message: { role: "assistant", content: "```json\n{}\n```" },
+      expected: /可验证的 JSON/,
+    },
+    {
+      message: {
+        role: "assistant",
+        content: JSON.stringify({ summary: 17, citedTraceIds: ["a", "b"] }),
+      },
+      expected: /输出 schema/,
+    },
+  ];
+  for (const scenario of cases) {
+    let called = false;
+    const progress: NonNullable<Run["modelExecution"]>[] = [];
+    await withMockProvider([scenario.message], async () => {
+      await assert.rejects(
+        modelReview(
+          run,
+          async () => {
+            called = true;
+            throw new Error("Must not call MCP");
+          },
+          { onProgress: (state) => progress.push(state) },
+        ),
+        scenario.expected,
+      );
+      assert.equal(called, false);
+      assert.equal(progress.at(-1)?.status, "failed");
+      assert.equal(progress.at(-1)?.toolCallCount, 0);
+      assert.equal(progress.at(-1)?.rounds, 1);
+    });
+  }
+});
+
+test("mock model: disabled tools are excluded and missing a required source fails before any provider request", async () => {
+  await withMockProvider([], async () => {
+    const progress: NonNullable<Run["modelExecution"]>[] = [];
+    await assert.rejects(
+      modelReview(
+        run,
+        async () => {
+          throw new Error("Must not call MCP");
+        },
+        {
+          tools: () => [
+            {
+              connector: "gleif",
+              name: "get_entity",
+              description: "mock catalog",
+              available: true,
+              enabled: true,
+              readOnly: true,
+              inputSchema: {
+                type: "object",
+                properties: { lei: { type: "string" } },
+                required: ["lei"],
+              },
+            },
+            {
+              connector: "ledger",
+              name: "search_matters",
+              description: "disabled mock catalog",
+              available: true,
+              enabled: false,
+              readOnly: true,
+              inputSchema: { type: "object" },
+            },
+          ],
+          onProgress: (state) => progress.push(state),
+        },
+      ),
+      /未连接或已禁用/,
+    );
+    assert.equal(progress.at(-1)?.status, "failed");
+    assert.equal(progress.at(-1)?.rounds, 0);
+    assert.equal(progress.at(-1)?.toolCallCount, 0);
+  });
+});
+
+test("mock model: a failed or mismatched returned trace cannot be used as evidence", async () => {
+  for (const patch of [
+    { status: "error" as const },
+    { connector: "ledger" as const },
+    { args: { lei: "21380081EP12LC86CB82" } },
+  ]) {
+    await withMockProvider(
+      [
+        {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            tool("identity", "gleif_get_entity", { lei: entity.lei }),
+          ],
+        },
+      ],
+      async () => {
+        const callback: ModelCall = async <T>() => ({
+          data: { entity } as T,
+          trace: {
+            id: "bad-trace",
+            connector: "gleif",
+            tool: "get_entity",
+            args: { lei: entity.lei },
+            startedAt: entity.fetchedAt,
+            durationMs: 0,
+            status: "success",
+            ...patch,
+          },
+        });
+        await assert.rejects(
+          modelReview(run, callback),
+          /凭据与本次请求不一致/,
+        );
+      },
+    );
+  }
+});
+
+test("mock model HTTP + real SQLite MCP: allowed tool flow records real local evidence and completion counters (GLEIF response mocked)", async () => {
+  // This is protocol/integration validation, NOT a successful external AI run.
+  const dir = mkdtempSync(join(tmpdir(), "alta-model-mcp-test-"));
+  const store = new Store(dir);
+  const connectors = new ConnectorManager(dir);
+  const desk = new ToolDeskService(store, connectors);
+  try {
+    await connectors.connect("ledger");
+    await connectors.connect("gleif"); // tools/list only, no public network request.
+    const responses: Message[] = [
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          tool("identity", "gleif_get_entity", { lei: entity.lei }),
+          tool("ledger", "ledger_search_matters", {
+            name: "Model invented name",
+            lei: entity.lei,
+          }),
+        ],
+      },
+      final([]),
+    ];
+    const traces: Trace[] = [];
+    const progress: NonNullable<Run["modelExecution"]>[] = [];
+    const callback: ModelCall = async <T>(
+      connector: "gleif" | "ledger",
+      name: string,
+      args: Record<string, unknown>,
+    ) => {
+      const result =
+        connector === "ledger"
+          ? await connectors.call<T>(connector, name, args, "model")
+          : {
+              data: { entity } as T,
+              trace: {
+                id: "MOCK-GLEIF-TRACE",
+                connector,
+                tool: name,
+                args,
+                startedAt: entity.fetchedAt,
+                durationMs: 0,
+                status: "success" as const,
+                initiator: "model" as const,
+              },
+            };
+      traces.push(result.trace);
+      responses[1] = final(traces.map((trace) => trace.id));
+      return result;
+    };
+    await withMockProvider(responses, async () => {
+      const summary = await modelReview(run, callback, {
+        tools: () => connectors.catalog(),
+        validateCall: (connector, name, args) =>
+          connectors.validateCall(connector, name, args),
+        onProgress: (state) => progress.push(state),
+      });
+      assert.match(summary, /MOCK-GLEIF-TRACE/);
+      assert.equal(traces.length, 2);
+      const ledgerTrace = traces.find((trace) => trace.connector === "ledger")!;
+      assert.equal(ledgerTrace.args.name, entity.name);
+      assert.equal(
+        (ledgerTrace.result as { synthetic: boolean }).synthetic,
+        true,
+      );
+      assert.ok(
+        (ledgerTrace.result as { matches: unknown[] }).matches.length > 0,
+      );
+      assert.deepEqual(progress.at(-1), {
+        status: "completed",
+        model: "mock-model",
+        toolCallCount: 2,
+        rounds: 2,
+      });
+      assert.match(summary, new RegExp(ledgerTrace.id));
+    });
+  } finally {
+    await desk.close();
+    await connectors.close();
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

@@ -1,9 +1,17 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { AjvJsonSchemaValidator } from "@modelcontextprotocol/sdk/validation/ajv";
+import type { JsonSchemaValidator } from "@modelcontextprotocol/sdk/validation";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
-import type { Connector, ConnectorId, Trace } from "../shared/types.ts";
+import type {
+  CatalogTool,
+  Connector,
+  ConnectorId,
+  ToolInfo,
+  Trace,
+} from "../shared/types.ts";
 
 export class HttpError extends Error {
   constructor(
@@ -32,8 +40,12 @@ type Entry = {
   client?: Client;
   transport?: StdioClientTransport;
   changing: boolean;
+  validators?: Map<string, JsonSchemaValidator<Record<string, unknown>>>;
 };
 export class ConnectorManager {
+  private schemaValidator = new AjvJsonSchemaValidator();
+  private enabled: (id: ConnectorId, tool: string) => boolean = () => true;
+  private discovered: (id: ConnectorId, tools: ToolInfo[]) => void = () => {};
   private entries: Record<ConnectorId, Entry> = {
     gleif: {
       state: {
@@ -64,7 +76,60 @@ export class ConnectorManager {
     return connectorIds.map((id) => this.get(id));
   }
   get(id: ConnectorId): Connector {
-    return structuredClone(this.entries[id].state);
+    const state = structuredClone(this.entry(id).state);
+    state.tools = state.tools.map((tool) => ({
+      ...tool,
+      enabled: this.enabled(id, tool.name),
+    }));
+    return state;
+  }
+  // One shared policy protects user, rule-engine, model, and connection-test calls.
+  setToolPolicy(check: (id: ConnectorId, tool: string) => boolean) {
+    this.enabled = check;
+  }
+  setDiscoveryObserver(observer: (id: ConnectorId, tools: ToolInfo[]) => void) {
+    this.discovered = observer;
+  }
+  restoreDiscovered(id: ConnectorId, tools: ToolInfo[]) {
+    const e = this.entry(id);
+    if (!e.state.connected)
+      e.state.tools = structuredClone(tools).filter((tool) =>
+        allowedTools[id].includes(tool.name),
+      );
+  }
+  catalog(): CatalogTool[] {
+    return this.list().flatMap((connector) =>
+      connector.tools
+        .filter((tool) => tool.inputSchema)
+        .map((tool) => ({
+          ...tool,
+          connector: connector.id,
+          enabled: tool.enabled !== false,
+          available: connector.connected && !this.entry(connector.id).changing,
+          readOnly: tool.readOnly === true,
+          inputSchema: tool.inputSchema!,
+        })),
+    );
+  }
+  validateCall(id: ConnectorId, tool: string, args: Record<string, unknown>) {
+    const e = this.entry(id);
+    if (!allowedTools[id].includes(tool))
+      throw new HttpError(403, "该 MCP 工具未获授权");
+    if (!e.client || !e.state.connected || e.changing)
+      throw new HttpError(409, `${e.state.name}尚未连接`);
+    if (!e.state.tools.some((item) => item.name === tool))
+      throw new HttpError(404, "MCP 服务未提供该工具");
+    if (!this.enabled(id, tool))
+      throw new HttpError(403, `工具 ${tool} 已禁用，请先在工具台启用`);
+    const validate = e.validators?.get(tool);
+    if (!validate)
+      throw new HttpError(409, "尚未取得工具输入 schema，请重新连接 MCP");
+    const result = validate(args);
+    if (!result.valid)
+      throw new HttpError(
+        400,
+        `工具参数不符合 MCP schema：${result.errorMessage}`,
+      );
   }
   private entry(id: ConnectorId) {
     if (!connectorIds.includes(id)) throw new HttpError(404, "未知连接器");
@@ -102,15 +167,30 @@ export class ConnectorManager {
       e.client = client;
       await client.connect(transport, { timeout: 15000 });
       const tools = await client.listTools();
+      const discoveredTools = tools.tools.filter((t) =>
+        allowedTools[id].includes(t.name),
+      );
+      e.validators = new Map(
+        discoveredTools.map((tool) => [
+          tool.name,
+          this.schemaValidator.getValidator<Record<string, unknown>>(
+            tool.inputSchema,
+          ),
+        ]),
+      );
       e.state = {
         ...e.state,
         connected: true,
         status: "connected",
         error: undefined,
-        tools: tools.tools
-          .filter((t) => allowedTools[id].includes(t.name))
-          .map((t) => ({ name: t.name, description: t.description || "" })),
+        tools: discoveredTools.map((t) => ({
+          name: t.name,
+          description: t.description || "",
+          inputSchema: structuredClone(t.inputSchema),
+          readOnly: t.annotations?.readOnlyHint === true,
+        })),
       };
+      this.discovered(id, structuredClone(e.state.tools));
       this.audit("mcp-connect", {
         connector: id,
         tools: e.state.tools.map((t) => t.name),
@@ -142,7 +222,6 @@ export class ConnectorManager {
       connected: false,
       status: "disconnected",
       error: undefined,
-      tools: [],
     };
     const client = e.client;
     const transport = e.transport;
@@ -164,23 +243,20 @@ export class ConnectorManager {
     initiator: Trace["initiator"] = "user",
   ): Promise<{ data: T; trace: Trace }> {
     const e = this.entry(id);
-    if (!e.client || !e.state.connected || e.changing)
-      throw new HttpError(409, `${e.state.name}尚未连接`);
-    if (!allowedTools[id].includes(tool))
-      throw new HttpError(403, "该 MCP 工具未获授权");
+    this.validateCall(id, tool, args);
     const started = Date.now();
     const trace: Trace = {
       id: randomUUID(),
       connector: id,
       tool,
-      args,
+      args: structuredClone(args),
       startedAt: new Date(started).toISOString(),
       durationMs: 0,
       status: "success",
       initiator,
     };
     try {
-      const output = await e.client.callTool(
+      const output = await e.client!.callTool(
         { name: tool, arguments: args },
         undefined,
         { timeout: 65000 },

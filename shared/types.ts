@@ -1,5 +1,11 @@
 export type ConnectorId = "gleif" | "ledger";
-export type ToolInfo = { name: string; description: string };
+export type ToolInfo = {
+  name: string;
+  description: string;
+  inputSchema?: Record<string, unknown>;
+  enabled?: boolean;
+  readOnly?: boolean;
+};
 export type Connector = {
   id: ConnectorId;
   name: string;
@@ -80,6 +86,13 @@ export type Run = {
   summary: string;
   modelSummary?: string;
   error?: string;
+  modelExecution?: {
+    status: "running" | "completed" | "failed";
+    model: string;
+    toolCallCount: number;
+    rounds: number;
+    error?: string;
+  };
 };
 export type RunInput = {
   matterName: string;
@@ -92,4 +105,97 @@ export type AppStatus = {
   connectors: Connector[];
   model: { configured: boolean; model: string; modeLabel: string };
   ledger: { count: number; synthetic: true };
+};
+
+export type PartyRole = "拟委托人" | "交易对方" | "担保方" | "其他相关方";
+export type CaseParty = {
+  id: string;
+  name: string;
+  role: PartyRole;
+  confirmed: boolean;
+  entity?: Entity;
+  runId?: string;
+};
+export type CaseInput = {
+  name: string;
+  context: string;
+  jurisdiction: string;
+  mode: "rules" | "ai";
+  parties: CaseParty[];
+};
+export type CaseTask = {
+  id: string;
+  kind: "identity" | "coverage" | "scope" | "confidentiality";
+  title: string;
+  description: string;
+  partyIds: string[];
+  required: boolean;
+  systemManaged: boolean;
+  status: "open" | "resolved";
+  note: string;
+  reference: string;
+  updatedAt?: string;
+};
+export type CaseDecision = {
+  status:
+    | "draft"
+    | "needs-information"
+    | "needs-partner-review"
+    | "review-recorded";
+  note: string;
+  reviewer: string;
+  recordedAt?: string;
+  revision: number;
+};
+export type CaseActivity = {
+  id: string;
+  at: string;
+  type: string;
+  message: string;
+};
+export type CaseFile = {
+  id: string;
+  name: string;
+  context: string;
+  jurisdiction: string;
+  mode: "rules" | "ai";
+  createdAt: string;
+  updatedAt: string;
+  revision: number;
+  parties: CaseParty[];
+  tasks: CaseTask[];
+  decision: CaseDecision;
+  activity: CaseActivity[];
+};
+export type CaseView = CaseFile & {
+  runs: Run[];
+  status: "running" | "needs-attention" | "ready-for-review" | "recorded";
+  blockers: string[];
+  progress: {
+    total: number;
+    confirmed: number;
+    completed: number;
+    findings: number;
+    pendingFindings: number;
+    openTasks: number;
+  };
+};
+export type CatalogTool = ToolInfo & {
+  connector: ConnectorId;
+  available: boolean;
+  enabled: boolean;
+  readOnly: boolean;
+  inputSchema: Record<string, unknown>;
+};
+export type ToolExecution = {
+  id: string;
+  connector: ConnectorId;
+  tool: string;
+  args: Record<string, unknown>;
+  status: "queued" | "running" | "success" | "error";
+  createdAt: string;
+  completedAt?: string;
+  trace?: Trace;
+  error?: string;
+  retryOf?: string;
 };

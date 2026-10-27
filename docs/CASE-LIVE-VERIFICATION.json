@@ -1,0 +1,157 @@
+{
+  "verifiedAt": "2026-10-27T07:54:13.829Z",
+  "mode": "rules",
+  "realMcp": true,
+  "aiVerified": false,
+  "syntheticLedger": true,
+  "simulatedHumanReviews": true,
+  "publicEntities": [
+    {
+      "name": "HSBC BANK PLC",
+      "lei": "MP6I5ZYZBEU3UXPYFY54",
+      "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+      "fetchedAt": "2026-10-27T07:54:07.318Z"
+    },
+    {
+      "name": "HSBC UK BANK PLC",
+      "lei": "21380081EP12LC86CB82",
+      "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+      "fetchedAt": "2026-10-27T07:54:08.172Z"
+    }
+  ],
+  "sharedTasks": [
+    {
+      "id": "scope-4e40087843ab66349b2c",
+      "kind": "scope",
+      "partyIds": [
+        "client",
+        "counterparty"
+      ]
+    },
+    {
+      "id": "scope-f09377ae7b9dc48c545f",
+      "kind": "scope",
+      "partyIds": [
+        "client",
+        "counterparty"
+      ]
+    },
+    {
+      "id": "scope-057a483887f4046f45a4",
+      "kind": "scope",
+      "partyIds": [
+        "client",
+        "counterparty"
+      ]
+    },
+    {
+      "id": "confidentiality-057a483887f4046f45a4",
+      "kind": "confidentiality",
+      "partyIds": [
+        "client",
+        "counterparty"
+      ]
+    }
+  ],
+  "identityGuard": true,
+  "finalDecisionGuard": true,
+  "reportDownloaded": true,
+  "reviewChangeInvalidatedDecision": true,
+  "retryPreservedHistory": true,
+  "actualCalls": [
+    {
+      "runId": "85870c7b-adbe-499a-a9a1-823940163fc4",
+      "connector": "gleif",
+      "tool": "get_entity",
+      "args": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 446
+    },
+    {
+      "runId": "85870c7b-adbe-499a-a9a1-823940163fc4",
+      "connector": "ledger",
+      "tool": "search_matters",
+      "args": {
+        "name": "HSBC BANK PLC",
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 8
+    },
+    {
+      "runId": "85870c7b-adbe-499a-a9a1-823940163fc4",
+      "connector": "gleif",
+      "tool": "get_relationships",
+      "args": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 1469
+    },
+    {
+      "runId": "85870c7b-adbe-499a-a9a1-823940163fc4",
+      "connector": "ledger",
+      "tool": "search_matters",
+      "args": {
+        "name": "HSBC HOLDINGS PLC",
+        "lei": "MLU0ZO3ML4LN2LL2TL39"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 2
+    },
+    {
+      "runId": "1e822088-cd46-45f9-a00a-ce9b63e9ee24",
+      "connector": "gleif",
+      "tool": "get_entity",
+      "args": {
+        "lei": "21380081EP12LC86CB82"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 787
+    },
+    {
+      "runId": "1e822088-cd46-45f9-a00a-ce9b63e9ee24",
+      "connector": "ledger",
+      "tool": "search_matters",
+      "args": {
+        "name": "HSBC UK BANK PLC",
+        "lei": "21380081EP12LC86CB82"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 1
+    },
+    {
+      "runId": "1e822088-cd46-45f9-a00a-ce9b63e9ee24",
+      "connector": "gleif",
+      "tool": "get_relationships",
+      "args": {
+        "lei": "21380081EP12LC86CB82"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 457
+    },
+    {
+      "runId": "1e822088-cd46-45f9-a00a-ce9b63e9ee24",
+      "connector": "ledger",
+      "tool": "search_matters",
+      "args": {
+        "name": "HSBC HOLDINGS PLC",
+        "lei": "MLU0ZO3ML4LN2LL2TL39"
+      },
+      "initiator": "rules",
+      "status": "success",
+      "durationMs": 1
+    }
+  ],
+  "finalCaseStatus": "needs-attention",
+  "finalDecision": "draft"
+}
