@@ -1,0 +1,104 @@
+{
+  "verifiedAt": "2026-10-27T06:30:23.069Z",
+  "mode": "rules",
+  "realMcp": true,
+  "syntheticLedger": true,
+  "publicEntity": {
+    "lei": "MP6I5ZYZBEU3UXPYFY54",
+    "name": "HSBC BANK PLC",
+    "jurisdiction": "GB",
+    "status": "ACTIVE",
+    "address": "8 CANADA SQUARE, LONDON, GB",
+    "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+    "fetchedAt": "2026-10-27T06:30:21.108Z"
+  },
+  "status": "completed",
+  "findingTypes": [
+    "direct",
+    "similar",
+    "related"
+  ],
+  "relations": [
+    {
+      "type": "direct-parent",
+      "entity": {
+        "lei": "MLU0ZO3ML4LN2LL2TL39",
+        "name": "HSBC HOLDINGS PLC",
+        "jurisdiction": "GB",
+        "status": "ACTIVE",
+        "address": "8 CANADA SQUARE, LONDON, GB",
+        "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+        "fetchedAt": "2026-10-27T06:30:21.602Z"
+      },
+      "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/direct-parent",
+      "fetchedAt": "2026-10-27T06:30:21.602Z"
+    },
+    {
+      "type": "ultimate-parent",
+      "entity": {
+        "lei": "MLU0ZO3ML4LN2LL2TL39",
+        "name": "HSBC HOLDINGS PLC",
+        "jurisdiction": "GB",
+        "status": "ACTIVE",
+        "address": "8 CANADA SQUARE, LONDON, GB",
+        "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+        "fetchedAt": "2026-10-27T06:30:22.670Z"
+      },
+      "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/ultimate-parent",
+      "fetchedAt": "2026-10-27T06:30:22.670Z"
+    }
+  ],
+  "gaps": [
+    "核查仅覆盖选定对方主体及 GLEIF 披露的直接/最终母公司；拟委托人字段仅为事项背景，尚未执行其主体核查。",
+    "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+    "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。"
+  ],
+  "calls": [
+    {
+      "connector": "gleif",
+      "tool": "get_entity",
+      "initiator": "rules",
+      "durationMs": 465,
+      "status": "success",
+      "args": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      }
+    },
+    {
+      "connector": "ledger",
+      "tool": "search_matters",
+      "initiator": "rules",
+      "durationMs": 2,
+      "status": "success",
+      "args": {
+        "name": "HSBC BANK PLC",
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      }
+    },
+    {
+      "connector": "gleif",
+      "tool": "get_relationships",
+      "initiator": "rules",
+      "durationMs": 1564,
+      "status": "success",
+      "args": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54"
+      }
+    },
+    {
+      "connector": "ledger",
+      "tool": "search_matters",
+      "initiator": "rules",
+      "durationMs": 2,
+      "status": "success",
+      "args": {
+        "name": "HSBC HOLDINGS PLC",
+        "lei": "MLU0ZO3ML4LN2LL2TL39"
+      }
+    }
+  ],
+  "reviewPersisted": true,
+  "downloadVerified": true,
+  "disconnectEnforced": true,
+  "aiVerified": false
+}

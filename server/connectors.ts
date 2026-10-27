@@ -1,0 +1,228 @@
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { randomUUID } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+import type { Connector, ConnectorId, Trace } from "../shared/types.ts";
+
+export class HttpError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+export class ToolError extends Error {
+  constructor(
+    message: string,
+    public trace: Trace,
+  ) {
+    super(message);
+  }
+}
+export const connectorIds: ConnectorId[] = ["gleif", "ledger"];
+const allowedTools: Record<ConnectorId, string[]> = {
+  gleif: ["search_entities", "get_entity", "get_relationships"],
+  ledger: ["ledger_info", "search_matters"],
+};
+const root = fileURLToPath(new URL("../", import.meta.url));
+type Entry = {
+  state: Connector;
+  client?: Client;
+  transport?: StdioClientTransport;
+  changing: boolean;
+};
+export class ConnectorManager {
+  private entries: Record<ConnectorId, Entry> = {
+    gleif: {
+      state: {
+        id: "gleif",
+        name: "GLEIF 企业主体",
+        connected: false,
+        status: "disconnected",
+        tools: [],
+      },
+      changing: false,
+    },
+    ledger: {
+      state: {
+        id: "ledger",
+        name: "律所客户与事项台账",
+        connected: false,
+        status: "disconnected",
+        tools: [],
+      },
+      changing: false,
+    },
+  };
+  constructor(
+    private dir: string,
+    private audit: (kind: string, data: unknown) => void = () => {},
+  ) {}
+  list() {
+    return connectorIds.map((id) => this.get(id));
+  }
+  get(id: ConnectorId): Connector {
+    return structuredClone(this.entries[id].state);
+  }
+  private entry(id: ConnectorId) {
+    if (!connectorIds.includes(id)) throw new HttpError(404, "未知连接器");
+    return this.entries[id];
+  }
+  async connect(id: ConnectorId) {
+    const e = this.entry(id);
+    if (e.changing) throw new HttpError(409, "连接器正在切换状态，请稍后重试");
+    if (e.client && e.state.connected) return this.get(id);
+    e.changing = true;
+    try {
+      const env: Record<string, string> = { DATA_DIR: resolve(this.dir) };
+      for (const key of [
+        "PATH",
+        "HOME",
+        "PUBLIC_API_TIMEOUT_MS",
+        "HTTPS_PROXY",
+        "HTTP_PROXY",
+        "NO_PROXY",
+        "NODE_USE_ENV_PROXY",
+      ])
+        if (process.env[key]) env[key] = process.env[key]!;
+      const transport = new StdioClientTransport({
+        command: process.execPath,
+        args: ["--import", "tsx", resolve(root, "mcp", `${id}.ts`)],
+        cwd: root,
+        env,
+        stderr: "pipe",
+      });
+      const client = new Client({
+        name: "conflict-desk-host",
+        version: "0.1.0",
+      });
+      e.transport = transport;
+      e.client = client;
+      await client.connect(transport, { timeout: 15000 });
+      const tools = await client.listTools();
+      e.state = {
+        ...e.state,
+        connected: true,
+        status: "connected",
+        error: undefined,
+        tools: tools.tools
+          .filter((t) => allowedTools[id].includes(t.name))
+          .map((t) => ({ name: t.name, description: t.description || "" })),
+      };
+      this.audit("mcp-connect", {
+        connector: id,
+        tools: e.state.tools.map((t) => t.name),
+        transport: "stdio",
+      });
+      return this.get(id);
+    } catch (err) {
+      await e.client?.close().catch(() => {});
+      await e.transport?.close().catch(() => {});
+      e.client = undefined;
+      e.transport = undefined;
+      e.state = {
+        ...e.state,
+        connected: false,
+        status: "error",
+        error: (err as Error).message,
+      };
+      throw new HttpError(502, `MCP 连接失败：${(err as Error).message}`);
+    } finally {
+      e.changing = false;
+    }
+  }
+  async disconnect(id: ConnectorId) {
+    const e = this.entry(id);
+    if (e.changing) throw new HttpError(409, "连接器正在切换状态，请稍后重试");
+    e.changing = true;
+    e.state = {
+      ...e.state,
+      connected: false,
+      status: "disconnected",
+      error: undefined,
+      tools: [],
+    };
+    const client = e.client;
+    const transport = e.transport;
+    e.client = undefined;
+    e.transport = undefined;
+    try {
+      await client?.close();
+      await transport?.close();
+      this.audit("mcp-disconnect", { connector: id });
+    } finally {
+      e.changing = false;
+    }
+    return this.get(id);
+  }
+  async call<T>(
+    id: ConnectorId,
+    tool: string,
+    args: Record<string, unknown>,
+    initiator: Trace["initiator"] = "user",
+  ): Promise<{ data: T; trace: Trace }> {
+    const e = this.entry(id);
+    if (!e.client || !e.state.connected || e.changing)
+      throw new HttpError(409, `${e.state.name}尚未连接`);
+    if (!allowedTools[id].includes(tool))
+      throw new HttpError(403, "该 MCP 工具未获授权");
+    const started = Date.now();
+    const trace: Trace = {
+      id: randomUUID(),
+      connector: id,
+      tool,
+      args,
+      startedAt: new Date(started).toISOString(),
+      durationMs: 0,
+      status: "success",
+      initiator,
+    };
+    try {
+      const output = await e.client.callTool(
+        { name: tool, arguments: args },
+        undefined,
+        { timeout: 65000 },
+      );
+      const content = output.content as Array<{ type: string; text?: string }>;
+      const text = content
+        ?.filter((c) => c.type === "text")
+        .map((c) => c.text || "")
+        .join("\n");
+      if (output.isError) throw new Error(text || "MCP 工具返回错误");
+      const data = JSON.parse(text || "{}") as T;
+      trace.durationMs = Date.now() - started;
+      trace.result = data;
+      this.audit("mcp-tool-call", trace);
+      return { data, trace };
+    } catch (error) {
+      trace.durationMs = Date.now() - started;
+      trace.status = "error";
+      trace.error = (error as Error).message;
+      this.audit("mcp-tool-call", trace);
+      throw new ToolError(trace.error, trace);
+    }
+  }
+  async test(id: ConnectorId) {
+    const e = this.entry(id);
+    try {
+      await this.call(
+        id,
+        id === "gleif" ? "get_entity" : "ledger_info",
+        id === "gleif" ? { lei: "MP6I5ZYZBEU3UXPYFY54" } : {},
+      );
+      e.state.lastTestAt = new Date().toISOString();
+      e.state.status = "connected";
+      e.state.error = undefined;
+      return this.get(id);
+    } catch (err) {
+      e.state.error = (err as Error).message;
+      if (e.state.connected) e.state.status = "error";
+      throw err;
+    }
+  }
+  async close() {
+    for (const id of connectorIds) await this.disconnect(id).catch(() => {});
+  }
+}
