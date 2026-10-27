@@ -1,0 +1,156 @@
+{
+  "kind": "verified-ai-screenshot-walkthrough",
+  "continuousScreenRecording": false,
+  "mode": "ai",
+  "aiVerified": true,
+  "audio": false,
+  "syntheticInternalData": true,
+  "modelRequestsByRenderer": 0,
+  "persistentDisclosure": "真实 AI 验收 · 截图演示 · 非连续录屏",
+  "persistentLimitation": "内部委托数据虚构 · 单主体核查完成，案件仍待补证与复核",
+  "originalScreenshotsUnmodified": true,
+  "singlePartyScreeningCompleted": true,
+  "acceptedMatter": false,
+  "caseHasBlockers": true,
+  "caseBlockers": [
+    "「澄川科技有限公司（虚构）」身份未确认",
+    "3 条线索仍待复核或进一步复核",
+    "4 项委托范围或保密补证尚未补齐"
+  ],
+  "evidence": {
+    "file": "AI-LIVE-VERIFICATION.json",
+    "sha256": "0f20b1021e33888a32c8c500da92f2c1caa03febf7b2ea035e6bba9d6608ce2d",
+    "verifiedAt": "2026-10-27T08:20:17.497Z",
+    "caseId": "4ad98a01-f9bd-46c2-bee8-4276924e2396",
+    "runId": "091f6e1e-ab98-4541-9e42-e3ff6f730245",
+    "model": "deepseek-flash",
+    "rounds": 2,
+    "modelToolCalls": 4,
+    "ruleToolCalls": 4,
+    "totalMcpCalls": 8,
+    "verificationBasis": "Read-only validation of saved local application model execution records and successful model-initiated MCP traces. This script does not invoke the model or independently verify provider billing."
+  },
+  "method": "Native screenshot pixels, final one-pixel column removed for even-width encoding, then vertical crop/pan and external captions. No synthetic click, cursor animation, or sparse raw capture frames.",
+  "sourceScreenshots": [
+    {
+      "file": "ai-01-confirmed.jpg",
+      "sha256": "859d87fdc3090d74732281ff85684720ac70e620d211d92efd81ebc51c04fa8b",
+      "dimensions": [
+        1065,
+        1724
+      ],
+      "capturedAt": "2026-10-27T08:18:53.140072+00:00",
+      "captureTimestampBasis": "Source screenshot capture/save file modification time, observed before rendering",
+      "mtimeNs": 1793089133140072228
+    },
+    {
+      "file": "ai-02-completed.jpg",
+      "sha256": "1ea7a834473efb8da7e7a42857761323b4d9f6c553c41a6b65924d403577e03d",
+      "dimensions": [
+        1065,
+        1162
+      ],
+      "capturedAt": "2026-10-27T08:20:31.112271+00:00",
+      "captureTimestampBasis": "Source screenshot capture/save file modification time, observed before rendering",
+      "mtimeNs": 1793089231112271217
+    },
+    {
+      "file": "ai-03-summary.jpg",
+      "sha256": "8854b9ae59e5baa45da82b7d07a218bd089c9e01b6df07c00dd6b451dab94e59",
+      "dimensions": [
+        1065,
+        2181
+      ],
+      "capturedAt": "2026-10-27T08:22:02.350816+00:00",
+      "captureTimestampBasis": "Source screenshot capture/save file modification time, observed before rendering",
+      "mtimeNs": 1793089322350815997
+    },
+    {
+      "file": "ai-04-model-calls.jpg",
+      "sha256": "e1e757529d25205ece6128e598fa651544779f8b8f66caddd60c0e00e751dd77",
+      "dimensions": [
+        1065,
+        1473
+      ],
+      "capturedAt": "2026-10-27T08:22:35.627184+00:00",
+      "captureTimestampBasis": "Source screenshot capture/save file modification time, observed before rendering",
+      "mtimeNs": 1793089355627183801
+    },
+    {
+      "file": "ai-05-trace.jpg",
+      "sha256": "e2dc299f822b4c427ff44e29bcb358c75346a7d7c740d45dbbf6997cb3a640ac",
+      "dimensions": [
+        1065,
+        954
+      ],
+      "capturedAt": "2026-10-27T08:22:36.039718+00:00",
+      "captureTimestampBasis": "Source screenshot capture/save file modification time, observed before rendering",
+      "mtimeNs": 1793089356039718191
+    }
+  ],
+  "chapters": [
+    {
+      "image": "ai-01-confirmed.jpg",
+      "seconds": 8,
+      "start": 480,
+      "end": 710,
+      "title": "01  确认 AI 核查的主体范围",
+      "caption": "执行方式为 AI 工具调用。仅 HSBC BANK PLC 已确认 LEI；拟委托人身份缺失，仍作为案件缺口保留。"
+    },
+    {
+      "image": "ai-02-completed.jpg",
+      "seconds": 8,
+      "start": 180,
+      "end": 410,
+      "title": "02  单主体 AI 调用链路完成",
+      "caption": "已确认主体核查完成：模型执行 2 轮、发起 4 次工具调用，连同 4 次规则调用共 8 次真实 MCP 请求。"
+    },
+    {
+      "image": "ai-03-summary.jpg",
+      "seconds": 9,
+      "start": 280,
+      "end": 530,
+      "title": "03  将返回证据整理为辅助说明",
+      "caption": "deepseek-flash 根据真实返回整理主体、母公司与虚构台账线索，附调用编号；3 条线索仍须律师复核。"
+    },
+    {
+      "image": "ai-04-model-calls.jpg",
+      "seconds": 9,
+      "start": 610,
+      "end": 750,
+      "title": "04  区分规则与模型发起的调用",
+      "caption": "记录逐项标记发起方。模型实际调用 GLEIF 身份、母公司关系及两次本地事项查询，4 次均成功返回。"
+    },
+    {
+      "image": "ai-05-trace.jpg",
+      "seconds": 7,
+      "start": 120,
+      "end": 140,
+      "title": "05  查看模型调用的原始凭证",
+      "caption": "模型发起的 get_entity 耗时 867 ms：请求 LEI、返回名称、法域、来源链接与获取时间均可追溯。"
+    }
+  ],
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1440,
+        "height": 900,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "24/1"
+      },
+      {
+        "codec_name": "mov_text",
+        "codec_type": "subtitle",
+        "r_frame_rate": "0/0"
+      }
+    ],
+    "format": {
+      "duration": "52.000000",
+      "size": "809330"
+    }
+  }
+}

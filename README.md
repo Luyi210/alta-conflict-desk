@@ -4,6 +4,8 @@
 
 v0.2 将单主体查询深化为案件级工作流：最多六个企业主体、自动补证清单、逐项复核、总意见与变更留痕。同时增加独立工具调用台，让连接器权限、参数、真实调用与失败重试可见、可操作。
 
+**真实 AI 工具调用已完成一次验收。** 2026-10-27，通过本机 UI 发起的 DeepSeek `deepseek-flash` 核查完成 2 轮交互、4 次模型发起的 MCP 调用，覆盖 GLEIF 与本地台账；另有 4 次规则预核查调用。证据见 [AI 实跑记录](docs/AI-LIVE-VERIFICATION.json)与[模型摘要及调用报告](docs/SAMPLE-AI-REPORT.md)。本次只有一个已确认企业完成 AI 核查，案件另一虚构客户仍缺身份，案件未完备，也未获准收案。
+
 交付仓库：[Luyi210/alta-conflict-desk](https://github.com/Luyi210/alta-conflict-desk)（私有，评审者需要仓库访问权限）。
 
 这是一款独立运行的面试原型，没有获取或修改 Alta Lex 源码。此前在测试账户与已查看产品文档中未发现同类收案入口；这不代表 Alta Lex 的所有版本均没有此能力。
@@ -86,7 +88,13 @@ cp .env.example .env
 
 启用模型后，选定主体、公开关系、命中台账与事项名称会发送给所配置的模型服务。演示请继续使用虚构事项；生产环境需另行确定模型与保密政策。
 
-未配置模型时，连接管理、工具调用台、案件规则核查、补证、人工复核及报告可先运行。**当前尚未使用真实模型 API 验证 AI 模式。** 完整题目还要求验证：**模型实际发出工具调用 → 后端通过 MCP 执行 → 模型读取真实结果**。不能仅凭界面显示“AI”、配置检查成功、手动调用或规则模式跑通，宣称这项要求完成。
+未配置模型时，连接管理、工具调用台、案件规则核查、补证、人工复核及报告仍可运行。本机现已实际验证 **模型发出工具调用 → 后端通过 MCP 执行 → 模型读取真实结果并引用**。配置存在、手动调用和规则模式本身仍不能作为 AI 验收证据；历史规则记录不因后来模型验证通过而变成 AI 记录。
+
+### DeepSeek 官方接口
+
+本机 `.env` 可使用 `MODEL_BASE_URL=https://api.deepseek.com` 和 `MODEL_NAME=deepseek-flash`，把密钥填入 `MODEL_API_KEY` 后重新启动后端。当前模型名及非思考工具调用格式依据 [DeepSeek 官方文档](https://api-docs.deepseek.com/guides/tool_calls/)（2026-10-27）。适配器对官方 DeepSeek 主机显式设置 `thinking.type=disabled`，避免多轮工具调用依赖未保存的思考内容；其他兼容接口不附加这个参数。
+
+本次 `deepseek-flash` 实跑已完成；凭证以保存的模型执行状态、4 条 `initiator:model` 成功追踪及对应摘要引用为依据，区别于兼容性 mock 测试，也不是服务商账单的独立核验。密钥只存于 Git 忽略的本机 `.env`，不随仓库交付。使用其他模型或第三方中转仍需单独验证，不要将官方密钥填到未经确认的其他服务地址。
 
 ## 验证
 
@@ -98,23 +106,38 @@ npm run test:live
 - `npm test`：覆盖主体匹配、输入校验、MCP 连接、案件覆盖、补证合并、总意见失效、持久化、工具权限、schema 校验、失败重试及模型适配边界等。模型适配测试使用 mock 响应验证协议与限制，**不是实际模型运行**。当次数量和结果以测试输出及验收记录为准。
 - `npm run test:live`：在临时数据目录启动 API 与两个 MCP 服务，实时查询 GLEIF、执行核查、保存复核、检查报告下载和断开行为，然后关闭并清理临时数据库。它不依赖已启动的开发服务器，也不修改日常演示数据库。
 - `npm run build`：TypeScript 检查与前端生产构建。
+- `npm run verify:ai -- --case <id>`：只读核验本机已有案件的 AI 核查记录，不新建任务、不发送模型请求、不读取 `.env`；检查完成状态、两类来源的模型调用与摘要引用，写出 AI 验收 JSON 和报告。
+
+本机本次记录可这样复核：
+
+```bash
+npm run verify:ai -- --case 4ad98a01-f9bd-46c2-bee8-4276924e2396
+```
+
+对应单主体 run 为 `091f6e1e-ab98-4541-9e42-e3ff6f730245`。上述编号属于本机已有数据库；全新克隆不包含 `data/`，须先实际运行自己的 AI 案件，再传入其编号。该命令只重新检查已有证据，不重新消费模型调用。
 
 实时脚本将当次结果写入 [LIVE-VERIFICATION.json](docs/LIVE-VERIFICATION.json)。该记录按脚本实际覆盖范围解释；基础规则流程通过不自动证明所有 v0.2 交互均已验收。外网失败会导致测试失败或明确缺口，不会切换成假数据。
 
 安装构建、模型实跑、v0.2 浏览器验证、仓库同步和视频录制的最新证据见 [交付清单](docs/DELIVERY-CHECKLIST.md) 与 [浏览器验收记录](docs/BROWSER-VERIFICATION.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
 
+## DeepSeek 真实 AI 验收演示
+
+[52 秒 AI 验收视频](docs/demo-ai-walkthrough.mp4)展示本次真实运行的身份确认、完成状态、模型摘要、4 次模型发起的 MCP 调用及原始返回。视频为实际截图串联，**非连续录屏**；与之前纯规则视频分开保存。配套[字幕](docs/demo-ai-walkthrough.srt)、[截图来源及哈希清单](docs/demo-ai-walkthrough.json)，可选运行 `python3 scripts/render-ai-demo.py` 重建。
+
+本次一个已确认主体的 AI 工具链路通过，案件中的拟委托人身份仍待补充，报告不是收案批准。模型复核后已通过浏览器保存演示人工意见并下载报告。
+
 ## v0.2 演示与验证
 
 [72 秒新版截图演示](docs/demo-v2-walkthrough.mp4)展示多主体案件、补证、总意见阻塞和工具调用台，配套[字幕](docs/demo-v2-walkthrough.srt)与[来源校验记录](docs/demo-v2-walkthrough.json)。它是实际页面截图串联，**非连续录屏、非真实 AI 演示**。可选执行 `python3 scripts/render-v2-demo.py` 重建。
 
-本次 `npm test` 为 **31 / 31 通过**，生产构建通过；实际浏览器操作见[验收记录](docs/BROWSER-VERIFICATION.md)。两个新增实时脚本可独立复验：
+本轮自动测试 **32 / 32 通过**，`npm run build` 通过；其中 mock、协议和记录核验测试与真实 DeepSeek 实跑分别计证。实际浏览器操作见[验收记录](docs/BROWSER-VERIFICATION.md)。两个新增实时脚本可独立复验：
 
 ```bash
 npm run test:case-live
 npm run test:tools-live
 ```
 
-[案件验证](docs/CASE-LIVE-VERIFICATION.json)、[工具台验证](docs/TOOL-LIVE-VERIFICATION.json)保留真实 MCP 事实与验收边界。另附[实际导出的案件报告](docs/SAMPLE-CASE-REPORT.md)，其中人工意见和引用仅为演示。
+[案件验证](docs/CASE-LIVE-VERIFICATION.json)、[工具台验证](docs/TOOL-LIVE-VERIFICATION.json)保留原有规则/手动 MCP 事实，不改写为 AI 证据。另附[实际导出的案件报告](docs/SAMPLE-CASE-REPORT.md)，其中人工意见和引用仅为演示。独立的 [AI-LIVE-VERIFICATION.json](docs/AI-LIVE-VERIFICATION.json)记录本次 DeepSeek 实跑与仍存在的案件阻塞项。
 
 ## 演示草稿
 
@@ -133,6 +156,8 @@ npm run test:tools-live
 | [依赖与复用范围](docs/THIRD-PARTY-NOTICES.md)  | 实际安装版本、许可证与直接依赖用途              |
 | [浏览器验收记录](docs/BROWSER-VERIFICATION.md) | 实际操作结果及响应式检查                        |
 | [样例核查报告](docs/SAMPLE-REPORT.md)          | 实际规则运行导出的报告，内部委托数据虚构        |
+| [AI 实跑证据](docs/AI-LIVE-VERIFICATION.json)  | 已保存模型执行状态、实际模型 MCP 调用与引用核验 |
+| [AI 样例报告](docs/SAMPLE-AI-REPORT.md)        | 本次模型摘要、来源、原始调用与案件未完成项      |
 | [核心演示脚本](docs/DEMO.md)                   | 录屏顺序、演示输入、异常分支和旁白要点          |
 | [工具调用台](docs/TOOLS.md)                    | 真实工具发现、参数填写、权限、轮询与重试        |
 | [AI 协作决策记录](docs/AI-COLLABORATION.md)    | 脱敏的沟通与决策摘要；非原始聊天逐字稿          |

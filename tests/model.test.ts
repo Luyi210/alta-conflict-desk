@@ -60,6 +60,10 @@ const final = (ids: string[]): Message => ({
 async function withMockProvider(
   messages: Message[],
   work: () => Promise<void>,
+  options: {
+    baseUrl?: string;
+    onRequest?: (body: Record<string, unknown>) => void;
+  } = {},
 ) {
   const originalFetch = globalThis.fetch;
   const previous = Object.fromEntries(
@@ -73,9 +77,10 @@ async function withMockProvider(
   try {
     process.env.MODEL_API_KEY = "dummy-unit-test-key";
     process.env.MODEL_NAME = "mock-model";
-    process.env.MODEL_BASE_URL = "https://model.invalid/v1";
+    const base = options.baseUrl || "https://model.invalid/v1";
+    process.env.MODEL_BASE_URL = base;
     globalThis.fetch = (async (url: URL | string, options?: RequestInit) => {
-      assert.equal(String(url), "https://model.invalid/v1/chat/completions");
+      assert.equal(String(url), `${base.replace(/\/$/, "")}/chat/completions`);
       assert.equal(
         (options?.headers as Record<string, string>).Authorization,
         "Bearer dummy-unit-test-key",
@@ -92,6 +97,8 @@ async function withMockProvider(
     await work();
     assert.equal(responseIndex, messages.length);
     assert.equal(received.length, messages.length);
+    for (const body of received)
+      options.onRequest?.(body as Record<string, unknown>);
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(previous)) {
@@ -445,5 +452,72 @@ test("mock model HTTP + real SQLite MCP: allowed tool flow records real local ev
     await connectors.close();
     store.close();
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("mock provider HTTP: only the exact DeepSeek host disables thinking on every tool round", async () => {
+  // Every response and tool result in this test is mocked; this is not live AI validation.
+  for (const baseUrl of [
+    "https://api.deepseek.com",
+    "https://api.deepseek.com/v1",
+    "https://model.invalid/v1",
+    "https://api.deepseek.com.proxy.invalid/v1",
+  ]) {
+    const requests: Record<string, unknown>[] = [];
+    const callback: ModelCall = async <T>(
+      connector: "gleif" | "ledger",
+      name: string,
+      args: Record<string, unknown>,
+    ) => ({
+      data: (connector === "gleif"
+        ? { entity }
+        : { matches: [], synthetic: true }) as T,
+      trace: {
+        id: `mock-${connector}`,
+        connector,
+        tool: name,
+        args,
+        startedAt: entity.fetchedAt,
+        durationMs: 0,
+        status: "success",
+        initiator: "model",
+      },
+    });
+    await withMockProvider(
+      [
+        {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            tool("identity", "gleif_get_entity", { lei: entity.lei }),
+            tool("ledger", "ledger_search_matters", {
+              lei: entity.lei,
+              name: entity.name,
+            }),
+          ],
+        },
+        final(["mock-gleif", "mock-ledger"]),
+      ],
+      async () => {
+        const summary = await modelReview(run, callback);
+        assert.match(summary, /引用调用：mock-gleif、mock-ledger/);
+      },
+      { baseUrl, onRequest: (body) => requests.push(body) },
+    );
+    assert.deepEqual(
+      requests.map((body) => body.tool_choice),
+      ["required", "auto"],
+    );
+    for (const body of requests) {
+      if (new URL(baseUrl).hostname === "api.deepseek.com") {
+        assert.deepEqual(body.thinking, { type: "disabled" });
+      } else {
+        assert.equal(
+          Object.hasOwn(body, "thinking"),
+          false,
+          `Unexpected provider-specific setting for ${baseUrl}`,
+        );
+      }
+    }
   }
 });

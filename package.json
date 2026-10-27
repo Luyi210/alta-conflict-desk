@@ -16,7 +16,8 @@
     "test:live": "node --env-file-if-exists=.env --import tsx scripts/live-smoke.ts",
     "format": "prettier --write src server mcp shared tests scripts/*.ts vite.config.ts",
     "test:case-live": "node --env-file-if-exists=.env --import tsx scripts/case-live-smoke.ts",
-    "test:tools-live": "node --env-file-if-exists=.env --import tsx scripts/tool-live-smoke.ts"
+    "test:tools-live": "node --env-file-if-exists=.env --import tsx scripts/tool-live-smoke.ts",
+    "verify:ai": "node --import tsx scripts/verify-ai-run.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

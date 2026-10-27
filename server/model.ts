@@ -211,6 +211,11 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
           messages,
           tools: permitted.map((t) => t.provider),
           tool_choice: round === 0 ? "required" : "auto",
+          // This adapter does not retain reasoning_content between tool rounds.
+          // DeepSeek's official API therefore explicitly uses non-thinking mode.
+          ...(url.hostname === "api.deepseek.com"
+            ? { thinking: { type: "disabled" } }
+            : {}),
         }),
         signal: AbortSignal.timeout(60000),
       });

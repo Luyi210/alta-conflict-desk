@@ -35,4 +35,4 @@ CaseView任务由实际结果动态生成、稳定id合并：未确认身份(ide
 
 - `src/CaseWorkspace.tsx` 和 `src/CaseResults.tsx` 提供案件输入与结果页；现有单主体历史功能保留。
 - `src/ToolDesk.tsx` 为独立组件；props `{onError:(message:string)=>void,onTrace:(trace:Trace)=>void,onConnections:()=>void}`，API 调用上述端点。导入现有 api helper 和共享类型，沿用 btn/panel/badge，样式位于 `src/tool-desk.css`；`App.tsx` 提供导航、通知和追踪抽屉。
-- v0.2 未新增 npm 依赖。未配置并实跑模型 API 是当前已知验收缺口；不能用规则模式、手动调用或 mock 测试替代。
+- v0.2 未新增 npm 依赖。已完成一次 DeepSeek 真实工具调用验收：一个已确认主体、2 轮、4 次模型 MCP 调用，另有 4 次规则预核查，见 `AI-LIVE-VERIFICATION.json`。案件未确认主体和补证缺口仍保留；不能用模型成功替代案件完备，也不能把旧规则、手动或 mock 记录改成 AI 证据。

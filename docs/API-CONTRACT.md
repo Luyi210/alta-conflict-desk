@@ -58,4 +58,6 @@ MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失�
 
 按 LEI 精确匹配优先，exact-name/similar-name 作为身份待确认线索，不能仅凭名称认定法律冲突。关联企业命中也是线索。限定 direct-parent 和 ultimate-parent，不把无关系当成全面清白。所有内部记录为虚构律所委托；公开公司名称/LEI 可以真实。辖区字段只作背景，不执行当地法律判断。
 
-模型可选 OpenAI-compatible API 环境变量。未配置时 `rules` 可实际调用 MCP，但不能称为 AI 验收通过。配置后通过 function calling 转发至同一权限和校验入口，检查允许工具、已确认主体边界、调用次数与真实引用。`Run.modelExecution` 记录状态、模型、轮次与工具调用数；配置存在不等于执行通过。当前尚未完成真实模型 API 实跑，mock 测试仅验证协议边界。
+模型可选 OpenAI-compatible API 环境变量。未配置时 `rules` 可实际调用 MCP，但不能称为 AI 验收通过。配置后通过 function calling 转发至同一权限和校验入口，检查允许工具、已确认主体边界、调用次数与真实引用。`Run.modelExecution` 记录状态、模型、轮次与工具调用数；配置存在不等于执行通过。
+
+当前 DeepSeek `deepseek-flash` 已完成一次实际验收：一个已确认企业、2 轮、4 次 `initiator:model` 成功 MCP 调用，另有 4 次 `rules` 预核查。证据见 [AI-LIVE-VERIFICATION.json](AI-LIVE-VERIFICATION.json)；案件仍存在未确认主体和补证缺口。`npm run verify:ai -- --case <id>` 只读检查已有记录，不新建任务、不请求模型、不读取 `.env`；mock 测试仅验证协议边界，原规则验收不因此改变模式。
