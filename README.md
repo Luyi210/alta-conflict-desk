@@ -90,7 +90,7 @@ npm run test:live
 
 实时脚本将当次结果写入 [LIVE-VERIFICATION.json](docs/LIVE-VERIFICATION.json)。2026-10-27 的规则模式实跑完成，包含两组真实 MCP 调用与直接、关联、近似名三类线索；`aiVerified` 仍为 `false`。外网失败会导致测试失败或明确缺口，不会偷偷切换成假数据。
 
-模型实跑、浏览器验证、GitHub 上传、视频录制的验收状态见 [交付清单](docs/DELIVERY-CHECKLIST.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
+已通过干净目录安装与构建，代码和现有演示素材已上传私有仓库。模型实跑、浏览器验证、视频录制的验收状态见 [交付清单](docs/DELIVERY-CHECKLIST.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
 
 ## 演示草稿
 
