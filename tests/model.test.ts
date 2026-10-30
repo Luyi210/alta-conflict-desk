@@ -126,12 +126,8 @@ test("mock model: a summary without actual tool calls is rejected even when it i
   );
 });
 
-test("mock model: out-of-scope LEIs and unauthorized tools are blocked before the MCP boundary", async () => {
+test("mock model: unauthorized tools are blocked before the MCP boundary", async () => {
   const cases = [
-    {
-      request: tool("t1", "gleif_get_entity", { lei: "21380081EP12LC86CB82" }),
-      message: /未授权的主体/,
-    },
     {
       request: tool("t2", "ledger_execute_sql", {
         lei: entity.lei,
@@ -154,6 +150,101 @@ test("mock model: out-of-scope LEIs and unauthorized tools are blocked before th
       },
     );
   }
+});
+
+test("mock model: out-of-scope calls return a bounded correction without reaching MCP or becoming evidence", async () => {
+  const calls: Record<string, unknown>[] = [];
+  const call: ModelCall = async <T>(
+    connector: "gleif" | "ledger",
+    name: string,
+    args: Record<string, unknown>,
+  ) => {
+    calls.push(args);
+    return {
+      data: (connector === "gleif"
+        ? { entity }
+        : { matches: [], synthetic: true }) as T,
+      trace: {
+        id: `scope-${connector}`,
+        connector,
+        tool: name,
+        args,
+        startedAt: entity.fetchedAt,
+        durationMs: 1,
+        status: "success",
+        initiator: "model",
+      },
+    };
+  };
+  const denied = tool("out-of-scope", "gleif_get_entity", {
+    lei: "21380081EP12LC86CB82",
+  });
+  const states: any[] = [];
+  await withMockProvider(
+    [
+      { role: "assistant", content: null, tool_calls: [denied] },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          tool("in-scope", "gleif_get_entity", { lei: entity.lei }),
+          tool("ledger", "ledger_search_matters", {
+            lei: entity.lei,
+            name: entity.name,
+          }),
+        ],
+      },
+      final(["scope-gleif", "scope-ledger"]),
+    ],
+    async () => {
+      await modelReview(run, call, {
+        onProgress: (state) => states.push(state),
+      });
+      assert.equal(calls.length, 2);
+      assert.ok(calls.every((args) => args.lei === entity.lei));
+      assert.equal(states.at(-1).toolCallCount, 2);
+      assert.equal(states.at(-1).rounds, 3);
+    },
+    {
+      onRequest: (body) => {
+        for (const t of body.tools as any[])
+          assert.deepEqual(t.function.parameters.properties.lei.enum, [
+            entity.lei,
+          ]);
+        const correction = (body.messages as any[]).find(
+          (m) => m.role === "tool" && m.tool_call_id === denied.id,
+        );
+        if (correction) {
+          const payload = JSON.parse(correction.content);
+          assert.equal(payload.executed, false);
+          assert.equal(payload.error, "OUT_OF_SCOPE");
+          assert.equal(payload.traceId, undefined);
+        }
+      },
+    },
+  );
+  let attempts = 0;
+  await withMockProvider(
+    Array.from({ length: 3 }, (_, round) => ({
+      role: "assistant",
+      content: null,
+      tool_calls: Array.from({ length: 6 }, (_, index) =>
+        tool(`denied-${round}-${index}`, "gleif_get_entity", {
+          lei: "21380081EP12LC86CB82",
+        }),
+      ),
+    })),
+    async () => {
+      await assert.rejects(
+        modelReview(run, async () => {
+          attempts++;
+          throw new Error("Unexpected MCP call");
+        }),
+        /超过本次核查上限/,
+      );
+      assert.equal(attempts, 0);
+    },
+  );
 });
 
 test("mock model: completion requires allowed GLEIF and ledger calls plus citations to their returned trace IDs", async () => {

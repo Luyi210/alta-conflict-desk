@@ -160,6 +160,15 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
                 // Scope policy deliberately requires a confirmed LEI even when ledger MCP allows name-only searches.
                 parameters: {
                   ...schema,
+                  properties: {
+                    ...(schema.properties as Record<string, unknown>),
+                    lei: {
+                      type: "string",
+                      enum: [...allowed.keys()],
+                      description:
+                        "Only the current run's confirmed subject and supplied parents. Other parties in the matter context are screened in separate runs.",
+                    },
+                  },
                   required: [
                     ...new Set([
                       ...(Array.isArray(schema.required)
@@ -191,6 +200,10 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
           jurisdictionContext: run.jurisdiction || "未提供",
           partyRole: run.partyRole,
           confirmedEntity: run.entity,
+          allowedSubjects: [...allowed.values()].map(({ lei, name }) => ({
+            lei,
+            name,
+          })),
           publicParents: run.relations,
           preliminaryFindings: run.findings.map((f) => ({
             id: f.id,
@@ -204,6 +217,7 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
     ];
     const actualCalls: Trace[] = [];
     const requestIds = new Set<string>();
+    let requestedCalls = 0;
     const base = (
       process.env.MODEL_BASE_URL || "https://api.openai.com/v1"
     ).replace(/\/$/, "");
@@ -324,9 +338,11 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
       }
       if (
         message.tool_calls.length > 6 ||
-        state.toolCallCount + message.tool_calls.length > 12
+        requestedCalls + message.tool_calls.length > 12
       )
         throw new Error("模型工具调用超过本次核查上限");
+      // Rejected requests consume the same budget, but never become successful MCP traces.
+      requestedCalls += message.tool_calls.length;
       for (const tc of message.tool_calls) {
         if (requestIds.has(tc.id))
           throw new Error("模型返回重复的工具调用 ID，已阻止重复执行");
@@ -343,8 +359,23 @@ export async function modelReview(run: Run, call: Call, options: Options = {}) {
         if (!validatedArgs.success)
           throw new Error("模型工具参数不符合输入 schema，已阻止调用");
         const args = validatedArgs.data;
-        if (!allowed.has(args.lei))
-          throw new Error("模型尝试查询未授权的主体，已阻止");
+        if (!allowed.has(args.lei)) {
+          messages.push({
+            role: "tool",
+            tool_call_id: tc.id,
+            content: JSON.stringify({
+              executed: false,
+              error: "OUT_OF_SCOPE",
+              message:
+                "该主体不在当前子核查范围，未执行任何 MCP 调用。案件其他当事人由各自子核查处理。请使用 allowedSubjects 中的 LEI 完成本轮取证；不可引用本条错误作为证据。",
+              allowedSubjects: [...allowed.values()].map(({ lei, name }) => ({
+                lei,
+                name,
+              })),
+            }),
+          });
+          continue;
+        }
         const input: Record<string, unknown> =
           definition.connector === "ledger"
             ? { lei: args.lei, name: allowed.get(args.lei)!.name }

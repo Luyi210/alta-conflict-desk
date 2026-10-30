@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CaseView, Run, Trace } from "../shared/types.ts";
+import { evidenceFacts } from "../shared/evidence-facts.ts";
 
 const outputDir = fileURLToPath(new URL("../docs/", import.meta.url));
 const usage = `只读验收已有 AI 核查，不新建任务、不调用模型、不读取 .env。
@@ -10,6 +11,7 @@ const usage = `只读验收已有 AI 核查，不新建任务、不调用模型�
   node --import tsx scripts/verify-ai-run.ts <runId>
   node --import tsx scripts/verify-ai-run.ts --case <caseId>
   可选：--base-url http://127.0.0.1:4318
+  加固验收：--hardened（逐主体台账引用、事实卡与网络回执；另存 V3-AI-* 文件）
 输出：docs/AI-LIVE-VERIFICATION.json、docs/SAMPLE-AI-REPORT.md`;
 const sensitiveKeys = new Set([
   "apikey",
@@ -199,6 +201,81 @@ export function validateAiRun(run: Run) {
   };
 }
 
+export function validateHardenedAiRun(run: Run) {
+  const verified = validateAiRun(run);
+  const required = [
+    ...new Set([
+      run.entity.lei,
+      ...run.relations.map((relation) => relation.entity.lei),
+    ]),
+  ];
+  for (const lei of required)
+    assert.ok(
+      run.traces.some(
+        (trace) =>
+          trace.initiator === "model" &&
+          trace.connector === "ledger" &&
+          trace.tool === "search_matters" &&
+          trace.status === "success" &&
+          trace.args.lei === lei &&
+          verified.citedTraceIds.includes(trace.id),
+      ),
+      `主体 ${lei} 缺少实际模型台账调用或引用`,
+    );
+  assert.ok(run.context?.trim(), "缺少实际传入的委托背景");
+  assert.ok(
+    run.modelBrief?.questions?.length && run.modelBrief.nextSteps?.length,
+    "缺少结构化复核问题或下一步建议",
+  );
+  assert.deepEqual(
+    run.modelBrief.citedTraceIds,
+    verified.citedTraceIds,
+    "结构化引用与摘要引用不一致",
+  );
+  const facts = evidenceFacts(run.traces);
+  assert.ok(facts.length > 0, "没有可由真实工具返回生成的来源卡");
+  assert.deepEqual(run.modelBrief.facts, facts, "来源卡与原始工具字段不一致");
+  for (const trace of run.traces.filter(
+    (t) => t.connector === "gleif" && t.status === "success",
+  )) {
+    const result = trace.result as {
+      network?: {
+        url: string;
+        attempts: { status?: number; error?: string }[];
+      }[];
+      gaps?: string[];
+    };
+    const requests = result.network;
+    assert.ok(requests?.length, `GLEIF 调用 ${trace.id} 缺少实际 HTTP 回执`);
+    for (const request of requests) {
+      assert.equal(new URL(request.url).hostname, "api.gleif.org");
+      assert.ok(request.attempts.length >= 1 && request.attempts.length <= 2);
+      const finalAttempt = request.attempts.at(-1)!;
+      const status = finalAttempt.status;
+      // A disclosed parent can itself have no parent record. A real 404 is an explicit
+      // coverage gap, never a transport failure or proof that no relationship exists.
+      const explicitMissingParent =
+        status === 404 &&
+        trace.tool === "get_relationships" &&
+        /\/(direct-parent|ultimate-parent)$/.test(
+          new URL(request.url).pathname,
+        ) &&
+        Boolean(result.gaps?.some((gap) => gap.includes("404")));
+      assert.ok(
+        (status === 200 && !finalAttempt.error) || explicitMissingParent,
+        "GLEIF 来源请求失败，或缺少记录未明确标记为覆盖缺口",
+      );
+    }
+  }
+  return {
+    ...verified,
+    hardenedVerified: true,
+    context: run.context,
+    modelBrief: clean(run.modelBrief),
+    requiredLedgerLeis: required,
+  };
+}
+
 type VerifiedRun = ReturnType<typeof validateAiRun>;
 const oneLine = (value: string) =>
   value.replace(/[\r\n]+/g, " ").replace(/[<>]/g, "");
@@ -279,6 +356,11 @@ function report(
 }
 
 async function main() {
+  const hardened = process.argv.slice(2).includes("--hardened");
+  const jsonFile = hardened
+    ? "V3-AI-VERIFICATION.json"
+    : "AI-LIVE-VERIFICATION.json";
+  const reportFile = hardened ? "V3-AI-REPORT.md" : "SAMPLE-AI-REPORT.md";
   let source: { baseUrl?: string; kind?: string; id?: string } = {};
   const verifiedAt = new Date().toISOString();
   try {
@@ -292,6 +374,7 @@ async function main() {
     let id: string | undefined;
     for (let index = 0; index < args.length; index++) {
       const arg = args[index];
+      if (arg === "--hardened") continue;
       if (arg === "--base-url") {
         assert.ok(args[index + 1], "--base-url 缺少地址");
         base = args[++index];
@@ -336,6 +419,12 @@ async function main() {
       const file = await get<CaseView>(`/cases/${encodeURIComponent(id)}`);
       assert.equal(file.mode, "ai", "所选案件不是 AI 模式");
       const confirmed = file.parties.filter((party) => party.confirmed);
+      if (hardened)
+        assert.equal(
+          confirmed.length,
+          file.parties.length,
+          "加固案件验收要求所有案件主体都已确认身份",
+        );
       assert.ok(
         confirmed.length > 0 && confirmed.every((party) => party.runId),
         "案件没有已启动核查的确认主体，或存在缺失的子核查",
@@ -354,11 +443,14 @@ async function main() {
         blockers: file.blockers,
       };
     } else runs = [await get<Run>(`/runs/${encodeURIComponent(id)}`)];
-    const validated = runs.map(validateAiRun);
+    const validated = runs.map(
+      hardened ? validateHardenedAiRun : validateAiRun,
+    );
     const artifact = {
       verifiedAt,
       source,
       aiVerified: true,
+      hardenedVerified: hardened,
       actualModel: true,
       syntheticLedger: true,
       verificationBasis:
@@ -369,27 +461,25 @@ async function main() {
     };
     mkdirSync(outputDir, { recursive: true });
     writeFileSync(
-      resolve(outputDir, "AI-LIVE-VERIFICATION.json"),
+      resolve(outputDir, jsonFile),
       JSON.stringify(clean(artifact), null, 2) + "\n",
     );
     writeFileSync(
-      resolve(outputDir, "SAMPLE-AI-REPORT.md"),
+      resolve(outputDir, reportFile),
       report(verifiedAt, validated, caseInfo),
     );
     console.log(
       JSON.stringify(
         {
           aiVerified: true,
+          hardenedVerified: hardened,
           models: [...new Set(validated.map((run) => run.model))],
           runIds: validated.map((run) => run.id),
           modelToolCalls: validated.reduce(
             (count, run) => count + run.modelExecution.toolCallCount,
             0,
           ),
-          files: [
-            resolve(outputDir, "AI-LIVE-VERIFICATION.json"),
-            resolve(outputDir, "SAMPLE-AI-REPORT.md"),
-          ],
+          files: [resolve(outputDir, jsonFile), resolve(outputDir, reportFile)],
         },
         null,
         2,
@@ -400,7 +490,7 @@ async function main() {
     // A failed validation overwrites an older success artifact to avoid stale acceptance claims.
     mkdirSync(outputDir, { recursive: true });
     writeFileSync(
-      resolve(outputDir, "AI-LIVE-VERIFICATION.json"),
+      resolve(outputDir, jsonFile),
       JSON.stringify(
         {
           verifiedAt,
@@ -414,7 +504,7 @@ async function main() {
       ) + "\n",
     );
     writeFileSync(
-      resolve(outputDir, "SAMPLE-AI-REPORT.md"),
+      resolve(outputDir, reportFile),
       `# AI 工具调用验收未通过\n\n核验时间：${verifiedAt}\n\n${message}\n\n没有新建任务或发起模型调用；请修复后对已完成记录重新执行验收。\n`,
     );
     console.error(`AI 验收未通过：${message}`);

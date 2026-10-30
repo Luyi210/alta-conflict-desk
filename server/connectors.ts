@@ -5,6 +5,7 @@ import type { JsonSchemaValidator } from "@modelcontextprotocol/sdk/validation";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { gleifNodeNetworkArgs } from "../mcp/network-policy.ts";
 import type {
   CatalogTool,
   Connector,
@@ -154,7 +155,12 @@ export class ConnectorManager {
         if (process.env[key]) env[key] = process.env[key]!;
       const transport = new StdioClientTransport({
         command: process.execPath,
-        args: ["--import", "tsx", resolve(root, "mcp", `${id}.ts`)],
+        args: [
+          ...(id === "gleif" ? gleifNodeNetworkArgs : []),
+          "--import",
+          "tsx",
+          resolve(root, "mcp", `${id}.ts`),
+        ],
         cwd: root,
         env,
         stderr: "pipe",

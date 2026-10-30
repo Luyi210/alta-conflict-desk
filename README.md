@@ -6,7 +6,9 @@ v0.3 补齐律师审查处理路径：保留问题、不承接结案、意见与
 
 v0.2 将单主体查询深化为案件级工作流：最多六个企业主体、自动补证清单、逐项复核、总意见与变更留痕。同时增加独立工具调用台，让连接器权限、参数、真实调用与失败重试可见、可操作。
 
-**真实 AI 工具调用已完成一次验收。** 2026-10-27，通过本机 UI 发起的 DeepSeek `deepseek-flash` 核查完成 2 轮交互、4 次模型发起的 MCP 调用，覆盖 GLEIF 与本地台账；另有 4 次规则预核查调用。证据见 [AI 实跑记录](docs/AI-LIVE-VERIFICATION.json)与[模型摘要及调用报告](docs/SAMPLE-AI-REPORT.md)。本次只有一个已确认企业完成 AI 核查，案件另一虚构客户仍缺身份，案件未完备，也未获准收案。
+**最新双主体 AI 全链路已通过验收（2026-10-30）。** 修复 GLEIF 连接超时后，页面确认的两家企业均完成 DeepSeek `deepseek-flash` 核查，每家 2 轮、6 次模型 MCP 调用，共 12 次，覆盖 GLEIF 与本地台账；另有 8 次规则调用。来源卡、逐主体台账引用和 HTTP 回执通过加固检查，案件报告已实际下载。详见 [超时修复与实跑说明](docs/GLEIF-RECOVERY.md)、[验收 JSON](docs/V3-AI-VERIFICATION.json)与[案件报告](docs/V3-AI-CASE-REPORT.md)。仍有 6 条人工复核线索及 4 项补证，不代表获准收案。
+
+2026-10-27 的单主体验收保留为历史：[旧 AI 实跑记录](docs/AI-LIVE-VERIFICATION.json)与[旧调用报告](docs/SAMPLE-AI-REPORT.md)，没有覆盖改写。
 
 交付仓库：[Luyi210/alta-conflict-desk](https://github.com/Luyi210/alta-conflict-desk)（私有，评审者需要仓库访问权限）。
 
@@ -81,7 +83,7 @@ cp .env.example .env
 | ----------------------- | ------------------------------------------------------------------------------------------ |
 | `PORT`                  | 后端端口，默认 `4318`；开发模式的 Vite 代理也使用此端口，若更改须同步修改 `vite.config.ts` |
 | `DATA_DIR`              | 本机数据目录，默认 `./data`                                                                |
-| `PUBLIC_API_TIMEOUT_MS` | 公开接口单次请求超时，示例为 `20000` 毫秒                                                  |
+| `PUBLIC_API_TIMEOUT_MS` | 公开接口单次超时，默认 `20000` 毫秒；最多两次，总预算最多 60 秒                                                  |
 | `MODEL_API_KEY`         | 可选模型接口密钥，仅保存在本机                                                             |
 | `MODEL_BASE_URL`        | 支持 Chat Completions function calling 的接口根地址；默认 `https://api.openai.com/v1`      |
 | `MODEL_NAME`            | 模型服务提供的模型标识，须支持工具调用                                                     |
@@ -96,7 +98,7 @@ cp .env.example .env
 
 本机 `.env` 可使用 `MODEL_BASE_URL=https://api.deepseek.com` 和 `MODEL_NAME=deepseek-flash`，把密钥填入 `MODEL_API_KEY` 后重新启动后端。当前模型名及非思考工具调用格式依据 [DeepSeek 官方文档](https://api-docs.deepseek.com/guides/tool_calls/)（2026-10-27）。适配器对官方 DeepSeek 主机显式设置 `thinking.type=disabled`，避免多轮工具调用依赖未保存的思考内容；其他兼容接口不附加这个参数。
 
-本次 `deepseek-flash` 实跑已完成；凭证以保存的模型执行状态、4 条 `initiator:model` 成功追踪及对应摘要引用为依据，区别于兼容性 mock 测试，也不是服务商账单的独立核验。密钥只存于 Git 忽略的本机 `.env`，不随仓库交付。使用其他模型或第三方中转仍需单独验证，不要将官方密钥填到未经确认的其他服务地址。
+本次 `deepseek-flash` 实跑已完成；凭证以保存的模型执行状态、最新双主体 12 条 `initiator:model` 成功追踪及对应摘要引用为依据，区别于兼容性 mock 测试，也不是服务商账单的独立核验。密钥只存于 Git 忽略的本机 `.env`，不随仓库交付。使用其他模型或第三方中转仍需单独验证，不要将官方密钥填到未经确认的其他服务地址。
 
 ## 验证
 
@@ -110,29 +112,31 @@ npm run test:live
 - `npm run build`：TypeScript 检查与前端生产构建。
 - `npm run verify:ai -- --case <id>`：只读核验本机已有案件的 AI 核查记录，不新建任务、不发送模型请求、不读取 `.env`；检查完成状态、两类来源的模型调用与摘要引用，写出 AI 验收 JSON 和报告。
 
-本机本次记录可这样复核：
+最新双主体记录可这样只读复核（`--hardened` 另存 V3-AI-*，不覆盖旧验收）：
 
 ```bash
-npm run verify:ai -- --case 4ad98a01-f9bd-46c2-bee8-4276924e2396
+npm run verify:ai -- --case fe5bd2b5-c7e3-4440-835c-2a7729b6ff2e --hardened
 ```
 
-对应单主体 run 为 `091f6e1e-ab98-4541-9e42-e3ff6f730245`。上述编号属于本机已有数据库；全新克隆不包含 `data/`，须先实际运行自己的 AI 案件，再传入其编号。该命令只重新检查已有证据，不重新消费模型调用。
+对应两个 run 为 `6c62eeac-7faf-41ee-adee-d5afc830d0d6` 与 `32b3a553-a2e6-4b38-9e19-c811f345ce8a`。上述编号属于本机已有数据库；全新克隆不包含 `data/`，须先实际运行自己的 AI 案件，再传入其编号。该命令只重新检查已有证据，不重新消费模型调用。
 
 实时脚本将当次结果写入 [LIVE-VERIFICATION.json](docs/LIVE-VERIFICATION.json)。该记录按脚本实际覆盖范围解释；基础规则流程通过不自动证明所有 v0.2 交互均已验收。外网失败会导致测试失败或明确缺口，不会切换成假数据。
 
 安装构建、模型实跑、v0.2 浏览器验证、仓库同步和视频录制的最新证据见 [交付清单](docs/DELIVERY-CHECKLIST.md) 与 [浏览器验收记录](docs/BROWSER-VERIFICATION.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
 
-## DeepSeek 真实 AI 验收演示
+## 历史 DeepSeek AI 演示（2026-10-27）
 
-[52 秒 AI 验收视频](docs/demo-ai-walkthrough.mp4)展示本次真实运行的身份确认、完成状态、模型摘要、4 次模型发起的 MCP 调用及原始返回。视频为实际截图串联，**非连续录屏**；与之前纯规则视频分开保存。配套[字幕](docs/demo-ai-walkthrough.srt)、[截图来源及哈希清单](docs/demo-ai-walkthrough.json)，可选运行 `python3 scripts/render-ai-demo.py` 重建。
+当前功能验收见上面的双主体记录，本轮未录制视频。
 
-本次一个已确认主体的 AI 工具链路通过，案件中的拟委托人身份仍待补充，报告不是收案批准。模型复核后已通过浏览器保存演示人工意见并下载报告。
+[52 秒 AI 验收视频](docs/demo-ai-walkthrough.mp4)展示 2026-10-27 实跑的身份确认、完成状态、模型摘要、4 次模型发起的 MCP 调用及原始返回。视频为实际截图串联，**非连续录屏**；与之前纯规则视频分开保存。配套[字幕](docs/demo-ai-walkthrough.srt)、[截图来源及哈希清单](docs/demo-ai-walkthrough.json)，可选运行 `python3 scripts/render-ai-demo.py` 重建。
 
-## v0.2 演示与验证
+当时一个已确认主体的 AI 工具链路通过，案件中的拟委托人身份仍待补充，报告不是收案批准。模型复核后已通过浏览器保存演示人工意见并下载报告。
+
+## 历史 v0.2 演示与验证（2026-10-27）
 
 [72 秒新版截图演示](docs/demo-v2-walkthrough.mp4)展示多主体案件、补证、总意见阻塞和工具调用台，配套[字幕](docs/demo-v2-walkthrough.srt)与[来源校验记录](docs/demo-v2-walkthrough.json)。它是实际页面截图串联，**非连续录屏、非真实 AI 演示**。可选执行 `python3 scripts/render-v2-demo.py` 重建。
 
-本轮自动测试 **32 / 32 通过**，`npm run build` 通过；其中 mock、协议和记录核验测试与真实 DeepSeek 实跑分别计证。实际浏览器操作见[验收记录](docs/BROWSER-VERIFICATION.md)。两个新增实时脚本可独立复验：
+当时自动测试 **32 / 32 通过**，`npm run build` 通过；其中 mock、协议和记录核验测试与真实 DeepSeek 实跑分别计证。实际浏览器操作见[验收记录](docs/BROWSER-VERIFICATION.md)。两个新增实时脚本可独立复验：
 
 ```bash
 npm run test:case-live
