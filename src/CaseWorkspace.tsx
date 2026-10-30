@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  ShieldCheck,
+  Sparkles,
   Building2,
   Check,
   ChevronRight,
@@ -13,6 +17,7 @@ import {
 } from "lucide-react";
 import type {
   AppStatus,
+  CaseInput,
   CaseParty,
   CaseView,
   Entity,
@@ -21,6 +26,7 @@ import type {
 } from "../shared/types";
 import { api, post } from "./api";
 import "./case-workbench.css";
+import { intakeDraftKey, parseIntakeDraft } from "./intake-draft";
 
 const roles: PartyRole[] = ["拟委托人", "交易对方", "担保方", "其他相关方"];
 export const caseState = {
@@ -97,6 +103,7 @@ export function IdentityPicker({
           value={party.name}
           disabled={disabled || busy}
           placeholder="输入企业全称或 20 位 LEI"
+          maxLength={300}
           onChange={(e) => {
             onChange({
               ...party,
@@ -196,338 +203,540 @@ export function IdentityPicker({
 
 export default function CaseWorkspace({
   status,
-  cases,
   onConnect,
   connecting,
   onSettings,
   onCreate,
-  onOpen,
   onError,
   onTrace,
   onModelHelp,
+  onBack,
 }: {
   status: AppStatus;
-  cases: CaseView[];
   onConnect: () => Promise<void>;
   connecting: boolean;
   onSettings: () => void;
   onCreate: (value: CaseView) => void;
-  onOpen: (id: string) => void;
   onError: (message: string) => void;
   onTrace: (trace: Trace) => void;
   onModelHelp: () => void;
+  onBack: () => void;
 }) {
-  const [name, setName] = useState("");
-  const [context, setContext] = useState("");
-  const [jurisdiction, setJurisdiction] = useState("中国香港（事项背景）");
-  const [parties, setParties] = useState<CaseParty[]>([
-    newParty("拟委托人"),
-    newParty(),
-  ]);
-  const [mode, setMode] = useState<"rules" | "ai">("rules");
+  const [restored] = useState(() => {
+    try {
+      return parseIntakeDraft(sessionStorage.getItem(intakeDraftKey));
+    } catch {
+      return undefined;
+    }
+  });
+  const [value, setValue] = useState<CaseInput>(
+    () =>
+      restored?.value || {
+        name: "",
+        context: "",
+        jurisdiction: "中国香港（事项背景）",
+        mode: status.model.configured ? "ai" : "rules",
+        parties: [newParty("拟委托人"), newParty()],
+      },
+  );
+  const [step, setStep] = useState(restored?.step || 1);
+  const [savedAt, setSavedAt] = useState(restored?.savedAt || "");
+  const [storageAvailable, setStorageAvailable] = useState(true);
   const [busy, setBusy] = useState(false);
-  const ready = status.connectors.every((c) => c.connected);
-  const confirmed = parties.filter((p) => p.confirmed).length;
+  const submitted = useRef(false);
+  const { name, context, jurisdiction, mode, parties } = value;
+  const hasContent = Boolean(name || context || parties.some((p) => p.name));
+  useEffect(() => {
+    if (submitted.current) return;
+    try {
+      if (hasContent) {
+        const at = new Date().toISOString();
+        sessionStorage.setItem(
+          intakeDraftKey,
+          JSON.stringify({ version: 1, value, step, savedAt: at }),
+        );
+        setSavedAt(at);
+      } else sessionStorage.removeItem(intakeDraftKey);
+      setStorageAvailable(true);
+    } catch {
+      setStorageAvailable(false);
+    }
+  }, [value, step, hasContent]);
+  const update = (change: Partial<CaseInput>) =>
+    setValue((current) => ({ ...current, ...change }));
+  const ready =
+    status.connectors.length === 2 &&
+    status.connectors.every((c) => c.connected);
+  const confirmed = parties.filter((p) => p.confirmed && p.entity);
+  const duplicate =
+    new Set(confirmed.map((p) => p.entity!.lei)).size !== confirmed.length;
+  const basicValid = name.trim().length >= 2 && jurisdiction.trim().length > 0;
+  const partyValid =
+    parties.every((p) => p.name.trim().length >= 1) &&
+    confirmed.length > 0 &&
+    !duplicate;
   const valid =
     ready &&
-    name.trim().length >= 2 &&
-    parties.every((p) => p.name.trim().length >= 2) &&
-    confirmed > 0;
+    basicValid &&
+    partyValid &&
+    (mode !== "ai" || status.model.configured);
+  const changeStep = (next: number) => {
+    setStep(next);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
   function demo() {
-    setName("澄川科技 · 跨境融资收案审查（虚构）");
-    setContext(
-      "演示事项：拟为澄川科技提供融资交易法律服务，核实交易对方与担保方是否命中律所既有或历史事项。委托关系与事项均为虚构。需补充拟委托人的注册资料和各方委托范围。",
-    );
-    setParties([
-      newParty("拟委托人", "澄川科技有限公司（虚构）"),
-      newParty("交易对方", "MP6I5ZYZBEU3UXPYFY54"),
-      newParty("担保方", "21380081EP12LC86CB82"),
-    ]);
+    update({
+      name: "融资专项 · 收案审查（虚构示例）",
+      context:
+        "演示事项：拟为 HSBC UK BANK PLC 提供融资文件专项服务，交易对方为 HSBC BANK PLC。核实双方及已披露母公司是否命中本所既有事项，并由律师复核委托范围及保密义务。企业身份公开，委托关系与事项全部虚构。",
+      parties: [
+        newParty("拟委托人", "21380081EP12LC86CB82"),
+        newParty("交易对方", "MP6I5ZYZBEU3UXPYFY54"),
+      ],
+    });
   }
   async function create() {
+    if (!valid || busy) return;
     setBusy(true);
     try {
-      onCreate(
-        await post<CaseView>("/cases", {
-          name,
-          context,
-          jurisdiction,
-          mode,
-          parties,
-        }),
-      );
+      const result = await post<CaseView>("/cases", value);
+      submitted.current = true;
+      try {
+        sessionStorage.removeItem(intakeDraftKey);
+      } catch {
+        /* Creation succeeded even if local storage is unavailable. */
+      }
+      onCreate(result);
     } catch (e) {
       onError((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
+  const stepTitles = ["事项信息", "确认相关方", "核查确认"];
   return (
-    <div className="page-enter case-workspace">
+    <div className="page-enter case-workspace intake-workspace">
+      <button className="back-link" onClick={onBack} disabled={busy}>
+        <ArrowLeft size={15} /> 返回收案工作台
+      </button>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">MATTER INTAKE · CONNECTED EVIDENCE</div>
-          <h1>把每一方，都放进审查范围。</h1>
-          <p>从确认主体到补齐材料，以同一份案件记录支持律师收案判断。</p>
+          <div className="eyebrow">NEW MATTER</div>
+          <h1>新建收案审查</h1>
+          <p>把委托范围说清楚，再核实每一方的身份。</p>
         </div>
-        <span className="case-version">
-          案件工作台 <b>03</b>
+        <span className="intake-draft-state" role="status">
+          <Check size={14} />
+          {busy
+            ? "正在建立案件…"
+            : !storageAvailable
+              ? "暂存不可用，请勿关闭页面"
+              : hasContent
+                ? `当前标签页已暂存 · ${new Date(savedAt || Date.now()).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })}`
+                : "填写后自动暂存"}
         </span>
       </div>
-      <div className="case-steps">
-        <span>
-          <b>01</b> 确认当事人
-        </span>
-        <ChevronRight size={15} />
-        <span>
-          <b>02</b> MCP 取证与比对
-        </span>
-        <ChevronRight size={15} />
-        <span>
-          <b>03</b> 补证与逐项复核
-        </span>
-        <ChevronRight size={15} />
-        <span>
-          <b>04</b> 记录总意见
-        </span>
-      </div>
-      {!ready && (
-        <div className="case-connect-banner">
-          <div>
-            <strong>先连接两组核查工具</strong>
-            <p>GLEIF 公开法人身份 + 本机虚构客户台账，均为真实 MCP 连接。</p>
-          </div>
+      <nav className="intake-stepper" aria-label="新建审查步骤">
+        {stepTitles.map((title, i) => (
           <button
-            className="btn primary"
-            disabled={connecting}
-            onClick={() => void onConnect()}
+            key={title}
+            disabled={busy || (i > 0 && !basicValid) || (i > 1 && !partyValid)}
+            aria-current={step === i + 1 ? "step" : undefined}
+            onClick={() => changeStep(i + 1)}
+            className={step === i + 1 ? "current" : step > i + 1 ? "done" : ""}
           >
-            {connecting ? (
-              <LoaderCircle className="spin" size={16} />
-            ) : (
-              <ArrowRight size={16} />
-            )}{" "}
-            连接核查工具
-          </button>
-        </div>
-      )}
-      <div className="case-intake-layout">
-        <section className="panel case-intake-form">
-          <div className="case-section-title">
-            <div>
-              <span className="eyebrow small">NEW MATTER</span>
-              <h2>新建收案审查</h2>
-            </div>
-            <button className="btn quiet" onClick={demo} disabled={busy}>
-              填入演示事项
-            </button>
-          </div>
-          <label className="case-field">
-            事项名称
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例如：某公司融资法律服务"
-              maxLength={200}
-            />
-          </label>
-          <div className="case-form-row">
-            <label className="case-field">
-              事项辖区
-              <input
-                value={jurisdiction}
-                onChange={(e) => setJurisdiction(e.target.value)}
-                maxLength={100}
-              />
-            </label>
-            <label className="case-field">
-              执行方式
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value as "rules" | "ai")}
-              >
-                <option value="rules">规则预览 · 真实 MCP</option>
-                <option value="ai" disabled={!status.model.configured}>
-                  AI 工具调用{!status.model.configured ? " · 待配置模型" : ""}
-                </option>
-              </select>
-            </label>
-          </div>
-          <label className="case-field">
-            委托背景与范围
-            <textarea
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              rows={3}
-              maxLength={4000}
-              placeholder="拟为谁提供什么服务？对方与担保方分别是谁？"
-            />
-          </label>
-          <div className="case-section-title party-section-title">
-            <div>
-              <h3>
-                <Users size={18} /> 当事人与相关方
-              </h3>
-              <p>最多 6 个企业主体；同一 LEI 合并核查。</p>
-            </div>
-            <span className="badge green">
-              已确认 {confirmed} / {parties.length}
+            <span>
+              {step > i + 1 ? (
+                <Check size={16} />
+              ) : (
+                String(i + 1).padStart(2, "0")
+              )}
             </span>
+            <div>
+              <strong>{title}</strong>
+              <small>
+                {["背景与服务范围", "检索并确认法人身份", "检查范围后启动"][i]}
+              </small>
+            </div>
+            <ChevronRight size={16} />
+          </button>
+        ))}
+      </nav>
+      <div className="intake-layout">
+        <section className="panel intake-main">
+          <div className="intake-panel-heading">
+            <span className="eyebrow small">STEP 0{step} / 03</span>
+            <h2>{stepTitles[step - 1]}</h2>
+            <p>
+              {
+                [
+                  "先建立这份委托的背景，帮助 AI 提出更相关的复核问题。",
+                  "名称相似不等于同一主体。请核对登记名称与 LEI 后确认。",
+                  "核对本次范围和运行方式，启动后会保存独立的案件记录。",
+                ][step - 1]
+              }
+            </p>
           </div>
-          <div className="party-roster">
-            {parties.map((party, index) => (
-              <article className="party-card" key={party.id}>
-                <div className="party-card-heading">
-                  <span className="party-number">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <select
-                    aria-label={`第 ${index + 1} 方角色`}
-                    value={party.role}
-                    onChange={(e) =>
-                      setParties((items) =>
-                        items.map((p) =>
-                          p.id === party.id
-                            ? { ...p, role: e.target.value as PartyRole }
-                            : p,
-                        ),
-                      )
-                    }
-                  >
-                    {roles.map((role) => (
-                      <option key={role}>{role}</option>
-                    ))}
-                  </select>
-                  <button
-                    className="icon-btn"
-                    aria-label={`移除第 ${index + 1} 方`}
-                    disabled={parties.length === 1 || busy}
-                    onClick={() =>
-                      setParties((items) =>
-                        items.filter((p) => p.id !== party.id),
-                      )
-                    }
-                  >
-                    <Trash2 size={16} />
+          <fieldset disabled={busy} className="intake-fields">
+            {step === 1 && (
+              <>
+                <div className="template-choice">
+                  <div>
+                    <FileSearch size={20} />
+                    <span>
+                      <strong>第一次体验？使用融资事项示例</strong>
+                      <small>
+                        填入两家可查询的公开企业，身份仍需实际核查。
+                      </small>
+                    </span>
+                  </div>
+                  <button className="btn secondary" onClick={demo}>
+                    填入示例
                   </button>
                 </div>
-                <IdentityPicker
-                  party={party}
-                  onChange={(value) =>
-                    setParties((items) =>
-                      items.map((p) => (p.id === value.id ? value : p)),
-                    )
-                  }
-                  onError={onError}
-                  onTrace={onTrace}
-                  disabled={!ready || busy}
-                />
-              </article>
-            ))}
-          </div>
-          <button
-            className="btn secondary add-party"
-            disabled={parties.length >= 6 || busy}
-            onClick={() => setParties((items) => [...items, newParty()])}
-          >
-            <Plus size={16} /> 添加相关方
-          </button>
-          <div className="case-submit">
-            <div>
-              <strong>
-                {confirmed > 0
-                  ? `${confirmed} 方将开始真实核查`
-                  : "至少确认 1 个主体后开始"}
-              </strong>
-              <p>{parties.length - confirmed} 方尚未确认，将进入补证清单。</p>
-            </div>
+                <label className="case-field">
+                  事项名称 <span className="required-label">必填</span>
+                  <input
+                    aria-label="事项名称"
+                    value={name}
+                    onChange={(e) => update({ name: e.target.value })}
+                    placeholder="例如：星河科技 · A 轮融资法律服务"
+                    maxLength={200}
+                  />
+                </label>
+                <label className="case-field">
+                  事项辖区{" "}
+                  <input
+                    aria-label="事项辖区"
+                    value={jurisdiction}
+                    onChange={(e) => update({ jurisdiction: e.target.value })}
+                    placeholder="例如：中国香港"
+                    maxLength={100}
+                  />
+                  <small className="field-help">
+                    用于描述事项背景，不自动适用当地执业规则。
+                  </small>
+                </label>
+                <label className="case-field">
+                  委托背景与范围{" "}
+                  <textarea
+                    aria-label="委托背景与范围"
+                    value={context}
+                    onChange={(e) => update({ context: e.target.value })}
+                    placeholder="拟代表哪一方？提供什么服务？涉及哪些交易对方、担保方或需要特别核实的关系？"
+                    rows={5}
+                    maxLength={4000}
+                  />
+                  <small className="field-help">
+                    用于辅助分析事项范围和保密义务。{context.length} / 4000
+                  </small>
+                </label>
+              </>
+            )}
+            {step === 2 && (
+              <>
+                {!ready && (
+                  <div className="case-connect-banner">
+                    <div>
+                      <strong>先连接核查数据源</strong>
+                      <p>公开身份查询与本地台账，均为只读工具。</p>
+                    </div>
+                    <button
+                      className="btn primary"
+                      disabled={connecting}
+                      onClick={() => void onConnect()}
+                    >
+                      {connecting ? (
+                        <LoaderCircle className="spin" size={16} />
+                      ) : (
+                        <ArrowRight size={16} />
+                      )}{" "}
+                      连接数据源
+                    </button>
+                  </div>
+                )}
+                <div className="party-progress">
+                  <span>
+                    <Users size={17} /> {parties.length} 方纳入本次范围
+                  </span>
+                  <b>
+                    {confirmed.length} / {parties.length} 已确认
+                  </b>
+                </div>
+                <div className="party-roster">
+                  {parties.map((party, index) => (
+                    <article className="party-card" key={party.id}>
+                      <div className="party-card-heading">
+                        <span className="party-index">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <select
+                          aria-label={`第 ${index + 1} 方角色`}
+                          value={party.role}
+                          onChange={(e) =>
+                            update({
+                              parties: parties.map((p) =>
+                                p.id === party.id
+                                  ? { ...p, role: e.target.value as PartyRole }
+                                  : p,
+                              ),
+                            })
+                          }
+                        >
+                          {roles.map((role) => (
+                            <option key={role}>{role}</option>
+                          ))}
+                        </select>
+                        <button
+                          className="icon-btn"
+                          aria-label={`移除第 ${index + 1} 方`}
+                          disabled={parties.length === 1}
+                          onClick={() =>
+                            update({
+                              parties: parties.filter((p) => p.id !== party.id),
+                            })
+                          }
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <IdentityPicker
+                        party={party}
+                        onChange={(changed) =>
+                          setValue((current) => ({
+                            ...current,
+                            parties: current.parties.map((p) =>
+                              p.id === changed.id ? changed : p,
+                            ),
+                          }))
+                        }
+                        onError={onError}
+                        onTrace={onTrace}
+                        disabled={!ready || busy}
+                      />
+                    </article>
+                  ))}
+                </div>
+                <button
+                  className="btn secondary add-party"
+                  disabled={parties.length >= 6}
+                  onClick={() => update({ parties: [...parties, newParty()] })}
+                >
+                  <Plus size={16} /> 添加相关方{" "}
+                  <small>{parties.length}/6</small>
+                </button>
+                {duplicate && (
+                  <div className="inline-error" role="alert">
+                    同一 LEI
+                    只需核查一次，请移除重复主体，并在背景中说明兼任角色。
+                  </div>
+                )}
+                <p className="field-help">
+                  至少确认一方后可开始。未确认的相关方会保留在案件中，形成待补身份项。
+                </p>
+              </>
+            )}
+            {step === 3 && (
+              <>
+                <div className="intake-review-name">
+                  <FileSearch size={22} />
+                  <div>
+                    <h3>{name}</h3>
+                    <p>
+                      {jurisdiction || "未填写辖区"} · {parties.length}{" "}
+                      方相关主体
+                    </p>
+                  </div>
+                  <button className="text-btn" onClick={() => changeStep(1)}>
+                    修改
+                  </button>
+                </div>
+                <div className="review-parties">
+                  {parties.map((p) => (
+                    <div key={p.id}>
+                      <span>{p.role}</span>
+                      <strong>{p.entity?.name || p.name}</strong>
+                      <span
+                        className={`badge ${p.confirmed ? "green" : "amber"}`}
+                      >
+                        {p.confirmed ? (
+                          <>
+                            <Check size={13} /> 已确认
+                          </>
+                        ) : (
+                          "身份待补"
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mode-heading">
+                  <h3>选择执行方式</h3>
+                  <button className="text-btn" onClick={onModelHelp}>
+                    模型说明 <ArrowRight size={13} />
+                  </button>
+                </div>
+                <div
+                  className="execution-options"
+                  role="radiogroup"
+                  aria-label="执行方式"
+                >
+                  {(["ai", "rules"] as const).map((option) => (
+                    <label
+                      key={option}
+                      className={`execution-option ${mode === option ? "selected" : ""} ${option === "ai" && !status.model.configured ? "unavailable" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="execution-mode"
+                        value={option}
+                        checked={mode === option}
+                        disabled={option === "ai" && !status.model.configured}
+                        onChange={() => update({ mode: option })}
+                      />
+                      <span>
+                        {option === "ai" ? (
+                          <Sparkles size={20} />
+                        ) : (
+                          <FileSearch size={20} />
+                        )}
+                        <strong>
+                          {option === "ai" ? "AI 辅助核查" : "规则核查"}
+                        </strong>
+                        <small>
+                          {option === "ai"
+                            ? status.model.configured
+                              ? `${status.model.model} · 模型实际调用工具、整理复核问题`
+                              : "模型尚未配置，可先使用规则核查"
+                            : "真实查询与确定性比对，不调用模型服务"}
+                        </small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="data-boundary">
+                  <ShieldCheck size={18} />
+                  <div>
+                    <strong>本次数据流向</strong>
+                    <p>
+                      企业名称、LEI 发送至 GLEIF；案件与虚构台账保存在本机。
+                      {mode === "ai"
+                        ? "事项背景、主体与台账命中将发送至已配置的模型服务。"
+                        : "事项背景与台账命中不会发送给模型。"}
+                    </p>
+                  </div>
+                </div>
+                {parties.length > confirmed.length && (
+                  <div className="case-hint amber">
+                    {parties.length - confirmed.length}{" "}
+                    方身份尚未确认，将保留为补证事项，不计为已完成核查。
+                  </div>
+                )}
+                {!ready && (
+                  <div className="case-connect-banner">
+                    <strong>数据源未就绪</strong>
+                    <button
+                      className="btn secondary"
+                      disabled={connecting}
+                      onClick={() => void onConnect()}
+                    >
+                      {connecting ? "连接中…" : "连接核查数据源"}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </fieldset>
+          <div className="intake-bottom">
             <button
-              className="btn primary"
-              disabled={!valid || busy}
-              onClick={() => void create()}
+              className="btn quiet"
+              disabled={busy}
+              onClick={() => (step > 1 ? changeStep(step - 1) : onBack())}
             >
-              {busy ? (
-                <LoaderCircle className="spin" size={17} />
-              ) : (
-                <FileSearch size={17} />
-              )}{" "}
-              创建案件并核查
+              <ArrowLeft size={15} />
+              {step > 1 ? "上一步" : "返回工作台"}
             </button>
+            <div>
+              {step === 1 && !basicValid && (
+                <small>填写事项名称与辖区后继续</small>
+              )}
+              {step === 2 && !partyValid && (
+                <small>
+                  {duplicate
+                    ? "请先移除重复主体"
+                    : "填写各方名称，并至少确认一方身份"}
+                </small>
+              )}
+              {step < 3 ? (
+                <button
+                  className="btn primary"
+                  disabled={busy || (step === 1 ? !basicValid : !partyValid)}
+                  onClick={() => changeStep(step + 1)}
+                >
+                  下一步：{stepTitles[step]}
+                  <ArrowRight size={16} />
+                </button>
+              ) : (
+                <button
+                  className="btn primary"
+                  disabled={!valid || busy}
+                  onClick={() => void create()}
+                >
+                  {busy ? (
+                    <LoaderCircle size={16} className="spin" />
+                  ) : (
+                    <FileSearch size={16} />
+                  )}{" "}
+                  {busy
+                    ? "正在建立案件…"
+                    : `创建案件并核查 ${confirmed.length} 方`}
+                </button>
+              )}
+            </div>
           </div>
         </section>
-        <aside className="case-side-column">
-          <section className="panel case-guide">
-            <Building2 size={26} />
-            <div className="eyebrow small">ONE MATTER, ONE RECORD</div>
-            <h2>
-              核查有据，
-              <br />
-              判断有留痕。
-            </h2>
-            <p>同一案件串起各方身份、既有事项、补证材料与人工复核。</p>
-            <ol>
-              <li>
-                <b>核实身份</b>
-                <span>
-                  用 LEI 区分同名企业，不将名称相似直接认定为同一主体。
-                </span>
-              </li>
-              <li>
-                <b>追溯线索</b>
-                <span>只读检索当前与历史事项，保留每次调用的参数和来源。</span>
-              </li>
-              <li>
-                <b>补齐审查记录</b>
-                <span>
-                  缺失身份、资料或复核意见会持续提示，不自动批准收案。
-                </span>
-              </li>
-            </ol>
-            <button className="text-btn" onClick={onSettings}>
-              管理数据源 <ArrowRight size={14} />
-            </button>
-            <button className="text-btn" onClick={onModelHelp}>
-              查看模型配置说明 <ArrowRight size={14} />
-            </button>
-          </section>
-          <div className="case-scope-note">
-            公开数据仅覆盖登记 LEI
-            的企业及会计合并母公司关系。事项辖区仅作背景；本原型不自动适用当地职业规则。
+        <aside className="intake-aside">
+          <span className="eyebrow small">A CLEAR REVIEW PATH</span>
+          <h2>
+            一份委托，
+            <br />
+            一条完整的审查路径。
+          </h2>
+          <ol>
+            <li className={step === 1 ? "active" : ""}>
+              <span>01</span>
+              <div>
+                <strong>明确范围</strong>
+                <p>谁是委托人、提供什么服务，是判断相关性的起点。</p>
+              </div>
+            </li>
+            <li className={step === 2 ? "active" : ""}>
+              <span>02</span>
+              <div>
+                <strong>确认身份</strong>
+                <p>通过登记信息区分名称近似的企业。</p>
+              </div>
+            </li>
+            <li className={step === 3 ? "active" : ""}>
+              <span>03</span>
+              <div>
+                <strong>取证与复核</strong>
+                <p>每次调用保留来源，最终意见由律师记录。</p>
+              </div>
+            </li>
+          </ol>
+          <div className="intake-aside-note">
+            <ShieldCheck size={18} />
+            <p>
+              草稿仅在当前浏览器标签页暂存；创建后进入本机案件库。公开查询限于登记
+              LEI 的企业。
+            </p>
           </div>
+          <button className="text-btn" onClick={onSettings} disabled={busy}>
+            管理数据连接 <ArrowRight size={14} />
+          </button>
         </aside>
       </div>
-      <section className="panel case-recent">
-        <div className="case-section-title">
-          <div>
-            <span className="eyebrow small">CONTINUE REVIEW</span>
-            <h3>最近案件</h3>
-          </div>
-          <span className="muted">{cases.length} 份本地记录</span>
-        </div>
-        {cases.length === 0 ? (
-          <p className="case-empty">
-            创建首份案件后，可以在这里继续补证与复核。
-          </p>
-        ) : (
-          cases.slice(0, 6).map((item) => (
-            <button
-              className="case-recent-row"
-              key={item.id}
-              onClick={() => onOpen(item.id)}
-            >
-              <span>
-                <strong>{item.name}</strong>
-                <small>
-                  {item.parties.length} 方主体 · {item.progress.findings} 条线索
-                  · 修订 {item.revision}
-                </small>
-              </span>
-              <span className="badge amber">{caseState[item.status]}</span>
-              <ArrowRight size={17} />
-            </button>
-          ))
-        )}
-      </section>
     </div>
   );
 }

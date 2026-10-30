@@ -36,6 +36,8 @@ import {
 import { api, post } from "./api";
 import CaseWorkspace, { caseState } from "./CaseWorkspace";
 import CaseResults from "./CaseResults";
+import MatterDashboard from "./MatterDashboard";
+import { useAppRoute, type Page, type CaseTab } from "./navigation";
 import ToolDesk from "./ToolDesk";
 import ReviewBrief from "./ReviewBrief";
 import { useReviewDraft } from "./useReviewDraft";
@@ -50,7 +52,6 @@ import type {
   Trace,
 } from "../shared/types";
 
-type Page = "workspace" | "tools" | "connectors" | "history" | "about";
 const cn = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(" ");
 const stamp = (value?: string) =>
@@ -142,7 +143,12 @@ function Empty({
 }
 
 export default function App() {
-  const [page, setPage] = useState<Page>("workspace");
+  const { route, go } = useAppRoute();
+  const page = route.page;
+  const [routeLoading, setRouteLoading] = useState(
+    Boolean(route.caseId || route.runId),
+  );
+  const [routeError, setRouteError] = useState(false);
   const [status, setStatus] = useState<AppStatus>();
   const [runs, setRuns] = useState<Run[]>([]);
   const [cases, setCases] = useState<CaseView[]>([]);
@@ -219,14 +225,56 @@ export default function App() {
       clearTimeout(timer);
     };
   }, [activeCase?.id, activeCase?.status]);
-  async function openCase(id: string) {
-    try {
-      setActiveCase(await api<CaseView>(`/cases/${id}`));
-      setActiveRun(undefined);
-      navigate("workspace");
-    } catch (e) {
-      setError((e as Error).message);
+  useEffect(() => {
+    let cancelled = false;
+    setActiveCase(undefined);
+    setActiveRun(undefined);
+    setRouteError(false);
+    setError("");
+    if (!route.caseId && !route.runId) {
+      setRouteLoading(false);
+      return;
     }
+    setRouteLoading(true);
+    void Promise.all([
+      route.caseId
+        ? api<CaseView>(`/cases/${route.caseId}`)
+        : Promise.resolve(undefined),
+      route.runId
+        ? api<Run>(`/runs/${route.runId}`)
+        : Promise.resolve(undefined),
+    ])
+      .then(([matter, run]) => {
+        if (cancelled) return;
+        if (matter && run && !matter.runs.some((r) => r.id === run.id))
+          throw new Error("该核查记录不属于此案件，请从案件列表重新打开。");
+        setActiveCase(matter);
+        setActiveRun(run);
+      })
+      .catch((e: Error) => {
+        if (!cancelled) {
+          setError(e.message);
+          setRouteError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setRouteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [route.caseId, route.runId]);
+  const hasRunningCases = cases.some((c) => c.status === "running");
+  useEffect(() => {
+    if (!hasRunningCases || activeCase?.status === "running") return;
+    const timer = setInterval(
+      () => void refresh().catch((e) => setError(e.message)),
+      3000,
+    );
+    return () => clearInterval(timer);
+  }, [hasRunningCases, activeCase?.status]);
+  function openCase(id: string, tab: CaseTab = "parties") {
+    go({ page: "workspace", caseId: id, tab });
   }
   function updateCase(value: CaseView) {
     setActiveCase(value);
@@ -284,17 +332,33 @@ export default function App() {
     }
   }
   function navigate(next: Page) {
-    setPage(next);
+    go({ page: next });
     setError("");
   }
-  async function openRun(id: string) {
-    try {
-      setActiveRun(await api<Run>(`/runs/${id}`));
-      navigate("workspace");
-    } catch (e) {
-      setError((e as Error).message);
-    }
+  function openRun(id: string) {
+    go({
+      page: "workspace",
+      runId: id,
+      ...(route.caseId ? { caseId: route.caseId, tab: route.tab } : {}),
+    });
   }
+  const pageName = {
+    workspace: "收案工作台",
+    new: "新建收案审查",
+    tools: "工具调用台",
+    connectors: "连接器管理",
+    history: "执行记录",
+    about: "使用指南",
+  }[page];
+  useEffect(() => {
+    document.title = `${activeRun && route.runId ? activeRun.entity.name : activeCase && route.caseId ? activeCase.name : pageName} · Alta Conflict Desk`;
+  }, [
+    pageName,
+    activeCase?.name,
+    activeRun?.entity.name,
+    route.caseId,
+    route.runId,
+  ]);
   const connected = status?.connectors.filter((c) => c.connected).length ?? 0;
   const pending = runs.reduce(
     (n, r) =>
@@ -325,16 +389,22 @@ export default function App() {
           <span>
             澄明律师事务所<small>独立演示空间</small>
           </span>
-          <ChevronDown size={14} />
+          <span className="workspace-label">本地</span>
         </div>
+        <button className="sidebar-create" onClick={() => navigate("new")}>
+          <Plus size={16} /> 新建审查
+        </button>
         <div className="nav-heading">工作空间</div>
         <nav aria-label="主导航">
           <button
-            className={cn("nav-item", page === "workspace" && "active")}
+            className={cn(
+              "nav-item",
+              (page === "workspace" || page === "new") && "active",
+            )}
             onClick={() => navigate("workspace")}
           >
             <FileSearch size={18} />
-            收案审查
+            收案工作台
             <span className="nav-dot" />
           </button>
           <button
@@ -349,14 +419,15 @@ export default function App() {
             onClick={() => navigate("connectors")}
           >
             <Plug size={18} />
-            连接器<span className="nav-count">{connected}/2</span>
+            连接器
+            <span className="nav-count">{status ? connected : "—"}/2</span>
           </button>
           <button
             className={cn("nav-item", page === "history" && "active")}
             onClick={() => navigate("history")}
           >
             <FolderClock size={18} />
-            核查记录
+            执行记录
             {runs.length > 0 && (
               <span className="nav-count">{runs.length}</span>
             )}
@@ -377,7 +448,7 @@ export default function App() {
             onClick={() => navigate("about")}
           >
             <CircleHelp size={18} />
-            方案与使用说明
+            使用指南
           </button>
           <div className="user">
             <div className="user-avatar">律</div>
@@ -390,35 +461,48 @@ export default function App() {
       </aside>
       <div className="main-shell">
         <header className="topbar">
-          <div>
-            <span className="muted">工具台</span>
+          <div className="product-breadcrumb">
+            <button onClick={() => navigate("workspace")}>工作空间</button>
             <ChevronRight size={14} />
-            <span>
-              {
-                {
-                  workspace: "收案审查",
-                  tools: "工具调用台",
-                  connectors: "连接器管理",
-                  history: "核查记录",
-                  about: "方案与使用说明",
-                }[page]
-              }
-            </span>
+            <span>{pageName}</span>
+            {route.caseId && (
+              <>
+                <ChevronRight size={14} />
+                <button
+                  onClick={() => openCase(route.caseId!)}
+                  title={activeCase?.name}
+                >
+                  {activeCase?.name || "案件详情"}
+                </button>
+              </>
+            )}
+            {route.runId && (
+              <>
+                <ChevronRight size={14} />
+                <span>主体核查</span>
+              </>
+            )}
           </div>
           <div className="topbar-right">
-            <span className="prototype-tag">PROTOTYPE</span>
-            <button className="model-state" onClick={() => setModelHelp(true)}>
+            <span className="prototype-tag">本地演示空间</span>
+            <button
+              className="model-state"
+              disabled={!status}
+              onClick={() => setModelHelp(true)}
+            >
               <span
                 className={cn("status-dot", status?.model.configured && "on")}
               />
-              {status?.model.configured
-                ? "AI 模型已配置"
-                : "规则预览 · 模型待配置"}
+              {!status
+                ? "读取运行状态…"
+                : status.model.configured
+                  ? "AI 模型已配置"
+                  : "规则预览 · 模型待配置"}
               <CircleHelp size={13} />
             </button>
           </div>
         </header>
-        <main>
+        <main id="main-content">
           {error && (
             <div className="alert error" role="alert">
               <AlertTriangle size={18} />
@@ -445,15 +529,31 @@ export default function App() {
           ) : (
             <>
               {page === "workspace" &&
-                (activeRun ? (
+                (routeLoading ? (
+                  <div className="product-loading" role="status">
+                    <LoaderCircle className="spin" size={24} />
+                    <h2>正在打开案件记录</h2>
+                    <p>读取主体、证据与已保存的审查意见。</p>
+                  </div>
+                ) : routeError ? (
+                  <div className="product-loading">
+                    <FileSearch size={28} />
+                    <h2>暂时无法打开这份记录</h2>
+                    <p>可能记录不存在或本地服务暂时不可用。</p>
+                    <button
+                      className="btn primary"
+                      onClick={() => navigate("workspace")}
+                    >
+                      返回收案工作台
+                    </button>
+                  </div>
+                ) : route.runId && activeRun ? (
                   <Results
                     run={activeRun}
-                    backLabel={activeCase ? "返回案件审查" : "返回案件工作台"}
+                    backLabel={route.caseId ? "返回案件审查" : "返回执行记录"}
                     onBack={() => {
-                      setActiveRun(undefined);
-                      void refreshActiveCase().catch((e) =>
-                        setError(e.message),
-                      );
+                      if (route.caseId) openCase(route.caseId, route.tab);
+                      else navigate("history");
                     }}
                     onUpdate={(r) => {
                       setActiveRun(r);
@@ -466,30 +566,47 @@ export default function App() {
                     onError={setError}
                     toast={toast}
                   />
-                ) : activeCase ? (
+                ) : route.caseId && activeCase ? (
                   <CaseResults
                     key={activeCase.id}
                     value={activeCase}
-                    onBack={() => setActiveCase(undefined)}
+                    tab={route.tab || "parties"}
+                    onTabChange={(tab) => go({ ...route, tab })}
+                    onBack={() => navigate("workspace")}
                     onUpdate={updateCase}
-                    onOpenRun={(id) => void openRun(id)}
+                    onOpenRun={(id) => openRun(id)}
                     onTrace={setTrace}
                     onError={setError}
                   />
                 ) : (
-                  <CaseWorkspace
-                    status={status}
+                  <MatterDashboard
                     cases={cases}
+                    status={status}
+                    onNew={() => navigate("new")}
+                    onOpen={openCase}
                     onConnect={connectAll}
                     connecting={busy === "connect-all"}
                     onSettings={() => navigate("connectors")}
-                    onCreate={updateCase}
-                    onOpen={(id) => void openCase(id)}
-                    onError={setError}
-                    onTrace={setTrace}
                     onModelHelp={() => setModelHelp(true)}
                   />
                 ))}
+              {page === "new" && (
+                <CaseWorkspace
+                  status={status}
+                  onBack={() => navigate("workspace")}
+                  onConnect={connectAll}
+                  connecting={busy === "connect-all"}
+                  onSettings={() => navigate("connectors")}
+                  onCreate={(value) => {
+                    updateCase(value);
+                    openCase(value.id);
+                    toast("案件已建立，正在进行真实核查");
+                  }}
+                  onError={setError}
+                  onTrace={setTrace}
+                  onModelHelp={() => setModelHelp(true)}
+                />
+              )}
               {page === "tools" && (
                 <ToolDesk
                   key={status.connectors
@@ -505,7 +622,7 @@ export default function App() {
                   <div className="page-heading">
                     <div>
                       <div className="eyebrow">CONNECTIONS</div>
-                      <h1>让信息，在授权范围内流动。</h1>
+                      <h1>数据连接</h1>
                       <p>
                         连接公开企业身份与本地客户事项，让每条核查线索都有来处。
                       </p>
@@ -679,7 +796,7 @@ export default function App() {
                   <div className="page-heading">
                     <div>
                       <div className="eyebrow">MATTER REGISTER</div>
-                      <h1>每次核查，都可回溯。</h1>
+                      <h1>执行记录</h1>
                       <p>
                         保留主体身份、来源证据与人工复核，支持后续收案判断。
                       </p>
@@ -689,11 +806,11 @@ export default function App() {
                       onClick={() => {
                         setActiveRun(undefined);
                         setActiveCase(undefined);
-                        navigate("workspace");
+                        navigate("new");
                       }}
                     >
                       <Plus size={17} />
-                      新建核查
+                      新建审查
                     </button>
                   </div>
                   <div className="history-overview">
@@ -839,7 +956,11 @@ export default function App() {
                 </div>
               )}
               {page === "about" && (
-                <About onModelHelp={() => setModelHelp(true)} />
+                <About
+                  onModelHelp={() => setModelHelp(true)}
+                  onNew={() => navigate("new")}
+                  onSettings={() => navigate("connectors")}
+                />
               )}
             </>
           )}
@@ -847,13 +968,16 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.3</span>
+          <span>v0.4</span>
         </footer>
       </div>
       {notice && (
         <div className="toast" role="status">
           <Check size={17} />
           {notice}
+          <button aria-label="关闭提示" onClick={() => setNotice("")}>
+            <X size={15} />
+          </button>
         </div>
       )}
       {trace && (
@@ -882,7 +1006,7 @@ export default function App() {
       {modelHelp && (
         <Modal
           title="模型与运行方式"
-          subtitle="先跑通真实工具，再接入 AI 决策循环"
+          subtitle="了解运行方式与数据使用范围"
           onClose={() => setModelHelp(false)}
         >
           <div className="callout">
@@ -894,27 +1018,44 @@ export default function App() {
                   : "当前尚未配置模型 API"}
               </strong>
               <p>
-                规则预览会真实调用两组 MCP
-                工具，并按可解释的匹配规则生成线索；不会把预设流程标为 AI 推理。
+                {status?.model.configured
+                  ? "可在新建审查的最后一步选择 AI 辅助核查。模型会实际调用已授权工具，整理待律师核实的问题与下一步建议。"
+                  : "尚未配置模型也可使用规则核查，完成身份查询、台账比对和人工复核。"}
               </p>
             </div>
           </div>
-          <h3>启用 AI 模式</h3>
-          <p>
-            在项目本机的 <code>.env</code>{" "}
-            设置下列字段后重启后端。密钥只放在服务端，切勿写入 GitHub 或聊天。
-          </p>
-          <pre>
-            MODEL_BASE_URL=https://your-provider.example/v1{"\n"}
-            MODEL_API_KEY=your-local-key{"\n"}MODEL_NAME=your-tool-calling-model
-          </pre>
-          <p>
-            需要支持 OpenAI 兼容的 Chat Completions 工具调用接口。AI
-            模式会向模型传送本次事项上下文与工具返回，并保留真实调用记录。
-          </p>
+          <div className="model-mode-summary">
+            <div>
+              <strong>AI 辅助核查</strong>
+              <p>
+                事项背景、主体信息及台账结果发送至已配置的模型服务；每次实际调用都保留凭证。
+              </p>
+            </div>
+            <div>
+              <strong>规则核查</strong>
+              <p>
+                直接查询公开身份与本地台账，生成可解释的匹配线索，不发送给模型。
+              </p>
+            </div>
+          </div>
+          <details className="model-config-details">
+            <summary>开发者配置说明</summary>
+            <p>
+              在项目本机的 <code>.env</code>{" "}
+              设置下列字段后重启后端。密钥只放在服务端，切勿写入 GitHub 或聊天。
+            </p>
+            <pre>
+              MODEL_BASE_URL=https://your-provider.example/v1{"\n"}
+              MODEL_API_KEY=your-local-key{"\n"}
+              MODEL_NAME=your-tool-calling-model
+            </pre>
+            <p>
+              需要支持 OpenAI 兼容的 Chat Completions 工具调用接口。AI
+              模式会向模型传送本次事项上下文与工具返回，并保留真实调用记录。
+            </p>
+          </details>
           <div className="notice-box">
-            作业中的“AI 实际调用
-            MCP”须在配置可用模型后单独验收。目前规则预览仅验证界面、服务和工具链路。
+            “已配置”只表示本机存在配置，实际成功状态请以案件中的调用记录为准。模型摘要与建议仍需律师复核。
           </div>
         </Modal>
       )}
@@ -1480,120 +1621,205 @@ function Modal({
   );
 }
 
-function About({ onModelHelp }: { onModelHelp: () => void }) {
+function About({
+  onModelHelp,
+  onNew,
+  onSettings,
+}: {
+  onModelHelp: () => void;
+  onNew: () => void;
+  onSettings: () => void;
+}) {
   return (
     <div className="page-enter about-page">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">BUILT FOR A SPECIFIC MOMENT</div>
-          <h1>在开始代理之前，多一层审慎。</h1>
-          <p>一个面向律师收案流程的 Plugin / MCP 连接器工具台。</p>
+          <div className="eyebrow">GETTING STARTED</div>
+          <h1>使用指南</h1>
+          <p>从建立委托到记录意见，让每一步都有据可查。</p>
         </div>
       </div>
-      <div className="about-intro">
-        <span className="intro-number">01—03</span>
+      <div className="guide-start">
         <div>
-          <h2>识别主体 → 交叉核查 → 人工复核</h2>
+          <span className="eyebrow small">YOUR FIRST MATTER</span>
+          <h2>第一次使用，从一份事项开始。</h2>
           <p>
-            目标用户是负责新事项收案的经办律师与合伙人。把分散在公开企业信息和律所台账中的关系线索，组织成可解释、可追溯、可复核的工作结果。
+            可以填入融资示例体验完整流程；示例只填写表单，公开身份仍需实际查询确认。
           </p>
         </div>
+        <button className="btn primary" onClick={onNew}>
+          新建收案审查 <ArrowRight size={16} />
+        </button>
       </div>
-      <div className="about-grid">
-        <section className="panel">
-          <h3>本版本已经覆盖的工作流</h3>
-          <ol>
-            <li>在连接器页接入 GLEIF 与本地 SQLite MCP。</li>
-            <li>添加拟委托人、交易对方和担保方，逐方查询并确认 LEI。</li>
-            <li>检索主体及公开母公司关系，并与虚构台账交叉比对。</li>
-            <li>查看匹配依据、来源链接和真实调用记录。</li>
-            <li>补齐材料引用，记录逐项与案件总意见，导出聚合报告。</li>
-          </ol>
-        </section>
-        <section className="panel">
-          <h3>有意控制的范围</h3>
+      <ol className="guide-steps">
+        <li>
+          <span>01</span>
+          <h3>准备核查环境</h3>
           <p>
-            支持同一案件最多 6
-            方企业与其公开母公司核查，保留补证、逐项复核及案件意见。不覆盖自然人身份、完整集团图谱、制裁筛查或自动冲突豁免。
+            连接公开身份与本地台账。配置模型后可选择 AI
+            辅助，也可直接使用规则核查。
           </p>
-          <p>
-            LEI
-            和名称匹配用于产生核查线索。适用司法辖区、现有委托范围、保密义务等仍需律师判断。公司关联本身不能直接推出冲突结论。
-          </p>
-          <p>
-            每个已确认主体都会核查；未确认主体会保留为阻塞项。工具权限同时约束手动、规则和
-            AI 调用。
-          </p>
-        </section>
-        <section className="panel">
-          <h3>真实接入与模拟数据</h3>
-          <p>
-            <b>真实：</b>官方 SDK 的 MCP 客户端与两个独立工具服务、GLEIF
-            外网查询、本地 SQLite 检索、保存与导出。
-          </p>
-          <p>
-            <b>模拟：</b>
-            律所身份、台账事项、客户委托关系。公众企业名称可真实存在，但不表示该企业与演示律所有任何实际关系。
-          </p>
-          <button className="text-btn" onClick={onModelHelp}>
-            了解模型配置与验收边界
-            <ArrowUpRight size={14} />
+          <button className="text-btn" onClick={onSettings}>
+            管理数据连接 <ArrowRight size={14} />
           </button>
-        </section>
-        <section className="panel">
-          <h3>如何融入 Alta Lex</h3>
+        </li>
+        <li>
+          <span>02</span>
+          <h3>建立事项并确认身份</h3>
           <p>
-            作为 Project
-            创建前的“收案核查”入口，共用组织身份与连接器授权，返回线索、证据与人工复核状态。
+            填写委托背景，逐一核对主体名称、辖区与
+            LEI。最后检查范围和执行方式再启动。
           </p>
+        </li>
+        <li>
+          <span>03</span>
+          <h3>核对证据，记录意见</h3>
           <p>
-            正式接入时应增加多租户隔离、角色权限、机密事项可见范围、不可篡改审计及组织级模型数据授权。本原型不依赖
-            Alta Lex 源码。
+            从工作台继续处理线索，补充材料引用，记录总意见。来源调用和各次复核均保留在案件中。
           </p>
-        </section>
-      </div>
-      <div className="references">
-        <div className="eyebrow small">OPEN SOURCE & PRIMARY SOURCES</div>
-        <h3>参考透明，边界明确。</h3>
-        <p>
-          直接使用官方 MCP
-          SDK；参考开源主体匹配、证据审阅与人工接管设计。详细版本、许可证和研究链接随代码交付。
-        </p>
-        <div>
-          <a
-            href="https://github.com/modelcontextprotocol/typescript-sdk"
-            target="_blank"
-            rel="noreferrer"
-          >
-            MCP TypeScript SDK
-            <ExternalLink size={14} />
-          </a>
-          <a
-            href="https://github.com/opensanctions/yente"
-            target="_blank"
-            rel="noreferrer"
-          >
-            OpenSanctions yente
-            <ExternalLink size={14} />
-          </a>
-          <a
-            href="https://github.com/Open-Source-Legal/OpenContracts"
-            target="_blank"
-            rel="noreferrer"
-          >
-            OpenContracts
-            <ExternalLink size={14} />
-          </a>
-          <a
-            href="https://www.gleif.org/en/lei-data/gleif-api"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GLEIF API
-            <ExternalLink size={14} />
-          </a>
+        </li>
+      </ol>
+      <section className="guide-questions">
+        <h2>常见问题</h2>
+        {[
+          [
+            "为什么工具调用完成后，案件仍然待处理？",
+            "调用完成表示本轮工具证据已取得。线索相关性、委托范围及保密义务仍需律师核实，材料与复核未完成时会继续保留待办。",
+          ],
+          [
+            "查不到企业，是否可以继续？",
+            "GLEIF 只覆盖已登记 LEI 的企业，查不到不代表企业不存在。至少确认一方后可以开始，未确认的相关方仍在案件范围内，形成身份补证项。",
+          ],
+          [
+            "离开页面后，填写的内容会保留吗？",
+            "新建事项及未提交的复核内容会在当前标签页暂存，支持页面切换和刷新。关闭标签页后不保证恢复；点击创建或保存后，记录才进入本机案件库。",
+          ],
+          [
+            "来源失败或模型未完成怎么办？",
+            "打开该主体查看错误与调用记录。恢复连接或模型配置后重新核查；旧轮次保留，新证据会使旧总意见失效并恢复草稿。",
+          ],
+          [
+            "不承接事项，也必须排除所有线索吗？",
+            "不需要。律师可以记录不承接意见并结束本轮审查，原有缺口和线索继续留存。运行中的核查须结束后才能记录这一状态。",
+          ],
+          [
+            "这里会上传材料或通知合伙人吗？",
+            "当前只保存材料引用文本和人工意见，不上传文件，也不发送通知。模型模式的数据流向会在启动前明确展示。",
+          ],
+        ].map(([question, answer]) => (
+          <details key={question}>
+            <summary>{question}</summary>
+            <p>{answer}</p>
+          </details>
+        ))}
+      </section>
+      <details className="guide-technical">
+        <summary>原型范围、集成方案与开源参考</summary>
+        <div className="about-intro">
+          <span className="intro-number">01—03</span>
+          <div>
+            <h2>识别主体 → 交叉核查 → 人工复核</h2>
+            <p>
+              目标用户是负责新事项收案的经办律师与合伙人。把分散在公开企业信息和律所台账中的关系线索，组织成可解释、可追溯、可复核的工作结果。
+            </p>
+          </div>
         </div>
-      </div>
+        <div className="about-grid">
+          <section className="panel">
+            <h3>本版本已经覆盖的工作流</h3>
+            <ol>
+              <li>在连接器页接入 GLEIF 与本地 SQLite MCP。</li>
+              <li>添加拟委托人、交易对方和担保方，逐方查询并确认 LEI。</li>
+              <li>检索主体及公开母公司关系，并与虚构台账交叉比对。</li>
+              <li>查看匹配依据、来源链接和真实调用记录。</li>
+              <li>补齐材料引用，记录逐项与案件总意见，导出聚合报告。</li>
+            </ol>
+          </section>
+          <section className="panel">
+            <h3>有意控制的范围</h3>
+            <p>
+              支持同一案件最多 6
+              方企业与其公开母公司核查，保留补证、逐项复核及案件意见。不覆盖自然人身份、完整集团图谱、制裁筛查或自动冲突豁免。
+            </p>
+            <p>
+              LEI
+              和名称匹配用于产生核查线索。适用司法辖区、现有委托范围、保密义务等仍需律师判断。公司关联本身不能直接推出冲突结论。
+            </p>
+            <p>
+              每个已确认主体都会核查；未确认主体会保留为阻塞项。工具权限同时约束手动、规则和
+              AI 调用。
+            </p>
+          </section>
+          <section className="panel">
+            <h3>真实接入与模拟数据</h3>
+            <p>
+              <b>真实：</b>官方 SDK 的 MCP 客户端与两个独立工具服务、GLEIF
+              外网查询、本地 SQLite 检索、保存与导出。
+            </p>
+            <p>
+              <b>模拟：</b>
+              律所身份、台账事项、客户委托关系。公众企业名称可真实存在，但不表示该企业与演示律所有任何实际关系。
+            </p>
+            <button className="text-btn" onClick={onModelHelp}>
+              了解模型配置与验收边界
+              <ArrowUpRight size={14} />
+            </button>
+          </section>
+          <section className="panel">
+            <h3>如何融入 Alta Lex</h3>
+            <p>
+              作为 Project
+              创建前的“收案核查”入口，共用组织身份与连接器授权，返回线索、证据与人工复核状态。
+            </p>
+            <p>
+              正式接入时应增加多租户隔离、角色权限、机密事项可见范围、不可篡改审计及组织级模型数据授权。本原型不依赖
+              Alta Lex 源码。
+            </p>
+          </section>
+        </div>
+        <div className="references">
+          <div className="eyebrow small">OPEN SOURCE & PRIMARY SOURCES</div>
+          <h3>参考透明，边界明确。</h3>
+          <p>
+            直接使用官方 MCP
+            SDK；参考开源主体匹配、证据审阅与人工接管设计。详细版本、许可证和研究链接随代码交付。
+          </p>
+          <div>
+            <a
+              href="https://github.com/modelcontextprotocol/typescript-sdk"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MCP TypeScript SDK
+              <ExternalLink size={14} />
+            </a>
+            <a
+              href="https://github.com/opensanctions/yente"
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenSanctions yente
+              <ExternalLink size={14} />
+            </a>
+            <a
+              href="https://github.com/Open-Source-Legal/OpenContracts"
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenContracts
+              <ExternalLink size={14} />
+            </a>
+            <a
+              href="https://www.gleif.org/en/lei-data/gleif-api"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GLEIF API
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

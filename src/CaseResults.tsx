@@ -23,6 +23,7 @@ import { caseState, IdentityPicker } from "./CaseWorkspace";
 import "./case-workbench.css";
 import "./review-refinements.css";
 import { useReviewDraft } from "./useReviewDraft";
+import type { CaseTab } from "./navigation";
 
 const date = (value: string) =>
   new Date(value).toLocaleString("zh-CN", { hour12: false });
@@ -357,6 +358,8 @@ function DecisionForm({
 
 export default function CaseResults({
   value,
+  tab,
+  onTabChange,
   onBack,
   onUpdate,
   onOpenRun,
@@ -364,15 +367,15 @@ export default function CaseResults({
   onError,
 }: {
   value: CaseView;
+  tab: CaseTab;
+  onTabChange: (tab: CaseTab) => void;
   onBack: () => void;
   onUpdate: (value: CaseView) => void;
   onOpenRun: (id: string) => void;
   onTrace: (trace: Trace) => void;
   onError: (message: string) => void;
 }) {
-  const [tab, setTab] = useState<"parties" | "tasks" | "review" | "activity">(
-    "parties",
-  );
+  const setTab = onTabChange;
   const [resolving, setResolving] = useState<CaseParty>();
   const [busy, setBusy] = useState("");
   async function retry(party: CaseParty) {
@@ -394,7 +397,7 @@ export default function CaseResults({
   return (
     <div className="page-enter case-results">
       <button className="back-link" onClick={onBack}>
-        <ArrowLeft size={15} /> 返回案件工作台
+        <ArrowLeft size={15} /> 返回收案工作台
       </button>
       <div className="page-heading">
         <div>
@@ -418,6 +421,42 @@ export default function CaseResults({
           <Download size={16} /> 导出案件记录
         </a>
       </div>
+      <nav className="case-progress-rail" aria-label="案件处理进度">
+        {[
+          {
+            label: "身份确认",
+            done: value.progress.confirmed === value.progress.total,
+            target: "parties" as const,
+          },
+          {
+            label: "证据核查",
+            done: value.progress.completed === value.progress.total,
+            target: "parties" as const,
+          },
+          {
+            label: "补证与复核",
+            done:
+              !value.progress.openTasks &&
+              !value.progress.pendingFindings &&
+              value.status !== "running",
+            target: "tasks" as const,
+          },
+          {
+            label: "记录总意见",
+            done: value.status === "recorded" || value.status === "closed",
+            target: "review" as const,
+          },
+        ].map((stage, index, all) => (
+          <button
+            key={stage.label}
+            className={`${stage.done ? "complete" : ""} ${!stage.done && value.status !== "closed" && value.status !== "recorded" && all.slice(0, index).every((s) => s.done) ? "current" : ""}`}
+            onClick={() => setTab(stage.target)}
+          >
+            <span>{stage.done ? <Check size={13} /> : index + 1}</span>
+            {stage.label}
+          </button>
+        ))}
+      </nav>
       <div className="case-summary-strip">
         <div>
           <span>核查范围</span>
@@ -473,16 +512,20 @@ export default function CaseResults({
           <div>
             <span className="eyebrow small">NEXT ACTION</span>
             <strong>
-              {value.progress.pendingFindings
-                ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
-                : value.progress.openTasks
-                  ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
-                  : "记录本轮审查总意见"}
+              {value.status === "recorded"
+                ? "本轮审查记录已完备"
+                : value.progress.pendingFindings
+                  ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
+                  : value.progress.openTasks
+                    ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
+                    : "记录本轮审查总意见"}
             </strong>
             <p>
-              {value.progress.pendingFindings
-                ? "逐条查看依据，选择升级复核、保留问题或排除线索。"
-                : "已完成的操作会保存至案件记录，可随时导出。"}
+              {value.status === "recorded"
+                ? "可查看总意见或导出记录。后续证据变更会重新开启复核。"
+                : value.progress.pendingFindings
+                  ? "逐条查看依据，选择升级复核、保留问题或排除线索。"
+                  : "已完成的操作会保存至案件记录，可随时导出。"}
             </p>
           </div>
           <button
@@ -497,7 +540,8 @@ export default function CaseResults({
               )
             }
           >
-            继续处理 <ArrowRight size={15} />
+            {value.status === "recorded" ? "查看总意见" : "继续处理"}{" "}
+            <ArrowRight size={15} />
           </button>
         </div>
       )}
@@ -505,6 +549,23 @@ export default function CaseResults({
         <div className="case-hint case-live" role="status">
           <LoaderCircle className="spin" size={16} /> 正在通过 MCP
           获取身份、母公司关系和台账线索，结果会自动更新。
+        </div>
+      )}
+      {value.status === "running" && (
+        <div className="execution-live-list" aria-label="各方核查实时进度">
+          {value.runs
+            .filter((run) => run.status === "running")
+            .map((run) => (
+              <div key={run.id}>
+                <LoaderCircle size={15} className="spin" />
+                <strong>{run.entity.name}</strong>
+                <span>
+                  {run.modelExecution?.status === "running"
+                    ? `AI 正在取证与整理 · 已完成 ${run.modelExecution.toolCallCount} 次工具调用`
+                    : `正在读取公开来源与台账 · 已完成 ${run.traces.filter((t) => t.status === "success").length} 次调用`}
+                </span>
+              </div>
+            ))}
         </div>
       )}
       <div className="case-tabs" role="tablist" aria-label="案件审查步骤">
