@@ -1,4 +1,5 @@
 import type { CaseView } from "../shared/types.ts";
+import { briefReport } from "./report.ts";
 
 const text = (value: string) =>
   value
@@ -12,9 +13,11 @@ const source = (label: string, url: string) =>
 const reviewLabels = {
   pending: "待复核",
   escalated: "待进一步复核",
+  retained: "已复核，保留问题（不等于批准收案）",
   dismissed: "已排除此线索",
 };
 const decisionLabels = {
+  declined: "不承接，结束审查（未核实事项仍保留）",
   draft: "草稿",
   "needs-information": "待补充资料",
   "needs-partner-review": "待合伙人复核（本地标记）",
@@ -124,6 +127,22 @@ export function caseReport(file: CaseView) {
     `- 填写人（手工输入，身份未验证）：${text(file.decision.reviewer || "未填写")}`,
     `- 说明：${text(file.decision.note || "未填写")}`,
     `- 记录时间：${file.decision.recordedAt || "未记录"}`,
+    ...(file.decision.invalidatedAt
+      ? [
+          `- 原意见失效时间：${file.decision.invalidatedAt}；文字保留为草稿，须按当前资料重新审查。`,
+        ]
+      : []),
+    ...(file.decision.status === "declined"
+      ? [
+          "- 本轮审查已按人工不承接意见结束；前述未核实事项、线索与材料缺口仍保留，不视为核查通过。",
+        ]
+      : []),
+    "",
+    ...file.runs.flatMap((run) =>
+      run.modelSummary
+        ? [`### 主体：${text(run.entity.name)}`, "", ...briefReport(run)]
+        : [],
+    ),
     "",
     "## 活动与旧意见失效记录",
     "",

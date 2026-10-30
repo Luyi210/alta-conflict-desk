@@ -1,4 +1,34 @@
 import type { Run } from "../shared/types.ts";
+import { evidenceFacts } from "../shared/evidence-facts.ts";
+export function briefReport(run: Run): string[] {
+  if (!run.modelSummary) return [];
+  return [
+    "## AI 核查简报",
+    "",
+    "AI 摘要（待律师核对）：",
+    run.modelSummary,
+    "",
+    ...(
+      [
+        ["来源记录（直接由实际工具字段整理）", evidenceFacts(run.traces)],
+        ["律师待核实", run.modelBrief?.questions],
+        ["建议下一步", run.modelBrief?.nextSteps],
+      ] as const
+    ).flatMap(([label, items]) =>
+      items?.length
+        ? [
+            `### ${label}`,
+            "",
+            ...items.map(
+              (item) =>
+                `- ${text(item.text)}${item.traceIds.length ? `（来源调用：${item.traceIds.join("、")}）` : "（复核建议，尚未核实）"}`,
+            ),
+            "",
+          ]
+        : [],
+    ),
+  ];
+}
 const text = (value: string) =>
   value
     .replace(/[\r\n]+/g, " ")
@@ -8,6 +38,7 @@ export function report(run: Run) {
   const review = {
     pending: "待复核",
     escalated: "已标记进一步复核",
+    retained: "已复核，保留问题（不等于批准收案）",
     dismissed: "排除此线索",
   };
   return [
@@ -18,6 +49,8 @@ export function report(run: Run) {
     `- 拟委托人（背景字段，本次未核查）：${text(run.prospectiveClient)}`,
     `- 选定主体：${text(run.entity.name)} / ${run.entity.lei}`,
     `- 主体角色：${text(run.partyRole)}`,
+    `- 委托背景：${text(run.context || "未提供")}`,
+    `- 事项辖区（背景信息，不是法律适用结论）：${text(run.jurisdiction || "未提供")}`,
     `- 模式：${run.mode === "rules" ? "规则预览（非 AI 推理验收）" : "AI 工具核查（见调用记录与缺口）"}`,
     `- 状态：${run.status}`,
     `- 开始：${run.createdAt}`,
@@ -59,7 +92,7 @@ export function report(run: Run) {
       `- 证据调用编号：${finding.evidenceTraceIds.join("、")}`,
       "",
     ]),
-    ...(run.modelSummary ? ["## 模型辅助摘要", "", run.modelSummary, ""] : []),
+    ...briefReport(run),
     "## 实际 MCP 调用轨迹",
     "",
     ...run.traces.flatMap((trace) => [

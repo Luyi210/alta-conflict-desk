@@ -34,9 +34,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { api, post } from "./api";
-import CaseWorkspace from "./CaseWorkspace";
+import CaseWorkspace, { caseState } from "./CaseWorkspace";
 import CaseResults from "./CaseResults";
 import ToolDesk from "./ToolDesk";
+import ReviewBrief from "./ReviewBrief";
+import { useReviewDraft } from "./useReviewDraft";
 import type {
   AppStatus,
   CaseView,
@@ -70,6 +72,7 @@ const reviewLabel = {
   pending: "待复核",
   escalated: "待进一步复核",
   dismissed: "已排除",
+  retained: "已复核 · 保留问题",
 };
 const statusLabel = {
   running: "核查中",
@@ -294,7 +297,11 @@ export default function App() {
   }
   const connected = status?.connectors.filter((c) => c.connected).length ?? 0;
   const pending = runs.reduce(
-    (n, r) => n + r.findings.filter((f) => f.review === "pending").length,
+    (n, r) =>
+      n +
+      r.findings.filter(
+        (f) => f.review === "pending" || f.review === "escalated",
+      ).length,
     0,
   );
   return (
@@ -695,7 +702,7 @@ export default function App() {
                       <strong>{runs.length.toString().padStart(2, "0")}</strong>
                     </div>
                     <div>
-                      <span>待复核线索</span>
+                      <span>历史未处理线索 · 含旧轮次</span>
                       <strong>{pending.toString().padStart(2, "0")}</strong>
                     </div>
                     <div>
@@ -730,9 +737,7 @@ export default function App() {
                             </small>
                           </span>
                           <span className="badge amber">
-                            {item.decision.status === "review-recorded"
-                              ? "审查记录完备"
-                              : "待处理与复核"}
+                            {caseState[item.status]}
                           </span>
                           <ArrowRight size={17} />
                         </button>
@@ -842,7 +847,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.2</span>
+          <span>v0.3</span>
         </footer>
       </div>
       {notice && (
@@ -936,46 +941,16 @@ function Results({
 }) {
   const [selectedId, setSelectedId] = useState("");
   const [tab, setTab] = useState<"findings" | "trace">("findings");
-  const [filter, setFilter] = useState<"all" | "pending" | "reviewed">("all");
-  const [note, setNote] = useState("");
-  const [saving, setSaving] = useState(false);
-  const finding =
-    run.findings.find((f) => f.id === selectedId) ?? run.findings[0];
-  useEffect(() => {
-    setNote(finding?.reviewNote ?? "");
-  }, [finding?.id, finding?.reviewNote]);
+  const [filter, setFilter] = useState<"all" | Finding["review"]>("all");
+  const displayed = run.findings.filter(
+    (f) => filter === "all" || f.review === filter,
+  );
+  const finding = displayed.find((f) => f.id === selectedId) ?? displayed[0];
   const count = (t: Finding["type"]) =>
     run.findings.filter((f) => f.type === t).length;
-  const pending = run.findings.filter((f) => f.review === "pending").length;
-  async function review(value: Finding["review"]) {
-    if (!finding) return;
-    setSaving(true);
-    onError("");
-    try {
-      onUpdate(
-        await post<Run>(`/runs/${run.id}/findings/${finding.id}/review`, {
-          review: value,
-          note,
-        }),
-      );
-      toast(
-        value === "dismissed"
-          ? "排除理由已保存，可随时重新复核"
-          : value === "escalated"
-            ? "已标记进一步复核，不会向他人发送通知"
-            : "已恢复为待复核",
-      );
-    } catch (e) {
-      onError((e as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  }
-  const displayed = run.findings.filter(
-    (f) =>
-      filter === "all" ||
-      (filter === "pending" ? f.review === "pending" : f.review !== "pending"),
-  );
+  const pending = run.findings.filter(
+    (f) => f.review === "pending" || f.review === "escalated",
+  ).length;
   return (
     <div className="page-enter results-page">
       <div className="result-toolbar">
@@ -1045,8 +1020,17 @@ function Results({
             <span />
           </div>
           <div>
-            <Spinner text="真实 MCP 调用进行中" />
-            <span>已记录 {run.traces.length} 次工具调用 · 请保持页面打开</span>
+            <Spinner
+              text={
+                run.modelExecution?.status === "running"
+                  ? "AI 正在调用工具并整理复核简报"
+                  : "正在核实企业身份、公开关系与台账"
+              }
+            />
+            <span>
+              已记录 {run.traces.length} 次工具调用 ·
+              可离开页面，稍后从核查记录继续
+            </span>
           </div>
         </div>
       )}
@@ -1115,16 +1099,7 @@ function Results({
           {run.error}
         </div>
       )}
-      {run.modelSummary && (
-        <details className="model-summary">
-          <summary>
-            <Sparkles size={16} />
-            AI 辅助说明
-            <ChevronDown size={14} />
-          </summary>
-          <p>{run.modelSummary}</p>
-        </details>
-      )}
+      <ReviewBrief run={run} onTrace={onTrace} />
       <div className="result-tabs">
         <button
           className={cn(tab === "findings" && "selected")}
@@ -1158,7 +1133,9 @@ function Results({
                 >
                   <option value="all">全部</option>
                   <option value="pending">待复核</option>
-                  <option value="reviewed">已处理</option>
+                  <option value="escalated">待进一步复核</option>
+                  <option value="retained">已复核 · 保留问题</option>
+                  <option value="dismissed">已排除</option>
                 </select>
               </div>
               {displayed.map((f, i) => (
@@ -1192,10 +1169,11 @@ function Results({
                   <span
                     className={cn(
                       "review-state",
-                      f.review !== "pending" && "done",
+                      f.review === "dismissed" && "done",
+                      f.review === "retained" && "retained",
                     )}
                   >
-                    {f.review !== "pending" ? (
+                    {f.review === "dismissed" ? (
                       <Check size={12} />
                     ) : (
                       <span className="tiny-dot" />
@@ -1332,89 +1310,14 @@ function Results({
                     </small>
                   </div>
                 </section>
-                <aside className="review-panel">
-                  <span className="review-symbol">
-                    <ShieldCheck size={25} strokeWidth={1.5} />
-                  </span>
-                  <h3>律师复核</h3>
-                  <p>
-                    结合委托范围、相关性及适用执业规则，对这条线索作出处理。
-                  </p>
-                  <div className="review-current">
-                    <span>当前状态</span>
-                    <Badge
-                      tone={finding.review === "pending" ? "amber" : "green"}
-                    >
-                      {reviewLabel[finding.review]}
-                    </Badge>
-                  </div>
-                  <label className="field-label" htmlFor="review-note">
-                    复核说明 <span>处理时必填</span>
-                  </label>
-                  <textarea
-                    id="review-note"
-                    rows={5}
-                    maxLength={2000}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={
-                      finding.type === "similar"
-                        ? "如：LEI 不同，名称近似但不是同一法律主体…"
-                        : "如：需要向事项负责律师确认现有委托范围…"
-                    }
-                  />
-                  <button
-                    className="btn primary full"
-                    disabled={
-                      saving ||
-                      note.trim().length < 3 ||
-                      run.status === "running"
-                    }
-                    onClick={() => void review("escalated")}
-                  >
-                    {saving ? (
-                      <Spinner text="保存中" />
-                    ) : (
-                      <>
-                        <FileCheck2 size={15} />
-                        标记进一步复核
-                      </>
-                    )}
-                  </button>
-                  <button
-                    className="btn secondary full"
-                    disabled={
-                      saving ||
-                      note.trim().length < 3 ||
-                      run.status === "running"
-                    }
-                    onClick={() => void review("dismissed")}
-                  >
-                    <Check size={15} />
-                    排除此条线索
-                  </button>
-                  {finding.review !== "pending" && (
-                    <button
-                      className="text-btn reset-review"
-                      disabled={saving}
-                      onClick={() => void review("pending")}
-                    >
-                      重新设为待复核
-                    </button>
-                  )}
-                  {finding.reviewedAt && (
-                    <p className="saved-at">
-                      <Check size={12} />
-                      已保存于 {stamp(finding.reviewedAt)}
-                    </p>
-                  )}
-                  <div className="review-footnote">
-                    <Info size={15} />
-                    <span>
-                      标记仅保存在本机，不向他人发送通知。排除单条线索不等于批准收案。
-                    </span>
-                  </div>
-                </aside>
+                <FindingReview
+                  key={finding.id}
+                  finding={finding}
+                  run={run}
+                  onUpdate={onUpdate}
+                  onError={onError}
+                  toast={toast}
+                />
               </>
             )}
           </div>
@@ -1692,5 +1595,140 @@ function About({ onModelHelp }: { onModelHelp: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function FindingReview({
+  finding,
+  run,
+  onUpdate,
+  onError,
+  toast,
+}: {
+  finding: Finding;
+  run: Run;
+  onUpdate: (value: Run) => void;
+  onError: (message: string) => void;
+  toast: (message: string) => void;
+}) {
+  const draft = useReviewDraft(`finding:${run.id}:${finding.id}`, {
+    note: finding.reviewNote,
+  });
+  const { note } = draft.value;
+  const [saving, setSaving] = useState(false);
+  async function review(value: Finding["review"]) {
+    if (!finding) return;
+    setSaving(true);
+    onError("");
+    try {
+      onUpdate(
+        await post<Run>(`/runs/${run.id}/findings/${finding.id}/review`, {
+          review: value,
+          note,
+        }),
+      );
+      draft.accept({ note });
+      toast(
+        value === "dismissed"
+          ? "排除理由已保存，可随时重新复核"
+          : value === "retained"
+            ? "已记录复核结果并保留问题，请在案件总意见说明处理依据"
+            : value === "escalated"
+              ? "已标记进一步复核，不会向他人发送通知"
+              : "已恢复为待复核",
+      );
+    } catch (e) {
+      onError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <aside className="review-panel">
+      <span className="review-symbol">
+        <ShieldCheck size={25} strokeWidth={1.5} />
+      </span>
+      <h3>律师复核</h3>
+      <p>结合委托范围、相关性及适用执业规则，对这条线索作出处理。</p>
+      <div className="review-current">
+        <span>当前状态</span>
+        <Badge tone={finding.review === "dismissed" ? "green" : "amber"}>
+          {reviewLabel[finding.review]}
+        </Badge>
+      </div>
+      <label className="field-label" htmlFor="review-note">
+        复核说明 <span>处理时必填</span>
+      </label>
+      <textarea
+        id="review-note"
+        rows={5}
+        maxLength={2000}
+        value={note}
+        onChange={(e) => draft.setValue({ note: e.target.value })}
+        placeholder={
+          finding.type === "similar"
+            ? "如：LEI 不同，名称近似但不是同一法律主体…"
+            : "如：需要向事项负责律师确认现有委托范围…"
+        }
+      />
+      <button
+        className="btn primary full"
+        disabled={saving || note.trim().length < 2 || run.status === "running"}
+        onClick={() => void review("escalated")}
+      >
+        {saving ? (
+          <Spinner text="保存中" />
+        ) : (
+          <>
+            <FileCheck2 size={15} />
+            标记进一步复核
+          </>
+        )}
+      </button>
+      <button
+        className="btn secondary full"
+        disabled={saving || note.trim().length < 2 || run.status === "running"}
+        onClick={() => void review("dismissed")}
+      >
+        <Check size={15} />
+        排除此条线索
+      </button>
+      <button
+        className="btn secondary full"
+        disabled={saving || note.trim().length < 2 || run.status === "running"}
+        onClick={() => void review("retained")}
+      >
+        <FileCheck2 size={15} />
+        已复核，保留问题
+      </button>
+      {draft.dirty && (
+        <small className="draft-status" role="status">
+          {draft.storageAvailable
+            ? "未提交 · 当前标签页已暂存"
+            : "请提交后离开页面"}
+        </small>
+      )}
+      {finding.review !== "pending" && (
+        <button
+          className="text-btn reset-review"
+          disabled={saving}
+          onClick={() => void review("pending")}
+        >
+          重新设为待复核
+        </button>
+      )}
+      {finding.reviewedAt && (
+        <p className="saved-at">
+          <Check size={12} />
+          已保存于 {stamp(finding.reviewedAt)}
+        </p>
+      )}
+      <div className="review-footnote">
+        <Info size={15} />
+        <span>
+          保留问题表示已记录核实结果，仍需在案件总意见说明处理依据。进一步复核仍属于待办。以上操作仅保存本地记录。
+        </span>
+      </div>
+    </aside>
   );
 }

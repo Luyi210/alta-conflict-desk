@@ -73,6 +73,7 @@ export const caseTaskSchema = z.object({
   status: z.enum(["open", "resolved"]),
   note: z.string().trim().max(4000),
   reference: z.string().trim().max(2000),
+  expectedRevision: z.number().int().positive().optional(),
 });
 export const caseDecisionSchema = z
   .object({
@@ -81,9 +82,11 @@ export const caseDecisionSchema = z
       "needs-information",
       "needs-partner-review",
       "review-recorded",
+      "declined",
     ]),
     note: z.string().trim().max(6000),
     reviewer: z.string().trim().max(100),
+    expectedRevision: z.number().int().positive().optional(),
   })
   .refine(
     (v) =>
@@ -221,6 +224,7 @@ export class CaseService {
   ): CaseView {
     const input = caseTaskSchema.parse(raw);
     const file = this.file(this.get(id));
+    this.assertRevision(file, input.expectedRevision);
     const task = file.tasks.find((t) => t.id === taskId);
     if (!task) throw new HttpError(404, "补证待办不存在或已由最新结果替代");
     if (task.systemManaged)
@@ -242,7 +246,12 @@ export class CaseService {
       input.reference === task.reference
     )
       return this.get(id);
-    Object.assign(task, input, { updatedAt: now() });
+    Object.assign(task, {
+      status: input.status,
+      note: input.note,
+      reference: input.reference,
+      updatedAt: now(),
+    });
     this.invalidate(
       file,
       `补证「${task.title}」更新为${task.status === "resolved" ? "已补齐" : "待补充"}；说明：${task.note || "未填写"}；材料引用：${task.reference || "未填写"}。`,
@@ -254,27 +263,44 @@ export class CaseService {
 
   recordDecision(
     id: string,
-    raw: { status: CaseDecision["status"]; note: string; reviewer: string },
+    raw: {
+      status: CaseDecision["status"];
+      note: string;
+      reviewer: string;
+      expectedRevision?: number;
+    },
   ): CaseView {
     const input = caseDecisionSchema.parse(raw);
     const view = this.get(id);
+    this.assertRevision(view, input.expectedRevision);
+    if (input.status === "declined" && view.status === "running")
+      throw new HttpError(409, "核查仍在运行，请等待本轮结果保存后结束审查");
     if (input.status === "review-recorded" && view.blockers.length)
       throw new HttpError(409, `审查记录尚不完备：${view.blockers.join("；")}`);
     const file = this.file(view);
     file.decision = {
-      ...input,
+      status: input.status,
+      note: input.note,
+      reviewer: input.reviewer,
       revision: file.revision,
       ...(input.status === "draft" ? {} : { recordedAt: now() }),
     };
     this.event(
       file,
       "decision-recorded",
-      `人工审查状态：${input.status}；填写人：${input.reviewer || "未填写"}（身份未验证）；说明：${input.note || "未填写"}。此记录不批准收案，也不发送通知。`,
+      `人工审查状态：${{ draft: "草稿", "needs-information": "待补充材料", "needs-partner-review": "待进一步复核", "review-recorded": "审查记录完备", declined: "不承接，结束审查" }[input.status]}；填写人：${input.reviewer || "未填写"}（身份未验证）；说明：${input.note || "未填写"}。此记录不批准收案，也不发送通知。`,
     );
     this.save(file);
     return this.get(id);
   }
 
+  private assertRevision(file: CaseFile, expected?: number) {
+    if (expected !== undefined && expected !== file.revision)
+      throw new HttpError(
+        409,
+        "资料版本已更新，请查看最新证据后再次保存；输入内容仍保留在当前页面",
+      );
+  }
   private file(view: CaseView): CaseFile {
     const {
       runs: _runs,
@@ -303,6 +329,8 @@ export class CaseService {
           .map((p) => p.name)
           .join("、")
           .slice(0, 200) || "未指定拟委托人（见案件主体清单）",
+      context: file.context,
+      jurisdiction: file.jurisdiction,
       partyRole: party.role,
       entity: party.entity!,
       mode: file.mode,
@@ -356,9 +384,12 @@ export class CaseService {
       );
     file.decision = {
       status: "draft",
-      note: "",
-      reviewer: "",
+      note: previous.note,
+      reviewer: previous.reviewer,
       revision: file.revision,
+      ...(previous.status !== "draft" || previous.invalidatedAt
+        ? { invalidatedAt: now() }
+        : {}),
     };
     this.event(file, type, reason);
   }
@@ -478,7 +509,7 @@ export class CaseService {
     }
     const pending = runs
       .flatMap((r) => r.findings)
-      .filter((f) => f.review !== "dismissed");
+      .filter((f) => f.review === "pending" || f.review === "escalated");
     if (pending.length)
       blockers.push(`${pending.length} 条线索仍待复核或进一步复核`);
     const openTasks = file.tasks.filter(
@@ -494,11 +525,13 @@ export class CaseService {
       blockers,
       status: runs.some((r) => r.status === "running")
         ? "running"
-        : blockers.length
-          ? "needs-attention"
-          : file.decision.status === "review-recorded"
-            ? "recorded"
-            : "ready-for-review",
+        : file.decision.status === "declined"
+          ? "closed"
+          : blockers.length
+            ? "needs-attention"
+            : file.decision.status === "review-recorded"
+              ? "recorded"
+              : "ready-for-review",
       progress: {
         total: file.parties.length,
         confirmed: file.parties.filter((p) => p.confirmed && p.entity).length,

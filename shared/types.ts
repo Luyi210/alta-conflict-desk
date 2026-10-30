@@ -65,14 +65,23 @@ export type Finding = {
   relation?: Relation;
   match: LedgerMatch;
   evidenceTraceIds: string[];
-  review: "pending" | "escalated" | "dismissed";
+  review: "pending" | "escalated" | "retained" | "dismissed";
   reviewNote: string;
   reviewedAt?: string;
+};
+export type ModelBrief = {
+  summary: string;
+  citedTraceIds: string[];
+  facts?: { text: string; traceIds: string[] }[];
+  questions?: { text: string; traceIds: string[] }[];
+  nextSteps?: { text: string; traceIds: string[] }[];
 };
 export type Run = {
   id: string;
   matterName: string;
   prospectiveClient: string;
+  context?: string;
+  jurisdiction?: string;
   partyRole: string;
   entity: Entity;
   mode: "rules" | "ai";
@@ -85,6 +94,7 @@ export type Run = {
   gaps: string[];
   summary: string;
   modelSummary?: string;
+  modelBrief?: ModelBrief;
   error?: string;
   modelExecution?: {
     status: "running" | "completed" | "failed";
@@ -97,6 +107,8 @@ export type Run = {
 export type RunInput = {
   matterName: string;
   prospectiveClient: string;
+  context?: string;
+  jurisdiction?: string;
   partyRole: string;
   entity: Entity;
   mode: "rules" | "ai";
@@ -141,10 +153,12 @@ export type CaseDecision = {
     | "draft"
     | "needs-information"
     | "needs-partner-review"
-    | "review-recorded";
+    | "review-recorded"
+    | "declined";
   note: string;
   reviewer: string;
   recordedAt?: string;
+  invalidatedAt?: string;
   revision: number;
 };
 export type CaseActivity = {
@@ -169,7 +183,12 @@ export type CaseFile = {
 };
 export type CaseView = CaseFile & {
   runs: Run[];
-  status: "running" | "needs-attention" | "ready-for-review" | "recorded";
+  status:
+    | "running"
+    | "needs-attention"
+    | "ready-for-review"
+    | "recorded"
+    | "closed";
   blockers: string[];
   progress: {
     total: number;

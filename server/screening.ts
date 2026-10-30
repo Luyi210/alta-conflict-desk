@@ -25,13 +25,22 @@ export const entitySchema = z.object({
 export const runInputSchema = z.object({
   matterName: z.string().trim().min(2).max(200),
   prospectiveClient: z.string().trim().min(2).max(200),
-  partyRole: z.enum(["拟委托人", "对方当事人", "交易对方", "交易对手", "担保方", "其他相关方"]),
+  partyRole: z.enum([
+    "拟委托人",
+    "对方当事人",
+    "交易对方",
+    "交易对手",
+    "担保方",
+    "其他相关方",
+  ]),
+  context: z.string().trim().max(4000).optional(),
+  jurisdiction: z.string().trim().max(200).optional(),
   entity: entitySchema,
   mode: z.enum(["rules", "ai"]),
 });
 export const reviewSchema = z
   .object({
-    review: z.enum(["pending", "escalated", "dismissed"]),
+    review: z.enum(["pending", "escalated", "retained", "dismissed"]),
     note: z.string().trim().max(2000),
   })
   .refine(
@@ -204,9 +213,17 @@ export class ScreeningService {
             run,
             (id, tool, args) => call(id, tool, args, "model"),
             {
+              onBrief: (brief) => {
+                run.modelBrief = brief;
+                persist();
+              },
               tools: () => this.connectors.catalog(),
-              validateCall: (id, tool, args) => this.connectors.validateCall(id, tool, args),
-              onProgress: (state) => { run.modelExecution = state; persist(); },
+              validateCall: (id, tool, args) =>
+                this.connectors.validateCall(id, tool, args),
+              onProgress: (state) => {
+                run.modelExecution = state;
+                persist();
+              },
             },
           );
         } catch (err) {
@@ -234,6 +251,9 @@ export class ScreeningService {
     review: Finding["review"],
     note: string,
   ) {
+    const validated = reviewSchema.parse({ review, note });
+    review = validated.review;
+    note = validated.note;
     const run = this.store.get(id);
     if (!run) throw new HttpError(404, "核查不存在");
     if (run.status === "running")

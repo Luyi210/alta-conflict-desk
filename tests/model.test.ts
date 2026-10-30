@@ -246,7 +246,7 @@ test("mock model: malformed JSON, extra parameters, and oversized batches never 
       message: {
         role: "assistant",
         content: null,
-        tool_calls: Array.from({ length: 5 }, (_, i) =>
+        tool_calls: Array.from({ length: 7 }, (_, i) =>
           tool(`call-${i}`, "gleif_get_entity", { lei: entity.lei }),
         ),
       },
@@ -520,4 +520,174 @@ test("mock provider HTTP: only the exact DeepSeek host disables thinking on ever
       }
     }
   }
+});
+
+test("structured briefs carry matter context and validate every item citation against actual model calls", async () => {
+  for (const forged of [false, true]) {
+    let published: Run["modelBrief"];
+    const contextRun = {
+      ...run,
+      context: "虚构融资中担保范围仅限本次交易",
+      jurisdiction: "香港（背景）",
+    };
+    const callback: ModelCall = async <T>(
+      connector: "gleif" | "ledger",
+      name: string,
+      args: Record<string, unknown>,
+    ) => ({
+      data: (connector === "gleif" ? { entity } : { matches: [] }) as T,
+      trace: {
+        id: `brief-${connector}`,
+        connector,
+        tool: name,
+        args,
+        startedAt: entity.fetchedAt,
+        durationMs: 0,
+        status: "success",
+        initiator: "model",
+      },
+    });
+    const result: Message = {
+      role: "assistant",
+      content: JSON.stringify({
+        summary: "已核实登记身份，仍需确认担保范围。",
+        citedTraceIds: ["brief-gleif", "brief-ledger"],
+        facts: [
+          {
+            text: "登记来源返回所选身份",
+            traceIds: [forged ? "made-up" : "brief-gleif"],
+          },
+        ],
+        questions: [{ text: "担保范围是否与既有事项相关？", traceIds: [] }],
+        nextSteps: [{ text: "核对本次融资委托范围说明", traceIds: [] }],
+      }),
+    };
+    await withMockProvider(
+      [
+        {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            tool("b1", "gleif_get_entity", { lei: entity.lei }),
+            tool("b2", "ledger_search_matters", {
+              lei: entity.lei,
+              name: entity.name,
+            }),
+          ],
+        },
+        result,
+      ],
+      async () => {
+        const action = () =>
+          modelReview(contextRun, callback, {
+            onBrief: (brief) => {
+              published = brief;
+            },
+          });
+        if (forged) {
+          await assert.rejects(action, /模型分项引用/);
+          assert.equal(published, undefined);
+        } else {
+          await action();
+          assert.ok(
+            published?.facts?.some((fact) => fact.text.includes(entity.lei)),
+          );
+          assert.ok(
+            !published?.facts?.some(
+              (fact) => fact.text === "登记来源返回所选身份",
+            ),
+          );
+          assert.equal(published?.nextSteps?.length, 1);
+        }
+      },
+      {
+        onRequest: (body) => {
+          const messages = body.messages as { role: string; content: string }[];
+          const context = JSON.parse(
+            messages.find((m) => m.role === "user")!.content,
+          );
+          assert.equal(context.matterContext, contextRun.context);
+          assert.equal(context.jurisdictionContext, contextRun.jurisdiction);
+          assert.equal(context.prospectiveClient, contextRun.prospectiveClient);
+        },
+      },
+    );
+  }
+});
+
+test("parent evidence must be fetched and cited before a model brief can complete", async () => {
+  const parent = {
+    ...entity,
+    name: "HSBC HOLDINGS PLC",
+    lei: "MLU0ZO3ML4LN2LL2TL39",
+  };
+  const scopedRun: Run = {
+    ...run,
+    relations: [
+      {
+        type: "direct-parent",
+        entity: parent,
+        sourceUrl: entity.sourceUrl,
+        fetchedAt: entity.fetchedAt,
+      },
+    ],
+  };
+  const calls: string[] = [];
+  const callback: ModelCall = async <T>(
+    connector: "gleif" | "ledger",
+    name: string,
+    args: Record<string, unknown>,
+  ) => {
+    const id = `${connector}-${args.lei}`;
+    calls.push(id);
+    return {
+      data: {} as T,
+      trace: {
+        id,
+        connector,
+        tool: name,
+        args,
+        startedAt: entity.fetchedAt,
+        durationMs: 0,
+        status: "success",
+        initiator: "model",
+      },
+    };
+  };
+  await withMockProvider(
+    [
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          tool("p1", "gleif_get_entity", { lei: entity.lei }),
+          tool("p2", "ledger_search_matters", {
+            lei: entity.lei,
+            name: entity.name,
+          }),
+        ],
+      },
+      final([`gleif-${entity.lei}`, `ledger-${entity.lei}`]),
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          tool("p3", "ledger_search_matters", {
+            lei: parent.lei,
+            name: parent.name,
+          }),
+        ],
+      },
+      final([
+        `gleif-${entity.lei}`,
+        `ledger-${entity.lei}`,
+        `ledger-${parent.lei}`,
+      ]),
+    ],
+    async () => {
+      const summary = await modelReview(scopedRun, callback);
+      assert.equal(calls.length, 3);
+      assert.ok(summary.includes(`ledger-${parent.lei}`));
+    },
+  );
 });

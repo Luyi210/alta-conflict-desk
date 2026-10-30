@@ -28,6 +28,7 @@ export const caseState = {
   "needs-attention": "待补充与复核",
   "ready-for-review": "待记录总意见",
   recorded: "审查记录完备",
+  closed: "已结束 · 不承接",
 };
 const newParty = (role: PartyRole = "交易对方", name = ""): CaseParty => ({
   id: crypto.randomUUID(),
@@ -270,7 +271,7 @@ export default function CaseWorkspace({
           <p>从确认主体到补齐材料，以同一份案件记录支持律师收案判断。</p>
         </div>
         <span className="case-version">
-          案件工作台 <b>02</b>
+          案件工作台 <b>03</b>
         </span>
       </div>
       <div className="case-steps">

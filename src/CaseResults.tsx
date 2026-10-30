@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,14 +18,17 @@ import type {
   Run,
   Trace,
 } from "../shared/types";
-import { post } from "./api";
+import { api, ApiError, post } from "./api";
 import { caseState, IdentityPicker } from "./CaseWorkspace";
 import "./case-workbench.css";
+import "./review-refinements.css";
+import { useReviewDraft } from "./useReviewDraft";
 
 const date = (value: string) =>
   new Date(value).toLocaleString("zh-CN", { hour12: false });
 const decisionLabels = {
   draft: "草稿",
+  declined: "不承接 · 结束审查",
   "needs-information": "待补充材料",
   "needs-partner-review": "待合伙人进一步复核",
   "review-recorded": "审查记录完备",
@@ -36,35 +39,52 @@ const taskLabels = {
   scope: "事项范围",
   confidentiality: "既往事项保密",
 };
+async function refreshConflict(
+  error: unknown,
+  caseId: string,
+  onUpdate: (value: CaseView) => void,
+) {
+  if (error instanceof ApiError && error.status === 409) {
+    try {
+      onUpdate(await api<CaseView>(`/cases/${caseId}`));
+    } catch {
+      /* Keep the original save error and local draft if refresh also fails. */
+    }
+  }
+}
 
 function TaskEditor({
   task,
   caseId,
+  revision,
+  partyNames,
   onUpdate,
   onError,
 }: {
   task: CaseTask;
   caseId: string;
+  revision: number;
+  partyNames: string[];
   onUpdate: (value: CaseView) => void;
   onError: (message: string) => void;
 }) {
-  const [note, setNote] = useState(task.note);
-  const [reference, setReference] = useState(task.reference);
+  const draft = useReviewDraft(`task:${caseId}:${task.id}`, {
+    note: task.note,
+    reference: task.reference,
+  });
+  const { note, reference } = draft.value;
   const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    setNote(task.note);
-    setReference(task.reference);
-  }, [task.note, task.reference]);
   async function save(status: "open" | "resolved") {
     setBusy(true);
     try {
-      onUpdate(
-        await post<CaseView>(
-          `/cases/${caseId}/tasks/${encodeURIComponent(task.id)}`,
-          { status, note, reference },
-        ),
+      const updated = await post<CaseView>(
+        `/cases/${caseId}/tasks/${encodeURIComponent(task.id)}`,
+        { status, note, reference, expectedRevision: revision },
       );
+      draft.accept({ note, reference });
+      onUpdate(updated);
     } catch (e) {
+      await refreshConflict(e, caseId, onUpdate);
       onError((e as Error).message);
     } finally {
       setBusy(false);
@@ -86,6 +106,7 @@ function TaskEditor({
       </div>
       <h3>{task.title}</h3>
       <p>{task.description}</p>
+      <div className="task-party-names">涉及主体：{partyNames.join("、")}</div>
       {task.systemManaged ? (
         <div className="case-hint">
           {task.kind === "identity"
@@ -101,7 +122,9 @@ function TaskEditor({
               value={note}
               rows={2}
               maxLength={4000}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) =>
+                draft.setValue({ ...draft.value, note: e.target.value })
+              }
               placeholder="说明核实了哪些信息，依据是什么"
             />
           </label>
@@ -110,15 +133,36 @@ function TaskEditor({
             <input
               value={reference}
               maxLength={1000}
-              onChange={(e) => setReference(e.target.value)}
+              onChange={(e) =>
+                draft.setValue({ ...draft.value, reference: e.target.value })
+              }
               placeholder="例如：访谈记录第 2 页、委托范围邮件日期与编号"
             />
           </label>
           <div className="case-task-actions">
-            <small>仅保存引用文本，尚未上传或验证材料。</small>
+            <small aria-live="polite">
+              {draft.dirty
+                ? draft.storageAvailable
+                  ? "有未保存内容 · 当前标签页已暂存"
+                  : "有未保存内容 · 请保存后离开"
+                : task.updatedAt
+                  ? `已保存 · ${date(task.updatedAt)}`
+                  : "仅记录材料引用文本"}
+            </small>
+            <button
+              className="btn quiet"
+              disabled={busy || !draft.dirty}
+              onClick={() => void save(task.status)}
+            >
+              保存{task.status === "resolved" ? "修改" : "草稿"}
+            </button>
             <button
               className="btn secondary"
-              disabled={busy}
+              disabled={
+                busy ||
+                (task.status === "open" &&
+                  (note.trim().length < 2 || reference.trim().length < 2))
+              }
               onClick={() =>
                 void save(task.status === "resolved" ? "open" : "resolved")
               }
@@ -146,33 +190,37 @@ function DecisionForm({
   onUpdate: (value: CaseView) => void;
   onError: (message: string) => void;
 }) {
-  const [status, setStatus] = useState<CaseDecision["status"]>(
-    value.decision.status,
-  );
-  const [note, setNote] = useState(value.decision.note);
-  const [reviewer, setReviewer] = useState(value.decision.reviewer);
+  const draft = useReviewDraft<{
+    status: CaseDecision["status"];
+    note: string;
+    reviewer: string;
+  }>(`decision:${value.id}`, {
+    status: value.decision.status,
+    note: value.decision.note,
+    reviewer: value.decision.reviewer,
+  });
+  const { status, note, reviewer } = draft.value;
   const [busy, setBusy] = useState(false);
+  const previousRevision = useRef(value.revision);
   useEffect(() => {
-    setStatus(value.decision.status);
-    setNote(value.decision.note);
-    setReviewer(value.decision.reviewer);
-  }, [
-    value.id,
-    value.revision,
-    value.decision.recordedAt,
-    value.decision.status,
-  ]);
+    if (previousRevision.current !== value.revision) {
+      draft.setValue((current) => ({ ...current, status: "draft" }));
+      previousRevision.current = value.revision;
+    }
+  }, [value.revision]);
   async function save() {
     setBusy(true);
     try {
-      onUpdate(
-        await post<CaseView>(`/cases/${value.id}/decision`, {
-          status,
-          note,
-          reviewer,
-        }),
-      );
+      const updated = await post<CaseView>(`/cases/${value.id}/decision`, {
+        status,
+        note,
+        reviewer,
+        expectedRevision: value.revision,
+      });
+      draft.accept({ status, note, reviewer });
+      onUpdate(updated);
     } catch (e) {
+      await refreshConflict(e, value.id, onUpdate);
       onError((e as Error).message);
     } finally {
       setBusy(false);
@@ -189,14 +237,22 @@ function DecisionForm({
           <FileCheck2 size={24} />
         </div>
         <p>
-          逐项核实线索与材料后，记录律师意见。主体身份或子核查复核结果发生变化，已有总意见将恢复草稿。
+          记录本轮审查的处理意见及依据。资料变化时，总意见恢复草稿，已有文字保留供重新审查。
         </p>
+        {value.decision.invalidatedAt && (
+          <div className="case-hint" role="status">
+            资料已更新，原意见已恢复草稿。文字已保留，请核对当前修订后重新记录。
+          </div>
+        )}
         <label className="case-field">
           记录状态
           <select
             value={status}
             onChange={(e) =>
-              setStatus(e.target.value as CaseDecision["status"])
+              draft.setValue({
+                ...draft.value,
+                status: e.target.value as CaseDecision["status"],
+              })
             }
           >
             {Object.entries(decisionLabels).map(([id, label]) => (
@@ -211,7 +267,9 @@ function DecisionForm({
           <input
             value={reviewer}
             maxLength={100}
-            onChange={(e) => setReviewer(e.target.value)}
+            onChange={(e) =>
+              draft.setValue({ ...draft.value, reviewer: e.target.value })
+            }
             placeholder="手工填写，本原型不验证身份"
           />
         </label>
@@ -221,17 +279,28 @@ function DecisionForm({
             value={note}
             maxLength={6000}
             rows={6}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e) =>
+              draft.setValue({ ...draft.value, note: e.target.value })
+            }
             placeholder="说明核实情况、尚存问题和下一步处理意见"
           />
         </label>
+        {status === "declined" && (
+          <div className="case-hint">
+            结束后保留全部未核实事项、线索和材料缺口。此操作记录律师的不承接意见，不将未完成核查标记为通过。
+          </div>
+        )}
         <div className="case-hint">
           “审查记录完备”仅表示本次材料和复核记录齐备，不代表批准收案。待进一步复核仅保存本地状态，不会向合伙人发送通知。
         </div>
         <button
           className="btn primary"
           disabled={
-            busy || (status === "review-recorded" && value.blockers.length > 0)
+            busy ||
+            (status !== "draft" &&
+              (note.trim().length < 2 || reviewer.trim().length < 2)) ||
+            (status === "declined" && value.status === "running") ||
+            (status === "review-recorded" && value.blockers.length > 0)
           }
           onClick={() => void save()}
         >
@@ -240,8 +309,19 @@ function DecisionForm({
           ) : (
             <Check size={16} />
           )}{" "}
-          保存案件总意见
+          {status === "declined"
+            ? "记录不承接并结束审查"
+            : status === "draft"
+              ? "保存意见草稿"
+              : "保存案件总意见"}
         </button>
+        {draft.dirty && (
+          <small className="draft-status" role="status">
+            {draft.storageAvailable
+              ? "有未保存内容 · 当前标签页已暂存"
+              : "有未保存内容 · 请保存后离开"}
+          </small>
+        )}
         {value.decision.recordedAt && (
           <small className="decision-saved">
             已保存 · {date(value.decision.recordedAt)} · 修订{" "}
@@ -256,7 +336,9 @@ function DecisionForm({
             ? `${value.blockers.length} 项仍需处理`
             : "可以记录总意见"}
         </h2>
-        <p>在这些事项处理完成前，不能标记审查记录完备。</p>
+        <p>
+          以下事项阻止标记“审查记录完备”。选择不承接时可以结束审查，所有缺口仍保留。
+        </p>
         {value.blockers.length ? (
           <ul>
             {value.blockers.map((item, i) => (
@@ -374,6 +456,51 @@ export default function CaseResults({
           <small>{decisionLabels[value.decision.status]}</small>
         </div>
       </div>
+      {value.status === "closed" && (
+        <div className="case-hint closed-notice">
+          <FileCheck2 size={18} />
+          <div>
+            <strong>已记录不承接意见，本轮审查结束</strong>
+            <p>
+              尚有 {value.blockers.length}{" "}
+              项未完成事项，记录完整保留。修改证据或重新核查会重新开启审查。
+            </p>
+          </div>
+        </div>
+      )}
+      {value.status !== "closed" && value.status !== "running" && (
+        <div className="case-next-action">
+          <div>
+            <span className="eyebrow small">NEXT ACTION</span>
+            <strong>
+              {value.progress.pendingFindings
+                ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
+                : value.progress.openTasks
+                  ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
+                  : "记录本轮审查总意见"}
+            </strong>
+            <p>
+              {value.progress.pendingFindings
+                ? "逐条查看依据，选择升级复核、保留问题或排除线索。"
+                : "已完成的操作会保存至案件记录，可随时导出。"}
+            </p>
+          </div>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              setTab(
+                value.progress.pendingFindings
+                  ? "parties"
+                  : value.progress.openTasks
+                    ? "tasks"
+                    : "review",
+              )
+            }
+          >
+            继续处理 <ArrowRight size={15} />
+          </button>
+        </div>
+      )}
       {value.status === "running" && (
         <div className="case-hint case-live" role="status">
           <LoaderCircle className="spin" size={16} /> 正在通过 MCP
@@ -474,6 +601,13 @@ export default function CaseResults({
                           查看证据与逐项复核 <ArrowRight size={15} />
                         </button>
                         <button
+                          className="btn quiet"
+                          disabled={run.status === "running" || !!busy}
+                          onClick={() => setResolving(party)}
+                        >
+                          更正主体
+                        </button>
+                        <button
                           className="icon-btn"
                           aria-label={`重新核查${party.name}`}
                           title="重新核查会生成新记录并使旧总意见失效"
@@ -546,7 +680,7 @@ export default function CaseResults({
         <div>
           <div className="case-section-title">
             <div>
-              <h2>让待核实的问题，有具体落点。</h2>
+              <h2>补证与范围核实</h2>
               <p>同一内部事项跨主体合并，保留每项核实结果及材料引用。</p>
             </div>
             <button className="btn secondary" onClick={() => setTab("review")}>
@@ -559,6 +693,10 @@ export default function CaseResults({
                 key={task.id}
                 task={task}
                 caseId={value.id}
+                revision={value.revision}
+                partyNames={task.partyIds.map(
+                  (id) => value.parties.find((p) => p.id === id)?.name || id,
+                )}
                 onUpdate={onUpdate}
                 onError={onError}
               />
@@ -572,7 +710,12 @@ export default function CaseResults({
         </div>
       )}
       {tab === "review" && (
-        <DecisionForm value={value} onUpdate={onUpdate} onError={onError} />
+        <DecisionForm
+          key={value.id}
+          value={value}
+          onUpdate={onUpdate}
+          onError={onError}
+        />
       )}
       {tab === "activity" && (
         <section className="panel case-activity">

@@ -1,3 +1,11 @@
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+  }
+}
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
     ...options,
@@ -7,7 +15,10 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
     .json()
     .catch(() => ({ error: "服务没有返回有效响应，请确认后端已启动。" }));
   if (!response.ok)
-    throw new Error(data.error || `请求失败 (${response.status})`);
+    throw new ApiError(
+      data.error || `请求失败 (${response.status})`,
+      response.status,
+    );
   return data as T;
 }
 export const post = <T>(path: string, body?: unknown) =>

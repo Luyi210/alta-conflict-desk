@@ -36,3 +36,11 @@ CaseView任务由实际结果动态生成、稳定id合并：未确认身份(ide
 - `src/CaseWorkspace.tsx` 和 `src/CaseResults.tsx` 提供案件输入与结果页；现有单主体历史功能保留。
 - `src/ToolDesk.tsx` 为独立组件；props `{onError:(message:string)=>void,onTrace:(trace:Trace)=>void,onConnections:()=>void}`，API 调用上述端点。导入现有 api helper 和共享类型，沿用 btn/panel/badge，样式位于 `src/tool-desk.css`；`App.tsx` 提供导航、通知和追踪抽屉。
 - v0.2 未新增 npm 依赖。已完成一次 DeepSeek 真实工具调用验收：一个已确认主体、2 轮、4 次模型 MCP 调用，另有 4 次规则预核查，见 `AI-LIVE-VERIFICATION.json`。案件未确认主体和补证缺口仍保留；不能用模型成功替代案件完备，也不能把旧规则、手动或 mock 记录改成 AI 证据。
+
+## v0.3 兼容扩展
+
+- Finding.review 新增 `retained`，必填复核理由；仅 pending/escalated 计入未处理线索。retained 表示已记录问题，不代表排除或批准收案。
+- CaseDecision.status 新增 `declined`；完成中的任务不能结案，停止承接可保留 blockers。CaseView.status 对应 `closed`。证据更新仍恢复 draft，同时保留原意见文字及 invalidatedAt。
+- 补证和意见接口可接收 expectedRevision；UI 总是携带，过期返回 409，刷新当前资料并保留未保存输入。
+- RunInput/Run 增加可选 context、jurisdiction；Run 增加可选 modelBrief。来源卡统一调用 shared/evidence-facts.ts，由实际模型工具返回生成。
+- 模型每轮最多 6 次调用、全程最多 12 次、6 轮。最终输出必须实际查询并引用当前主体及已知母公司的台账来源。既有成功记录不因此被改写为已满足新约束。

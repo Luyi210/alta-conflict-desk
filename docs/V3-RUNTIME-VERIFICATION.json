@@ -1,0 +1,252 @@
+{
+  "verifiedAt": "2026-10-30T12:06:28.916Z",
+  "version": "0.3.0",
+  "finalHardenedAiFlowVerified": false,
+  "reason": "Final two runs failed at the GLEIF network boundary before model execution. Earlier real model output exposed a citation-content mismatch; it is not final acceptance.",
+  "newModelRequestsByThisRead": 0,
+  "case": {
+    "id": "c31b01e8-cce4-4b85-afec-9ed75a2e4565",
+    "status": "closed",
+    "decision": {
+      "status": "declined",
+      "note": "产品验收记录：本虚构事项因相关方身份资料缺失且最新公开来源未完成查询，演示选择不承接并结束本轮审查。未核实事项及旧核查原样保留，不认定无利益冲突。",
+      "reviewer": "演示审查人",
+      "revision": 8,
+      "recordedAt": "2026-10-30T12:03:51.617Z"
+    },
+    "blockers": [
+      "「HSBC BANK PLC」来源核查失败",
+      "「澄川科技有限公司（虚构，资料待补）」身份未确认"
+    ]
+  },
+  "runs": [
+    {
+      "id": "be2484b6-57cb-4c93-bd0f-43c23666b8bf",
+      "createdAt": "2026-10-30T12:02:45.024Z",
+      "status": "failed",
+      "error": "GLEIF 查询失败：fetch failed (UND_ERR_CONNECT_TIMEOUT)",
+      "context": "虚构验收场景：拟委托人寻求跨境融资专项服务，工作仅涵盖本次担保文件审查，不包含银行日常监管咨询。请重点提示与既有监管咨询委托范围是否重叠、既往集团事项保密义务是否需要核实。另一相关方尚未提交登记资料。",
+      "jurisdiction": "中国香港（事项背景）",
+      "traces": [
+        {
+          "id": "12bc98d2-6c03-4e3e-9871-a1fb054815c0",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "error",
+          "initiator": "rules",
+          "durationMs": 10519,
+          "error": "GLEIF 查询失败：fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+        }
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。",
+        "核心核查失败：GLEIF 查询失败：fetch failed (UND_ERR_CONNECT_TIMEOUT)"
+      ],
+      "hasStructuredBrief": false
+    },
+    {
+      "id": "e3ebaea7-a328-429b-84e3-3c9b2e9266e7",
+      "createdAt": "2026-10-30T12:02:03.158Z",
+      "status": "failed",
+      "error": "GLEIF 请求超时（20 秒）",
+      "context": "虚构验收场景：拟委托人寻求跨境融资专项服务，工作仅涵盖本次担保文件审查，不包含银行日常监管咨询。请重点提示与既有监管咨询委托范围是否重叠、既往集团事项保密义务是否需要核实。另一相关方尚未提交登记资料。",
+      "jurisdiction": "中国香港（事项背景）",
+      "traces": [
+        {
+          "id": "e1a5a78a-3a84-4153-b1dc-67c3d499d7ad",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "error",
+          "initiator": "rules",
+          "durationMs": 20008,
+          "error": "GLEIF 请求超时（20 秒）"
+        }
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。",
+        "核心核查失败：GLEIF 请求超时（20 秒）"
+      ],
+      "hasStructuredBrief": false
+    },
+    {
+      "id": "175f14ad-11b5-4281-bf47-60d5bb6f4764",
+      "createdAt": "2026-10-30T12:00:30.585Z",
+      "status": "partial",
+      "modelExecution": {
+        "status": "failed",
+        "model": "deepseek-flash",
+        "toolCallCount": 0,
+        "rounds": 1,
+        "error": "模型工具调用超过本次核查上限"
+      },
+      "context": "虚构验收场景：拟委托人寻求跨境融资专项服务，工作仅涵盖本次担保文件审查，不包含银行日常监管咨询。请重点提示与既有监管咨询委托范围是否重叠、既往集团事项保密义务是否需要核实。另一相关方尚未提交登记资料。",
+      "jurisdiction": "中国香港（事项背景）",
+      "traces": [
+        {
+          "id": "bffbd408-175d-400d-ac3a-92f536729eb1",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 5922
+        },
+        {
+          "id": "01040627-369d-4391-91e2-cbc2c9cb7f20",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "args": {
+            "name": "HSBC BANK PLC",
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 8
+        },
+        {
+          "id": "0f7e7653-c46e-4e0c-a3a0-2042446d8b21",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 6960
+        },
+        {
+          "id": "29489c78-3470-47ab-a0a9-b0c6f4487d5d",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "args": {
+            "name": "HSBC HOLDINGS PLC",
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 1
+        }
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。",
+        "模型工具核查未完成：模型工具调用超过本次核查上限"
+      ],
+      "hasStructuredBrief": false
+    },
+    {
+      "id": "0ef2be6a-bded-4385-a4b4-ddf38a8e8ef1",
+      "createdAt": "2026-10-30T11:57:59.262Z",
+      "status": "completed",
+      "modelExecution": {
+        "status": "completed",
+        "model": "deepseek-flash",
+        "toolCallCount": 3,
+        "rounds": 2
+      },
+      "context": "虚构验收场景：拟委托人寻求跨境融资专项服务，工作仅涵盖本次担保文件审查，不包含银行日常监管咨询。请重点提示与既有监管咨询委托范围是否重叠、既往集团事项保密义务是否需要核实。另一相关方尚未提交登记资料。",
+      "jurisdiction": "中国香港（事项背景）",
+      "traces": [
+        {
+          "id": "72f33f63-a72c-4a57-8d6d-273a5e0d60c9",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 5128
+        },
+        {
+          "id": "575a2ba4-434d-4498-88bc-5aa74fca5ded",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "args": {
+            "name": "HSBC BANK PLC",
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 8
+        },
+        {
+          "id": "6c568725-bcd4-4c04-a0ba-4c24f4164e68",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 4258
+        },
+        {
+          "id": "0de398ed-e150-4e91-b701-75539126f92c",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "args": {
+            "name": "HSBC HOLDINGS PLC",
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "status": "success",
+          "initiator": "rules",
+          "durationMs": 1
+        },
+        {
+          "id": "ed1f7ad6-09bf-4e56-9e7f-70904fb5925e",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "model",
+          "durationMs": 2732
+        },
+        {
+          "id": "5c133936-cf6e-40ec-9126-180c49712700",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "status": "success",
+          "initiator": "model",
+          "durationMs": 501
+        },
+        {
+          "id": "7e9349da-9888-4c86-8002-31da198a0e09",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54",
+            "name": "HSBC BANK PLC"
+          },
+          "status": "success",
+          "initiator": "model",
+          "durationMs": 1
+        }
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。"
+      ],
+      "hasStructuredBrief": true
+    }
+  ]
+}

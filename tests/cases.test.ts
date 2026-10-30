@@ -500,3 +500,154 @@ test("case HTTP routes validate input, expose aggregate state and return a Markd
     f.cleanup();
   }
 });
+
+test("retained findings can complete a review without being dismissed; escalations still block", () => {
+  const f = fixture((i) => ({ findings: [finding(i.entity, "escalated")] }));
+  try {
+    let view = f.cases.create(input());
+    const review = new ScreeningService(f.store, {} as ConnectorManager);
+    assert.equal(view.progress.pendingFindings, 1);
+    assert.throws(() =>
+      review.review(
+        view.runs[0].id,
+        view.runs[0].findings[0].id,
+        "retained",
+        "",
+      ),
+    );
+    review.review(
+      view.runs[0].id,
+      view.runs[0].findings[0].id,
+      "retained",
+      "演示核实：保留相关委托问题，处理依据另见总意见",
+    );
+    view = f.cases.get(view.id);
+    assert.equal(view.progress.pendingFindings, 0);
+    assert.ok(view.blockers.length, "Evidence tasks remain mandatory");
+    for (const task of view.tasks)
+      view = f.cases.updateTask(view.id, task.id, {
+        status: "resolved",
+        note: "已核对限定资料",
+        reference: "虚构材料 A-01",
+      });
+    view = f.cases.recordDecision(view.id, {
+      status: "review-recorded",
+      note: "相关问题已核实并保留，不代表批准收案",
+      reviewer: "测试律师",
+    });
+    assert.equal(view.status, "recorded");
+    assert.equal(view.runs[0].findings[0].review, "retained");
+    assert.match(caseReport(view), /已复核，保留问题/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("declining closes an incomplete review without clearing blockers, and new evidence reopens it", () => {
+  const f = fixture((i) => ({ findings: [finding(i.entity)] }));
+  try {
+    const data = input();
+    data.parties.push({
+      id: "unknown",
+      name: "身份未确认公司",
+      role: "担保方",
+      confirmed: false,
+    });
+    let view = f.cases.create(data);
+    const blockers = view.blockers;
+    view = f.cases.recordDecision(view.id, {
+      status: "declined",
+      note: "测试决定：资料不足，本轮不承接",
+      reviewer: "测试律师",
+    });
+    assert.equal(view.status, "closed");
+    assert.deepEqual(view.blockers, blockers);
+    assert.equal(view.progress.confirmed, 1);
+    assert.match(caseReport(view), /不视为核查通过/);
+    view = f.cases.retryParty(view.id, "client");
+    assert.notEqual(view.status, "closed");
+    assert.equal(view.decision.status, "draft");
+    assert.equal(view.decision.note, "测试决定：资料不足，本轮不承接");
+    assert.ok(view.decision.invalidatedAt);
+    assert.ok(view.activity.some((a) => a.type === "decision-invalidated"));
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("running evidence cannot be closed; stale revisions cannot overwrite evidence or decisions", () => {
+  const running = fixture(() => ({ status: "running" }));
+  try {
+    const view = running.cases.create(input());
+    assert.throws(
+      () =>
+        running.cases.recordDecision(view.id, {
+          status: "declined",
+          note: "测试不承接",
+          reviewer: "测试律师",
+        }),
+      statusError(409),
+    );
+  } finally {
+    running.cleanup();
+  }
+  const f = fixture((i) => ({ findings: [finding(i.entity)] }));
+  try {
+    let view = f.cases.create(input());
+    const oldRevision = view.revision;
+    view = f.cases.updateTask(view.id, view.tasks[0].id, {
+      status: "open",
+      note: "未完成材料草稿",
+      reference: "",
+      expectedRevision: oldRevision,
+    });
+    assert.equal(view.tasks[0].status, "open");
+    assert.equal(view.tasks[0].note, "未完成材料草稿");
+    assert.throws(
+      () =>
+        f.cases.recordDecision(view.id, {
+          status: "draft",
+          note: "旧版本意见",
+          reviewer: "",
+          expectedRevision: oldRevision,
+        }),
+      statusError(409),
+    );
+    assert.throws(
+      () =>
+        f.cases.updateTask(view.id, view.tasks[0].id, {
+          status: "open",
+          note: "覆盖尝试",
+          reference: "",
+          expectedRevision: oldRevision,
+        }),
+      statusError(409),
+    );
+    assert.equal(f.cases.get(view.id).tasks[0].note, "未完成材料草稿");
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("matter context reaches each run, and updating evidence retains an existing opinion draft", () => {
+  const f = fixture((i) => ({ findings: [finding(i.entity)] }));
+  try {
+    let view = f.cases.create(input());
+    assert.equal(view.runs[0].context, input().context);
+    assert.equal(view.runs[0].jurisdiction, input().jurisdiction);
+    view = f.cases.recordDecision(view.id, {
+      status: "draft",
+      note: "尚未写完的专业意见",
+      reviewer: "测试律师",
+    });
+    view = f.cases.updateTask(view.id, view.tasks[0].id, {
+      status: "open",
+      note: "新的补证草稿",
+      reference: "",
+    });
+    assert.equal(view.decision.note, "尚未写完的专业意见");
+    assert.equal(view.decision.reviewer, "测试律师");
+  } finally {
+    f.cleanup();
+  }
+});
