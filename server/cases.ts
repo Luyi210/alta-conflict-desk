@@ -101,6 +101,10 @@ const stableTaskId = (kind: CaseTask["kind"], key: string) =>
 const now = () => new Date().toISOString();
 
 export class CaseService {
+  private extraBlockers: (caseId: string) => string[] = () => [];
+  setExtraBlockers(provider: (caseId: string) => string[]) {
+    this.extraBlockers = provider;
+  }
   constructor(
     private store: Store,
     private screening: ScreeningService,
@@ -501,7 +505,7 @@ export class CaseService {
     return [...tasks.values()];
   }
   private view(file: CaseFile, runs: Run[]): CaseView {
-    const blockers: string[] = [];
+    const blockers: string[] = this.extraBlockers(file.id);
     for (const party of file.parties) {
       if (!party.confirmed || !party.entity) {
         blockers.push(`「${party.name}」身份未确认`);

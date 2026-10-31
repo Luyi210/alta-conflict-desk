@@ -88,3 +88,10 @@
 ## 2026-10-31 · v0.5
 
 本机 5178 页面实际完成材料 MCP 连接、虚构示例导入、版本授权、DeepSeek 两页真实调用、引用定位、关联补证摘录保存、通过上传文件入口加入修订版、回看旧原文和下载报告。首次文件选择器自动化节点失效，重试后实际上传成功；详见 PRODUCT-EXPERIENCE-V5.md。390px 测量匹配页及已打开 PDF 的材料页均为 documentWidth=390，视口已恢复。桌面截图保存 v5-material-library.png、v5-match-explanation.png、v5-model-receipt.png；移动截图 v5-mobile-materials.png。匹配表文字换行、调用凭证数据源名称经浏览器验证修正。未制作新视频。
+
+
+## 2026-10-31 · v0.6
+
+浏览器建立任务来源问题，关联真实 v1 引用，查看实际 MCP 双版本对照，添加 v2 矛盾依据并确认影响，保存虚构验收意见且保留历史。模型实跑两次格式失败后修复，最终 4 次真实 MCP 读取、3 个问题成功，并将其中客户边界问题及 4 条引用加入工作台。未决问题与草稿状态保留，未批准收案。
+
+通过导出链接下载实际 DOCX，逐页渲染检查另见 PRODUCT-EXPERIENCE-V6.md。390×844 下问题清单、版本对照、原文弹窗的 documentWidth 均为 390；测试 Escape 关闭与 MCP 凭证查看，已恢复默认视口。截图 v6-issues.png、v6-changes.png、v6-ai-comparison.png、v6-mobile-issues.png。实际比较按页码，不声称条款语义对齐；视频继续暂缓。

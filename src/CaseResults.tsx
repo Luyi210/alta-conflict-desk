@@ -25,6 +25,7 @@ import "./review-refinements.css";
 import { useReviewDraft } from "./useReviewDraft";
 import type { CaseTab } from "./navigation";
 import MaterialDesk from "./MaterialDesk";
+import IssueDesk from "./IssueDesk";
 
 const date = (value: string) =>
   new Date(value).toLocaleString("zh-CN", { hour12: false });
@@ -437,6 +438,7 @@ export default function CaseResults({
           {
             label: "补证与复核",
             done:
+              !value.blockers.length &&
               !value.progress.openTasks &&
               !value.progress.pendingFindings &&
               value.status !== "running",
@@ -519,7 +521,9 @@ export default function CaseResults({
                   ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
                   : value.progress.openTasks
                     ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
-                    : "记录本轮审查总意见"}
+                    : value.blockers.some((b) => b.includes("审查问题"))
+                      ? "继续处理审查问题与材料变化"
+                      : "记录本轮审查总意见"}
             </strong>
             <p>
               {value.status === "recorded"
@@ -537,7 +541,9 @@ export default function CaseResults({
                   ? "parties"
                   : value.progress.openTasks
                     ? "tasks"
-                    : "review",
+                    : value.blockers.some((b) => b.includes("审查问题"))
+                      ? "issues"
+                      : "review",
               )
             }
           >
@@ -574,6 +580,7 @@ export default function CaseResults({
           [
             ["parties", "主体与线索", Users],
             ["materials", "材料与原文", FileCheck2],
+            ["issues", "审查问题", FileCheck2],
             ["tasks", `补证清单 · ${value.progress.openTasks}`, FileCheck2],
             ["review", "案件总意见", Check],
             ["activity", "操作记录", History],
@@ -742,6 +749,14 @@ export default function CaseResults({
       {tab === "materials" && (
         <MaterialDesk
           key={value.id}
+          matter={value}
+          onUpdate={onUpdate}
+          onError={onError}
+          onTrace={onTrace}
+        />
+      )}
+      {tab === "issues" && (
+        <IssueDesk
           matter={value}
           onUpdate={onUpdate}
           onError={onError}

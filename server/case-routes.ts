@@ -2,10 +2,12 @@ import { Router } from "express";
 import { CaseService } from "./cases.ts";
 import { caseReport } from "./case-report.ts";
 import type { MaterialService } from "./material-service.ts";
+import type { IssueService } from "./issue-service.ts";
 
 export function createCaseRouter(
   cases: CaseService,
   materials?: MaterialService,
+  issues?: IssueService,
 ) {
   const router = Router();
   router.get("/", (_req, res) => res.json({ cases: cases.list() }));
@@ -28,7 +30,11 @@ export function createCaseRouter(
     res
       .type("text/markdown; charset=utf-8")
       .set("Content-Disposition", `attachment; filename="case-${file.id}.md"`)
-      .send(caseReport(file) + (materials?.report(file.id) || ""));
+      .send(
+        caseReport(file) +
+          (materials?.report(file.id) || "") +
+          (issues?.markdown(file.id) || ""),
+      );
   });
   return router;
 }

@@ -418,3 +418,124 @@ test("model uses actual scoped MCP pages; fabricated quotes and unrelated trace 
     await f.close();
   }
 });
+
+test("malformed model JSON gets one bounded repair with original MCP evidence; repeated malformed output stays failed", async () => {
+  const f = fixture();
+  const oldFetch = globalThis.fetch;
+  const oldEnv = {
+    MODEL_API_KEY: process.env.MODEL_API_KEY,
+    MODEL_NAME: process.env.MODEL_NAME,
+    MODEL_BASE_URL: process.env.MODEL_BASE_URL,
+  };
+  try {
+    Object.assign(process.env, {
+      MODEL_API_KEY: "unit-test-only",
+      MODEL_NAME: "mock-material-model",
+      MODEL_BASE_URL: "https://api.deepseek.com",
+    });
+    const m = await f.service.upload(f.a.id, "虚构格式校验材料", original);
+    await f.connectors.connect("documents");
+    f.service.permit(f.a.id, m.id, true);
+    for (const malformed of ["syntax", "schema", "persistent"]) {
+      const repairSucceeds = malformed !== "persistent";
+      let calls = 0;
+      globalThis.fetch = (async (_url, options) => {
+        const body = JSON.parse(options!.body as string);
+        calls++;
+        if (calls === 1) {
+          assert.equal(body.response_format, undefined);
+          assert.equal(body.tool_choice, "required");
+          return Response.json({
+            choices: [
+              {
+                message: {
+                  role: "assistant",
+                  content: null,
+                  tool_calls: [1, 2].map((page) => ({
+                    id: `format-${page}`,
+                    type: "function",
+                    function: {
+                      name: "read_material_page",
+                      arguments: JSON.stringify({ versionId: m.id, page }),
+                    },
+                  })),
+                },
+              },
+            ],
+          });
+        }
+        assert.equal(body.tool_choice, "none");
+        assert.equal(body.response_format.type, "json_object");
+        const result = JSON.parse(
+          body.messages.find((x: any) => x.role === "tool").content,
+        );
+        let content =
+          calls === 2 || !repairSucceeds
+            ? '{"items":['
+            : JSON.stringify({
+                items: [
+                  {
+                    question: "签署范围是否已经核对？",
+                    citations: [
+                      {
+                        versionId: m.id,
+                        page: 1,
+                        quote:
+                          "The firm advises on banking regulatory filings only.",
+                        traceId: result.traceId,
+                      },
+                    ],
+                  },
+                ],
+              });
+        if (calls === 2 && malformed === "schema")
+          content = JSON.stringify({
+            items: [
+              {
+                question: "缺少凭证字段",
+                citations: [
+                  {
+                    versionId: m.id,
+                    page: 1,
+                    quote:
+                      "The firm advises on banking regulatory filings only.",
+                  },
+                ],
+              },
+            ],
+          });
+        return Response.json({
+          choices: [{ message: { role: "assistant", content } }],
+        });
+      }) as typeof fetch;
+      f.service.start(f.a.id, {
+        versionIds: [m.id],
+        question: "测试输出格式恢复",
+      });
+      const deadline = Date.now() + 10000;
+      while (
+        f.service.snapshot(f.a.id).reviews[0].status === "running" &&
+        Date.now() < deadline
+      )
+        await new Promise((r) => setTimeout(r, 20));
+      const result = f.service.snapshot(f.a.id).reviews[0];
+      assert.equal(calls, 3);
+      assert.equal(result.formatRetries, 1);
+      assert.equal(result.traces.length, 2);
+      assert.equal(result.rounds, 3);
+      assert.equal(result.status, repairSucceeds ? "completed" : "failed");
+      if (repairSucceeds) assert.equal(result.items.length, 1);
+      else {
+        assert.equal(result.items.length, 0);
+        assert.match(result.error!, /格式校验未通过/);
+      }
+    }
+  } finally {
+    globalThis.fetch = oldFetch;
+    for (const [k, v] of Object.entries(oldEnv)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+    await f.close();
+  }
+});

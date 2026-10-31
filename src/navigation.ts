@@ -7,7 +7,13 @@ export type Page =
   | "connectors"
   | "history"
   | "about";
-export type CaseTab = "parties" | "tasks" | "review" | "activity" | "materials";
+export type CaseTab =
+  | "parties"
+  | "tasks"
+  | "review"
+  | "activity"
+  | "materials"
+  | "issues";
 export type Route = {
   page: Page;
   caseId?: string;
@@ -22,7 +28,14 @@ const pages: Record<string, Page> = {
   history: "history",
   about: "about",
 };
-const tabs: CaseTab[] = ["parties", "tasks", "review", "activity", "materials"];
+const tabs: CaseTab[] = [
+  "parties",
+  "tasks",
+  "review",
+  "activity",
+  "materials",
+  "issues",
+];
 export function parseRoute(hash: string): Route {
   const [path, query] = hash.replace(/^#\/?/, "").split("?");
   const parts = path.split("/");

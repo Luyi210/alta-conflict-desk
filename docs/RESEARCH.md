@@ -109,6 +109,14 @@ SDK 当前 `main` 已是 v2，使用拆分的 `@modelcontextprotocol/server` 与
 
 如果后续实施实际复制或移植了任何代码，应在交付前更新本节，注明仓库、提交/版本、文件、修改范围及保留的许可声明。
 
+## v0.6 实际复用：文字比较与 Word
+
+- [kpdecker/jsdiff](https://github.com/kpdecker/jsdiff)：实际使用 `diffLines` 比较 PDF 提取页的行级变化；设置时间/编辑预算，超过预算显示整页对照。BSD-3-Clause，未复制业务 UI。它不理解条款效力，也不自动对应重排页面。
+- [docx 官方文档](https://docx.js.org/)与[API](https://docx.js.org/api/modules/index.html)：实际采用 npm `docx` 生成可编辑段落、表格、页码与样式。MIT。Word 导出为本地函数，不需要外部文档账户。没有复用第三方律师意见模板。
+- [DeepSeek JSON Output](https://api-docs.deepseek.com/guides/json_mode/)：按官方文档在最终整理阶段使用 `json_object`，同时保留本项目的 schema、真实引用校验及一次格式重试。仅对已知官方主机附加 JSON 参数，其他兼容服务需自行验证。
+
+本轮未重新统计 GitHub stars，不以历史星数宣称当前热度。实际依赖版本及使用边界见许可清单。
+
 ## v0.5 实际复用：PDF.js
 
 2026-10-31 阅读 [Mozilla PDF.js 官方仓库](https://github.com/mozilla/pdf.js)，新增 `pdfjs-dist` 6.4.299（Apache-2.0）。直接复用 PDF 加载、页文本提取和 canvas 渲染；没有复制其完整 viewer UI。版本指纹、案件范围、模型工具权限和引用校验由本原型实现。OpenContracts 仍为证据定位与审阅思路参考，没有引入其后端或前端组件。曾查看 pdf-lib，但未安装或复用，因此不将其列作实际依赖。

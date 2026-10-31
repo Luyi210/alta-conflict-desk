@@ -20,6 +20,8 @@ import { createToolDeskRouter } from "./tool-routes.ts";
 import type { ConnectorId, Entity } from "../shared/types.ts";
 import { MaterialService } from "./material-service.ts";
 import { materialRouter } from "./material-routes.ts";
+import { IssueService } from "./issue-service.ts";
+import { issueRouter } from "./issue-routes.ts";
 
 export function createBackend(dir = dataDir) {
   const app = express();
@@ -31,6 +33,7 @@ export function createBackend(dir = dataDir) {
   const cases = new CaseService(store, screening);
   const toolDesk = new ToolDeskService(store, connectors);
   const materials = new MaterialService(dir, cases, connectors, store);
+  const issues = new IssueService(cases, materials);
   app.disable("x-powered-by");
   app.use((req, res, next) => {
     if (!["127.0.0.1", "localhost", "[::1]"].includes(req.hostname)) {
@@ -122,7 +125,8 @@ export function createBackend(dir = dataDir) {
     res.type("text/markdown").send(report(run));
   });
   app.use("/api/cases/:id/materials", materialRouter(materials));
-  app.use("/api/cases", createCaseRouter(cases, materials));
+  app.use("/api/cases/:id/issues", issueRouter(issues));
+  app.use("/api/cases", createCaseRouter(cases, materials, issues));
   app.use("/api/tool-desk", createToolDeskRouter(toolDesk));
   app.use("/api", (_req, res) => res.status(404).json({ error: "API 不存在" }));
   const dist = resolve(fileURLToPath(new URL("../", import.meta.url)), "dist");
@@ -169,6 +173,7 @@ export function createBackend(dir = dataDir) {
     cases,
     toolDesk,
     materials,
+    issues,
     async close() {
       await screening.close();
       await toolDesk.close();

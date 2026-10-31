@@ -137,10 +137,54 @@ export async function reviewMaterials(
   ];
   const used = new Set<string>();
   let requests = 0;
+  let formatRetries = 0;
+  let finalInstructionsSent = false;
   for (let round = 0; round < 5; round++) {
     assertAccess();
     review.rounds = round + 1;
     progress();
+    const allPagesRead = materials.every((m) =>
+      Array.from({ length: m.pageCount }, (_, n) => n + 1).every((page) =>
+        review.traces.some(
+          (t) =>
+            t.status === "success" &&
+            t.args.versionId === m.id &&
+            t.args.page === page,
+        ),
+      ),
+    );
+    if (allPagesRead && !finalInstructionsSent) {
+      finalInstructionsSent = true;
+      messages.push({
+        role: "user",
+        content: JSON.stringify({
+          instruction:
+            "所有选定页已实际读取。现在输出最多3个待核实问题的JSON，不新增工具调用。每条citations必须包含versionId、page、quote、traceId四个字段，traceId从下方实际凭证索引复制，quote从对应页原文连续摘录，不得改写。所有选定版本至少引用一次。不需要输出工具索引本身。",
+          format: {
+            items: [
+              {
+                question: "待核实问题",
+                citations: [
+                  {
+                    versionId: "版本UUID",
+                    page: 1,
+                    quote: "原文连续摘录",
+                    traceId: "该页实际读取凭证UUID",
+                  },
+                ],
+              },
+            ],
+          },
+          evidenceIndex: review.traces
+            .filter((t) => t.status === "success")
+            .map((t) => ({
+              versionId: t.args.versionId,
+              page: t.args.page,
+              traceId: t.id,
+            })),
+        }),
+      });
+    }
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -151,7 +195,12 @@ export async function reviewMaterials(
         model: modelName(),
         messages,
         tools: [tool],
-        tool_choice: round === 0 ? "required" : "auto",
+        tool_choice: allPagesRead ? "none" : "required",
+        max_tokens: 6000,
+        ...(allPagesRead &&
+        ["api.deepseek.com", "api.openai.com"].includes(url.hostname)
+          ? { response_format: { type: "json_object" } }
+          : {}),
         ...(url.hostname === "api.deepseek.com"
           ? { thinking: { type: "disabled" } }
           : {}),
@@ -209,10 +258,26 @@ export async function reviewMaterials(
         });
         continue;
       }
-      review.items = validateMaterialOutput(
-        JSON.parse(message.content || ""),
-        review,
-      );
+      let output: unknown;
+      try {
+        output = JSON.parse(message.content || "");
+        outputSchema.parse(output);
+      } catch {
+        if (formatRetries++ === 0 && round < 4) {
+          review.formatRetries = formatRetries;
+          progress();
+          messages.push({
+            role: "user",
+            content:
+              "上轮返回不是合法 JSON、内容为空或缺少必填字段。请使用已有工具结果重新输出规定的 JSON 对象，正确转义字符串中的引号；每条引用必须包含versionId、page、quote、traceId（复制实际凭证索引）。不加代码围栏，不新增读取，不改写原文引用。最多 3 个待核实问题，仍须引用所有选定版本。",
+          });
+          continue;
+        }
+        throw new Error(
+          "模型结果格式校验未通过，已保留原文读取凭证。请重新运行分析。",
+        );
+      }
+      review.items = validateMaterialOutput(output, review);
       assertAccess();
       return;
     }

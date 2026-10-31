@@ -1,0 +1,159 @@
+{
+  "verifiedAt": "2026-10-31T11:52:39.368Z",
+  "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+  "caseRevision": 13,
+  "verificationBasis": "Read-only local records: same-case current/historical quotes, immutable PDF hashes, opinion version snapshots and validated completed comparison outputs. Not legal validation or provider billing verification.",
+  "newModelRequests": 0,
+  "decisionStatus": "draft",
+  "issues": [
+    {
+      "id": "27b6753f-770d-4457-98b2-3bb6e5d2c651",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "title": "客户边界与保密义务是否覆盖拟委托主体？",
+      "category": "boundary",
+      "partyIds": [
+        "aca6a590-eb88-4b17-bbcf-d9c4668c72b8",
+        "59370c64-e1c4-4a2a-8c9d-cffd068d82e0"
+      ],
+      "sourceKey": "ai:4ed65372-2601-42ad-9196-06207bbc9026:2",
+      "owner": "测试复核人（虚构验收）",
+      "missing": "待取得签署版本，核对实际客户主体、关联方范围及保密义务。内置材料为未签署的虚构示例，不能据此作收案判断。",
+      "note": "功能验收：由本轮真实 AI 双版本分析加入，四条原文引用已随问题留存，尚待人工复核。",
+      "status": "open",
+      "citations": [
+        {
+          "id": "f6be8d39-691b-42cd-9955-eba5d7307184",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 1,
+          "quote": "HSBC BANK PLC | LEI MP6I5ZYZBEU3UXPYFY54",
+          "relation": "context"
+        },
+        {
+          "id": "6e541025-c29a-4124-b73f-6b3b2142058e",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 1,
+          "quote": "This engagement does not automatically extend to affiliates.",
+          "relation": "context"
+        },
+        {
+          "id": "c4140c05-1e91-4ccf-b3dc-cbdf1e2b7814",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 2,
+          "quote": "Client information remains confidential after the matter closes.",
+          "relation": "context"
+        },
+        {
+          "id": "6af21a57-624f-4025-b1c7-18a48cfbc0e8",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 2,
+          "quote": "This unsigned sample is not proof of any actual engagement.",
+          "relation": "context"
+        }
+      ],
+      "reviews": [],
+      "revision": 2,
+      "createdAt": "2026-10-31T11:51:35.791Z",
+      "updatedAt": "2026-10-31T11:51:43.937Z"
+    },
+    {
+      "id": "602a7e34-d5f1-4363-86a3-1a335add518c",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "title": "核实委托范围 · DEMO-2026-014",
+      "category": "scope",
+      "partyIds": [
+        "aca6a590-eb88-4b17-bbcf-d9c4668c72b8",
+        "59370c64-e1c4-4a2a-8c9d-cffd068d82e0"
+      ],
+      "taskId": "scope-4e40087843ab66349b2c",
+      "sourceKey": "task:scope-4e40087843ab66349b2c",
+      "owner": "测试复核人（虚构验收）",
+      "missing": "",
+      "note": "仅供软件验收的虚构记录：已对照 v1 与 v2 第 1 页。v1 排除融资文件服务，v2 纳入融资文件，谈判仍排除；旧版范围不能直接用于当前判断。本次只完成版本差异记录，签署效力、实际授权及收案判断仍保留在原补证任务中。",
+      "status": "resolved",
+      "citations": [
+        {
+          "id": "141e2d6f-39aa-4847-bcf8-6a700d9c5c34",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 1,
+          "quote": "Financing documentation and transaction negotiations are excluded.",
+          "relation": "support"
+        },
+        {
+          "id": "bab78354-a91e-444a-9c17-cfe8523402b6",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 1,
+          "quote": "The firm advises on regulatory filings and financing documentation.",
+          "relation": "contradict"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "8ef632b3-1537-4bd2-936a-f5c66f3ace62",
+          "at": "2026-10-31T11:49:53.753Z",
+          "reviewer": "测试复核人（虚构验收）",
+          "note": "仅供软件验收的虚构记录：已对照 v1 与 v2 第 1 页。v1 排除融资文件服务，v2 纳入融资文件，谈判仍排除；旧版范围不能直接用于当前判断。本次只完成版本差异记录，签署效力、实际授权及收案判断仍保留在原补证任务中。",
+          "basis": [
+            {
+              "id": "141e2d6f-39aa-4847-bcf8-6a700d9c5c34",
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "Financing documentation and transaction negotiations are excluded.",
+              "relation": "support"
+            },
+            {
+              "id": "bab78354-a91e-444a-9c17-cfe8523402b6",
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 1,
+              "quote": "The firm advises on regulatory filings and financing documentation.",
+              "relation": "contradict"
+            }
+          ],
+          "versions": [
+            {
+              "documentId": "1bcca843-e5e4-416c-9652-73262598c124",
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "sha256": "656d8290d6eb7c9d3108b3a5479c39377dbb167e8c5cb577ea2e7ed2e599579d"
+            }
+          ]
+        }
+      ],
+      "revision": 5,
+      "createdAt": "2026-10-31T11:43:03.820Z",
+      "updatedAt": "2026-10-31T11:49:53.753Z"
+    }
+  ],
+  "comparisonAttempts": [
+    {
+      "id": "4ed65372-2601-42ad-9196-06207bbc9026",
+      "createdAt": "2026-10-31T11:50:49.655Z",
+      "status": "completed",
+      "model": "deepseek-flash",
+      "rounds": 2,
+      "formatRetries": 0,
+      "modelToolCalls": 4,
+      "questions": 3
+    },
+    {
+      "id": "d6904e37-491c-44a9-b8dc-9f5621f9ff34",
+      "createdAt": "2026-10-31T11:49:13.338Z",
+      "status": "failed",
+      "model": "deepseek-flash",
+      "rounds": 2,
+      "formatRetries": 0,
+      "modelToolCalls": 4,
+      "questions": 0,
+      "error": "[\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      0,\n      \"citations\",\n      0,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      0,\n      \"citations\",\n      1,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      0,\n      \"citations\",\n      2,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      0,\n      \"citations\",\n      3,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      1,\n      \"citations\",\n      0,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      1,\n      \"citations\",\n      1,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      1,\n      \"citations\",\n      2,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      2,\n      \"citations\",\n      0,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      2,\n      \"citations\",\n      1,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      2,\n      \"citations\",\n      2,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      2,\n      \"citations\",\n      3,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      3,\n      \"citations\",\n      0,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      3,\n      \"citations\",\n      1,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      3,\n      \"citations\",\n      2,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      4,\n      \"citations\",\n      0,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      4,\n      \"citations\",\n      1,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      4,\n      \"citations\",\n      2,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"items\",\n      4,\n      \"citations\",\n      3,\n      \"traceId\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"
+    },
+    {
+      "id": "823daabd-b284-4b85-994a-93365123061e",
+      "createdAt": "2026-10-31T11:43:31.655Z",
+      "status": "failed",
+      "model": "deepseek-flash",
+      "rounds": 2,
+      "formatRetries": 0,
+      "modelToolCalls": 4,
+      "questions": 0,
+      "error": "Expected ',' or '}' after property value in JSON at position 783 (line 1 column 784)"
+    }
+  ]
+}
