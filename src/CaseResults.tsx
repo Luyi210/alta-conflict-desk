@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Users,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import type {
   CaseDecision,
@@ -23,6 +24,7 @@ import { api, ApiError, post } from "./api";
 import { caseState, IdentityPicker } from "./CaseWorkspace";
 import "./case-workbench.css";
 import "./review-refinements.css";
+import "./case-focus.css";
 import { useReviewDraft } from "./useReviewDraft";
 import type { CaseTab } from "./navigation";
 import MaterialDesk from "./MaterialDesk";
@@ -382,6 +384,7 @@ export default function CaseResults({
   onError: (message: string) => void;
 }) {
   const setTab = onTabChange;
+  const [showFlow, setShowFlow] = useState(false);
   const [resolving, setResolving] = useState<CaseParty>();
   const [busy, setBusy] = useState("");
   async function retry(party: CaseParty) {
@@ -401,7 +404,9 @@ export default function CaseResults({
   }
   const pending = value.progress.pendingFindings;
   return (
-    <div className="page-enter case-results">
+    <div
+      className={`page-enter case-results ${tab === "assistant" ? "case-results-focus" : ""}`}
+    >
       <button className="back-link" onClick={onBack}>
         <ArrowLeft size={15} /> 返回收案工作台
       </button>
@@ -419,51 +424,70 @@ export default function CaseResults({
             · {date(value.createdAt)}
           </p>
         </div>
-        <a
-          className="btn secondary"
-          href={`/api/cases/${value.id}/report`}
-          download
-        >
-          <Download size={16} /> 导出案件记录
-        </a>
-      </div>
-      <nav className="case-progress-rail" aria-label="案件处理进度">
-        {[
-          {
-            label: "身份确认",
-            done: value.progress.confirmed === value.progress.total,
-            target: "parties" as const,
-          },
-          {
-            label: "证据核查",
-            done: value.progress.completed === value.progress.total,
-            target: "parties" as const,
-          },
-          {
-            label: "补证与复核",
-            done:
-              !value.blockers.length &&
-              !value.progress.openTasks &&
-              !value.progress.pendingFindings &&
-              value.status !== "running",
-            target: "tasks" as const,
-          },
-          {
-            label: "记录总意见",
-            done: value.status === "recorded" || value.status === "closed",
-            target: "review" as const,
-          },
-        ].map((stage, index, all) => (
-          <button
-            key={stage.label}
-            className={`${stage.done ? "complete" : ""} ${!stage.done && value.status !== "closed" && value.status !== "recorded" && all.slice(0, index).every((s) => s.done) ? "current" : ""}`}
-            onClick={() => setTab(stage.target)}
+        <div className="case-heading-actions">
+          {tab === "assistant" && (
+            <button
+              className="case-flow-toggle"
+              aria-expanded={showFlow}
+              aria-controls="case-progress-rail"
+              onClick={() => setShowFlow(!showFlow)}
+            >
+              {showFlow ? "收起案件流程" : "查看案件流程"}
+              <ChevronDown size={13} />
+            </button>
+          )}
+          <a
+            className="btn secondary"
+            href={`/api/cases/${value.id}/report`}
+            download
           >
-            <span>{stage.done ? <Check size={13} /> : index + 1}</span>
-            {stage.label}
-          </button>
-        ))}
-      </nav>
+            <Download size={16} /> 导出案件记录
+          </a>
+        </div>
+      </div>
+      {(tab !== "assistant" || showFlow) && (
+        <nav
+          id="case-progress-rail"
+          className="case-progress-rail"
+          aria-label="案件处理进度"
+        >
+          {[
+            {
+              label: "身份确认",
+              done: value.progress.confirmed === value.progress.total,
+              target: "parties" as const,
+            },
+            {
+              label: "证据核查",
+              done: value.progress.completed === value.progress.total,
+              target: "parties" as const,
+            },
+            {
+              label: "补证与复核",
+              done:
+                !value.blockers.length &&
+                !value.progress.openTasks &&
+                !value.progress.pendingFindings &&
+                value.status !== "running",
+              target: "tasks" as const,
+            },
+            {
+              label: "记录总意见",
+              done: value.status === "recorded" || value.status === "closed",
+              target: "review" as const,
+            },
+          ].map((stage, index, all) => (
+            <button
+              key={stage.label}
+              className={`${stage.done ? "complete" : ""} ${!stage.done && value.status !== "closed" && value.status !== "recorded" && all.slice(0, index).every((s) => s.done) ? "current" : ""}`}
+              onClick={() => setTab(stage.target)}
+            >
+              <span>{stage.done ? <Check size={13} /> : index + 1}</span>
+              {stage.label}
+            </button>
+          ))}
+        </nav>
+      )}
       {tab !== "assistant" && (
         <div className="case-summary-strip">
           <div>

@@ -1,0 +1,123 @@
+/* A compact matter header leaves the first screen to actual review work. */
+#main-content:has(> .case-results-focus) {
+  padding: 22px 28px 35px;
+}
+.case-results-focus.page-enter {
+  animation: none;
+}
+.case-results-focus .back-link {
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.case-results-focus .page-heading {
+  margin-bottom: 16px;
+  gap: 20px;
+  align-items: center;
+}
+.case-results-focus .page-heading .eyebrow {
+  margin-bottom: 6px;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+.case-results-focus .page-heading h1 {
+  font-size: 23px;
+  line-height: 1.4;
+}
+.case-results-focus .page-heading p {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #7b8975;
+}
+.case-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.case-heading-actions > .btn {
+  white-space: nowrap;
+}
+.case-results-focus .case-heading-actions > .btn {
+  padding: 9px 11px;
+  font-size: 11px;
+}
+.case-flow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #7e8d71;
+  padding: 8px 0;
+}
+.case-results-focus .case-tabs {
+  margin: 0 0 17px;
+  gap: 24px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.case-results-focus .case-tabs button {
+  padding: 12px 0;
+  font-size: 12px;
+  gap: 7px;
+}
+.case-results-focus .case-tabs svg {
+  width: 14px;
+}
+.case-results-focus .case-progress-rail {
+  margin: 0 0 14px;
+  background: #f0f4e9;
+  border-radius: 6px;
+}
+.case-results-focus .case-progress-rail button {
+  padding: 10px 8px;
+}
+@media (max-width: 1100px) {
+  .case-results-focus .page-heading {
+    align-items: flex-start;
+  }
+  .case-results-focus .page-heading h1 {
+    font-size: 21px;
+  }
+  .case-heading-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+  }
+  .case-results-focus .case-tabs {
+    gap: 20px;
+  }
+}
+@media (max-width: 700px) {
+  #main-content:has(> .case-results-focus) {
+    padding: 18px 18px 28px;
+  }
+  .case-results-focus .page-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 11px;
+    margin-bottom: 8px;
+  }
+  .case-results-focus .page-heading h1 {
+    font-size: 21px;
+  }
+  .case-results-focus .page-heading p {
+    font-size: 10px;
+  }
+  .case-results-focus .case-heading-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .case-results-focus .case-heading-actions > .btn {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+  .case-results-focus .case-tabs {
+    gap: 19px;
+    margin-bottom: 15px;
+  }
+  .case-results-focus .case-tabs button {
+    font-size: 11px;
+    padding: 12px 0;
+  }
+}

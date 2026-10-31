@@ -3,26 +3,26 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
-  Clipboard,
   FileSearch,
   Layers,
   LoaderCircle,
   Play,
   RefreshCw,
   Sparkles,
-  X,
+  Plus,
+  ChevronRight,
+  FileText,
+  ListChecks,
+  ShieldCheck,
 } from "lucide-react";
-import type {
-  AssistantAction,
-  AssistantRun,
-  AssistantSnapshot,
-} from "../shared/assistant";
+import type { AssistantRun, AssistantSnapshot } from "../shared/assistant";
 import type { CaseView, Trace } from "../shared/types";
-import { issueCategories, issueStates } from "../shared/issues";
+import { issueCategories } from "../shared/issues";
 import type { MaterialCitation, MaterialPage } from "../shared/materials";
 import type { CaseTab } from "./navigation";
 import { api, post } from "./api";
-import { useReviewDraft } from "./useReviewDraft";
+import AssistantDraft from "./AssistantDraft";
+import ReviewDrawer from "./ReviewDrawer";
 import "./assistant.css";
 const PdfPage = lazy(() => import("./PdfPage"));
 const presets = [
@@ -63,14 +63,16 @@ export default function AssistantDesk({
   const [runId, setRunId] = useState("");
   const [active, setActive] = useState(0);
   const [briefOpen, setBriefOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [detail, setDetail] = useState<"overview" | "sources" | "draft">(
+    "overview",
+  );
+  const [quote, setQuote] = useState("");
+  const sourceTrigger = useRef<HTMLElement | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [source, setSource] = useState<{ data: MaterialPage; trace: Trace }>();
-  const sourcePanel = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (source) sourcePanel.current?.focus();
-  }, [source]);
   async function load() {
     const next = await api<AssistantSnapshot>(base);
     setData(next);
@@ -165,12 +167,16 @@ export default function AssistantDesk({
       });
       setRunId(next.id);
       setActive(0);
+      setDetail("overview");
       setSource(undefined);
+      setSetupOpen(false);
       await load();
     });
   }
   async function openSource(c: MaterialCitation) {
+    sourceTrigger.current = document.activeElement as HTMLElement | null;
     await work("source", async () => {
+      setQuote(c.quote);
       setSource(
         await api(
           `/cases/${matter.id}/materials/${c.versionId}/pages/${c.page}`,
@@ -178,36 +184,52 @@ export default function AssistantDesk({
       );
     });
   }
+  const action = run?.status === "completed" ? run.actions[active] : undefined;
+  const adoptedCount = run ? Object.keys(run.applications).length : 0;
+  const receipts =
+    run?.traces.filter((t) => t.status === "success").length || 0;
+  const changeAction = (index: number) => {
+    setActive(index);
+    setDetail("overview");
+  };
   return (
     <div className="assistant-desk">
-      <section className="assistant-hero">
-        <div>
-          <span className="eyebrow small">
-            <Sparkles size={14} /> MATTER INTELLIGENCE
+      <section className="review-hero">
+        <div className="review-hero-title">
+          <span className="review-emblem">
+            <Sparkles size={24} strokeWidth={1.3} />
           </span>
-          <h2>把材料，变成下一步行动。</h2>
-          <p>基于本案原文提出核实建议，准备补证草稿，交由你判断和采用。</p>
+          <div>
+            <span className="review-kicker">MATTER INTELLIGENCE</span>
+            <h2>审查行动台</h2>
+            <p>从核实依据，到下一份工作草稿。</p>
+          </div>
         </div>
-        <div className="assistant-totals">
+        <div className="review-hero-metrics">
           <button onClick={() => onTab("issues")}>
             <strong>{pending.length.toString().padStart(2, "0")}</strong>
             <span>
-              未决审查问题 <ArrowRight size={12} />
+              未决问题 <ChevronRight size={12} />
             </span>
           </button>
           <button onClick={() => onTab("issues")}>
             <strong>{changed.length.toString().padStart(2, "0")}</strong>
             <span>
-              材料变化待复核 <ArrowRight size={12} />
+              版本待复核 <ChevronRight size={12} />
             </span>
           </button>
         </div>
+        <button className="review-new-task" onClick={() => setSetupOpen(true)}>
+          <Plus size={16} />
+          {running ? "查看运行范围" : "发起新分析"}
+        </button>
       </section>
-      {error && (
+      {error && !setupOpen && (
         <div className="assistant-alert" role="alert">
           {error}
           <button onClick={() => void load().catch((e) => setError(e.message))}>
-            <RefreshCw size={14} /> 刷新状态
+            <RefreshCw size={14} />
+            刷新状态
           </button>
         </div>
       )}
@@ -220,316 +242,444 @@ export default function AssistantDesk({
           </button>
         </div>
       )}
-      <div className="assistant-layout">
-        <section className="assistant-results" aria-label="行动建议结果">
-          <div className="assistant-section-head">
-            <h3>
-              本轮行动建议 <span>AI 草稿</span>
-            </h3>
-            {data.runs.length > 0 && (
-              <select
-                aria-label="查看历史建议"
-                value={run?.id}
-                onChange={(e) => {
-                  setRunId(e.target.value);
-                  setActive(0);
-                  setSource(undefined);
-                }}
-              >
-                {data.runs.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {new Date(r.createdAt).toLocaleString("zh-CN", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    ·{" "}
-                    {
-                      {
-                        running: "生成中",
-                        completed: "已完成",
-                        failed: "未完成",
-                      }[r.status]
-                    }
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          {!run && (
-            <div className="assistant-empty">
-              <div className="assistant-empty-icon">
-                <Layers size={30} />
-              </div>
-              <h3>先明确问题，再准备行动</h3>
-              <p>
-                选定材料后，AI
-                会逐页读取原文，把待核实的问题、补证清单和请求草稿放在一起。
-              </p>
-              <ol>
-                <li>
-                  <b>01</b>
-                  <div>
-                    <strong>关联已有案件信息</strong>
-                    <span>复用主体、委托背景与未决问题。</span>
-                  </div>
-                </li>
-                <li>
-                  <b>02</b>
-                  <div>
-                    <strong>读取授权材料</strong>
-                    <span>每个引用保留版本、页码和调用凭证。</span>
-                  </div>
-                </li>
-                <li>
-                  <b>03</b>
-                  <div>
-                    <strong>形成可编辑草稿</strong>
-                    <span>采用后继续在审查问题中处理。</span>
-                  </div>
-                </li>
-              </ol>
-            </div>
-          )}
-          {run?.status === "running" && (
-            <div className="assistant-progress" role="status">
-              <LoaderCircle className="spin" size={26} />
-              <h3>
-                {run.traces.length
-                  ? "正在结合原文整理核实行动"
-                  : "正在请求模型读取授权材料"}
-              </h3>
-              <p>
-                已取得 {run.traces.filter((t) => t.status === "success").length}{" "}
-                次读取凭证 · 模型第 {run.rounds || 1} 轮
-              </p>
-              <div className="assistant-progress-line" />
-              <small>可以切换页面；完成后结果会保存在本案。</small>
-            </div>
-          )}
-          {run?.status === "failed" && (
-            <div className="assistant-alert assistant-failed" role="alert">
-              <h3>这轮建议未能完成</h3>
-              <p>{run.error}</p>
-              <span>
-                已保留 {run.traces.length} 条调用记录。检查后可从右侧重新生成。
-              </span>
-            </div>
-          )}
+      {stale && run?.status === "completed" && (
+        <div className="assistant-alert">
+          案件资料已变化，本轮建议仅供回看。
+          <button onClick={() => setSetupOpen(true)}>
+            基于当前材料重新分析 <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+      <div className="review-toolbar">
+        <div>
+          <span
+            className={`review-status-dot ${run?.status === "completed" ? "complete" : ""}`}
+          />
+          <strong>
+            {run?.status === "completed"
+              ? "本轮核实行动"
+              : run?.status === "running"
+                ? "正在准备行动建议"
+                : "审查工作区"}
+          </strong>
           {run?.status === "completed" && (
-            <>
-              {stale && (
-                <div className="assistant-alert">
-                  案件资料已变化。这轮建议保留供回看，重新生成后才能采用。
+            <span className="review-pill">
+              {run.actions.length} 项建议 · {adoptedCount} 项草稿已采用
+            </span>
+          )}
+        </div>
+        <div>
+          {run && (
+            <span className="review-run-basis">
+              依据修订 {run.caseRevision}
+            </span>
+          )}
+          {data.runs.length > 0 && (
+            <select
+              aria-label="查看历史建议"
+              value={run?.id}
+              onChange={(e) => {
+                setRunId(e.target.value);
+                setActive(0);
+                setDetail("overview");
+                setBriefOpen(false);
+              }}
+            >
+              {data.runs.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {new Date(r.createdAt).toLocaleString("zh-CN", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}{" "}
+                  ·{" "}
+                  {
+                    {
+                      running: "生成中",
+                      completed: "已完成",
+                      failed: "未完成",
+                    }[r.status]
+                  }
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+      {run?.status === "completed" && action ? (
+        <div className="review-workspace">
+          <aside className="review-index">
+            <div className="review-index-label">
+              <ListChecks size={14} />
+              <span>行动目录</span>
+              <small>{String(run.actions.length).padStart(2, "0")}</small>
+            </div>
+            <nav aria-label="行动建议目录">
+              {run.actions.map((a, index) => (
+                <button
+                  key={index}
+                  className={`review-index-item ${index === active ? "selected" : ""}`}
+                  aria-current={index === active ? "true" : undefined}
+                  aria-label={`查看行动 ${index + 1}：${a.title}`}
+                  onClick={() => changeAction(index)}
+                >
+                  <span className="review-index-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <span className="review-index-meta">
+                      <span
+                        className={
+                          a.priority === "first" ? "priority-first" : ""
+                        }
+                      >
+                        {a.priority === "first" ? "优先核实" : "随后核实"}
+                      </span>
+                      {run.applications[index] && (
+                        <span className="review-adopted">
+                          <Check size={11} />
+                          已采用
+                        </span>
+                      )}
+                    </span>
+                    <strong>{a.title}</strong>
+                    <small>
+                      {issueCategories[a.category]}
+                      <span>·</span>
+                      {a.citations.length} 处依据
+                    </small>
+                  </div>
+                  <ChevronRight size={14} />
+                </button>
+              ))}
+            </nav>
+            <div className="review-brief">
+              <button
+                aria-expanded={briefOpen}
+                onClick={() => setBriefOpen(!briefOpen)}
+              >
+                <span>
+                  <Sparkles size={13} />
+                  本轮摘要
+                </span>
+                <ChevronDown size={14} />
+              </button>
+              <p className={briefOpen ? "" : "review-clamp"}>{run.summary}</p>
+            </div>
+            <div className="review-proof">
+              <ShieldCheck size={17} />
+              <div>
+                <strong>{receipts} 次真实工具读取</strong>
+                <span>
+                  {run.versionIds.length} 个材料版本 · {run.model}
+                </span>
+              </div>
+            </div>
+          </aside>
+          <section
+            className="review-detail"
+            aria-label={`行动 ${active + 1} 的详情`}
+          >
+            <header className="review-detail-head">
+              <div className="review-detail-meta">
+                <span className="review-kicker">
+                  ACTION {String(active + 1).padStart(2, "0")} /{" "}
+                  {String(run.actions.length).padStart(2, "0")}
+                </span>
+                <span
+                  className={`review-pill ${action.priority === "first" ? "warm" : ""}`}
+                >
+                  {action.priority === "first" ? "优先核实" : "随后核实"}
+                </span>
+                <span>{issueCategories[action.category]}</span>
+              </div>
+              <h3>{action.title}</h3>
+              <div className="review-party-chips">
+                {action.partyIds.map((id) => (
+                  <span key={id}>
+                    {matter.parties.find((p) => p.id === id)?.name}
+                  </span>
+                ))}
+              </div>
+            </header>
+            <div className="review-detail-tabs" aria-label="查看行动内容">
+              {(
+                [
+                  ["overview", "核实要点", ListChecks],
+                  [
+                    "sources",
+                    `原文依据 · ${action.citations.length}`,
+                    FileSearch,
+                  ],
+                  ["draft", "补证草稿", FileText],
+                ] as const
+              ).map(([id, label, Icon]) => (
+                <button
+                  key={id}
+                  aria-pressed={detail === id}
+                  className={detail === id ? "active" : ""}
+                  onClick={() => setDetail(id)}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="review-detail-content">
+              {detail === "overview" && (
+                <>
+                  <section className="review-reason">
+                    <span className="review-section-number">01</span>
+                    <div>
+                      <h4>为什么需要核实</h4>
+                      <p>{action.reason}</p>
+                    </div>
+                  </section>
+                  <section className="review-missing">
+                    <div>
+                      <Layers size={16} />
+                      <h4>需要补齐什么</h4>
+                      <span>待核实</span>
+                    </div>
+                    <p>
+                      {run.adoptedDrafts?.[active]?.missing || action.missing}
+                    </p>
+                  </section>
+                  {action.targetIssueId && (
+                    <button
+                      className="review-linked"
+                      onClick={() => onTab("issues")}
+                    >
+                      <FileText size={15} />
+                      <span>
+                        <small>关联已有审查问题</small>
+                        {
+                          data.issues.find((i) => i.id === action.targetIssueId)
+                            ?.title
+                        }
+                      </span>
+                      <ArrowRight size={15} />
+                    </button>
+                  )}
+                  <div className="review-mini-sources">
+                    <div>
+                      <h4>依据入口</h4>
+                      <button onClick={() => setDetail("sources")}>
+                        查看全部引用 <ArrowRight size={13} />
+                      </button>
+                    </div>
+                    {action.citations.map((c, n) => {
+                      const m = data.materials.find(
+                        (m) => m.id === c.versionId,
+                      );
+                      return (
+                        <button
+                          key={n}
+                          disabled={busy === "source"}
+                          onClick={() => void openSource(c)}
+                        >
+                          <span className="review-source-number">{n + 1}</span>
+                          <span>
+                            {m?.title}
+                            <small>
+                              v{m?.version} · 第 {c.page} 页
+                            </small>
+                          </span>
+                          <FileSearch size={14} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+              {detail === "sources" && (
+                <div className="review-source-cards">
+                  <p className="review-section-note">
+                    每处引用保留实际读取的版本与页码，可打开 PDF 核对上下文。
+                  </p>
+                  {action.citations.map((c, n) => {
+                    const m = data.materials.find((m) => m.id === c.versionId);
+                    return (
+                      <article className="review-source-card" key={n}>
+                        <header>
+                          <span className="review-source-number">
+                            {String(n + 1).padStart(2, "0")}
+                          </span>
+                          <div>
+                            <strong>{m?.title}</strong>
+                            <small>
+                              v{m?.version} · 第 {c.page} 页 ·{" "}
+                              {m?.latest ? "最新版本" : "历史版本"}
+                            </small>
+                          </div>
+                          <span
+                            className="review-quote-mark"
+                            aria-hidden="true"
+                          >
+                            “
+                          </span>
+                        </header>
+                        <blockquote>{c.quote}</blockquote>
+                        <button
+                          disabled={busy === "source"}
+                          onClick={() => void openSource(c)}
+                        >
+                          <FileSearch size={14} />
+                          打开原文核对 <ArrowRight size={14} />
+                        </button>
+                      </article>
+                    );
+                  })}
                 </div>
               )}
-              <div className="assistant-summary">
-                <span className="eyebrow small">
-                  REVIEW BRIEF · 修订 {run.caseRevision}
+              {detail === "draft" && (
+                <AssistantDraft
+                  key={`${run.id}:${active}`}
+                  action={{ ...action, ...run.adoptedDrafts?.[active] }}
+                  draftKey={`${matter.id}:${run.id}:${active}`}
+                  adopted={Boolean(run.applications[active])}
+                  disabled={Boolean(stale || busy || running)}
+                  onError={onError}
+                  onApply={async (draft) => {
+                    await work("apply", async () => {
+                      const out = await post<{ snapshot: AssistantSnapshot }>(
+                        `${base}/runs/${run.id}/apply`,
+                        {
+                          index: active,
+                          expectedRevision: data.caseRevision,
+                          ...draft,
+                        },
+                      );
+                      setData(out.snapshot);
+                      setNotice(
+                        "草稿与依据已带入审查问题，原记录保留，仍待复核。",
+                      );
+                      onUpdate(await api<CaseView>(`/cases/${matter.id}`));
+                    });
+                  }}
+                />
+              )}
+            </div>
+            {detail !== "draft" && (
+              <footer className="review-detail-footer">
+                <span>
+                  <ShieldCheck size={14} />
+                  AI 建议 · 待律师复核
                 </span>
-                <p className={briefOpen ? "" : "assistant-brief-collapsed"}>
-                  {run.summary}
-                </p>
                 <button
-                  className="assistant-text-link"
-                  aria-expanded={briefOpen}
-                  onClick={() => setBriefOpen(!briefOpen)}
+                  className="btn primary"
+                  onClick={() => setDetail("draft")}
                 >
-                  {briefOpen ? "收起摘要" : "展开完整摘要"}
-                  <ChevronDown size={12} />
+                  {run.applications[active] ? "查看已采用草稿" : "编辑补证草稿"}
+                  <ArrowRight size={14} />
                 </button>
-                <div>
-                  <span>
-                    <Check size={12} />{" "}
-                    {run.traces.filter((t) => t.status === "success").length}{" "}
-                    次真实读取
-                  </span>
-                  <span>{run.versionIds.length} 个材料版本</span>
-                  <span>{run.model}</span>
-                </div>
+              </footer>
+            )}
+          </section>
+        </div>
+      ) : (
+        <section className="review-welcome">
+          <div className="review-welcome-symbol">
+            <Layers size={38} strokeWidth={1} />
+          </div>
+          <span className="review-kicker">EVIDENCE TO ACTION</span>
+          <h3>
+            {run?.status === "running"
+              ? "正在从材料中整理核实行动"
+              : run?.status === "failed"
+                ? "本轮分析尚未完成"
+                : "让下一步工作，有据可循。"}
+          </h3>
+          {run?.status === "running" ? (
+            <>
+              <LoaderCircle className="spin" size={21} />
+              <p role="status">
+                模型第 {run.rounds || 1} 轮 · 已取得 {receipts} 次读取凭证
+              </p>
+              <p className="review-section-note">
+                可以离开此页，结果会保存在本案。
+              </p>
+            </>
+          ) : run?.status === "failed" ? (
+            <>
+              <p role="alert">{run.error}</p>
+              <p className="review-section-note">
+                {run.traces.length} 条调用记录已保留，可在下方检查。
+              </p>
+              <button
+                className="btn primary"
+                onClick={() => setSetupOpen(true)}
+              >
+                检查范围并重新分析 <ArrowRight size={14} />
+              </button>
+            </>
+          ) : (
+            <>
+              <p>结合本案背景与授权材料，准备核实顺序、原文依据和补证草稿。</p>
+              <div className="review-welcome-steps">
+                <span>
+                  <b>01</b>选择材料
+                </span>
+                <ChevronRight size={13} />
+                <span>
+                  <b>02</b>读取与分析
+                </span>
+                <ChevronRight size={13} />
+                <span>
+                  <b>03</b>复核并采用
+                </span>
               </div>
-              <div className="assistant-actions">
-                {run.actions.map((a, index) => (
-                  <article
-                    key={`${run.id}:${index}`}
-                    className={`assistant-action ${active === index ? "is-active" : ""}`}
-                  >
-                    <button
-                      className="assistant-action-heading"
-                      aria-expanded={active === index}
-                      onClick={() => setActive(active === index ? -1 : index)}
-                    >
-                      <span className="assistant-number">0{index + 1}</span>
-                      <div>
-                        <div className="assistant-action-meta">
-                          <span
-                            className={
-                              a.priority === "first" ? "priority-first" : ""
-                            }
-                          >
-                            {a.priority === "first" ? "优先核实" : "随后核实"}
-                          </span>
-                          <span>{issueCategories[a.category]}</span>
-                          {run.applications[index] && (
-                            <span className="assistant-adopted">
-                              <Check size={11} />
-                              已采用
-                            </span>
-                          )}
-                        </div>
-                        <h4>{a.title}</h4>
-                      </div>
-                      <ChevronDown size={16} />
-                    </button>
-                    {active === index && (
-                      <div className="assistant-action-body">
-                        <p className="assistant-reason">{a.reason}</p>
-                        <div className="assistant-parties">
-                          {a.partyIds.map((id) => (
-                            <span key={id}>
-                              {matter.parties.find((p) => p.id === id)?.name}
-                            </span>
-                          ))}
-                        </div>
-                        {a.targetIssueId && (
-                          <p className="assistant-target">
-                            关联已有问题：
-                            {
-                              data.issues.find((i) => i.id === a.targetIssueId)
-                                ?.title
-                            }
-                          </p>
-                        )}
-                        <div className="assistant-source-list">
-                          <h5>
-                            原文依据 <span>{a.citations.length} 处</span>
-                          </h5>
-                          {a.citations.map((c, n) => {
-                            const m = data.materials.find(
-                              (m) => m.id === c.versionId,
-                            );
-                            return (
-                              <div className="assistant-citation" key={n}>
-                                <div>
-                                  <span>
-                                    {m?.title} · v{m?.version} · 第 {c.page} 页
-                                  </span>
-                                  <button
-                                    disabled={busy === "source"}
-                                    onClick={() => void openSource(c)}
-                                  >
-                                    <FileSearch size={13} /> 查看原文
-                                  </button>
-                                </div>
-                                <blockquote>{c.quote}</blockquote>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <ActionDraft
-                          key={`${run.id}:${index}`}
-                          action={{ ...a, ...run.adoptedDrafts?.[index] }}
-                          draftKey={`${matter.id}:${run.id}:${index}`}
-                          adopted={Boolean(run.applications[index])}
-                          disabled={Boolean(stale || busy || running)}
-                          onApply={async (draft) => {
-                            await work("apply", async () => {
-                              const out = await post<{
-                                snapshot: AssistantSnapshot;
-                              }>(`${base}/runs/${run.id}/apply`, {
-                                index,
-                                expectedRevision: data.caseRevision,
-                                ...draft,
-                              });
-                              setData(out.snapshot);
-                              setNotice(
-                                "补证草稿与原文依据已带入审查问题，状态为复核中。原有文字和处理记录保留。",
-                              );
-                              onUpdate(
-                                await api<CaseView>(`/cases/${matter.id}`),
-                              );
-                            });
-                          }}
-                          onError={onError}
-                        />
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
+              <button
+                className="btn primary"
+                onClick={() => setSetupOpen(true)}
+              >
+                开始一次材料分析 <Plus size={15} />
+              </button>
             </>
           )}
-          {run && run.traces.length > 0 && (
-            <details className="assistant-traces">
-              <summary>查看工具调用记录 · {run.traces.length} 次</summary>
+        </section>
+      )}
+      <div className="review-bottom-bar">
+        <span>建议顺序不代表法律风险评级；采用后仍需律师复核。</span>
+        {run && run.traces.length > 0 && (
+          <details className="review-receipts">
+            <summary>
+              工具读取凭证 <span>{run.traces.length}</span>
+              <ChevronDown size={13} />
+            </summary>
+            <div>
               {run.traces.map((t, i) => (
                 <button key={t.id} onClick={() => onTrace(t)}>
-                  <span>
-                    {String(i + 1).padStart(2, "0")} · 读取第{" "}
-                    {String(t.args.page)} 页
-                  </span>
+                  <span>{String(i + 1).padStart(2, "0")}</span>
                   <span>
                     {
                       data.materials.find((m) => m.id === t.args.versionId)
                         ?.title
-                    }{" "}
-                    · {t.status === "success" ? "成功" : "失败"}
+                    }
+                    <small>
+                      第 {String(t.args.page)} 页 ·{" "}
+                      {t.status === "success" ? "读取成功" : "读取失败"}
+                    </small>
                   </span>
                   <ArrowRight size={13} />
                 </button>
               ))}
-            </details>
-          )}
-          <p className="assistant-footnote">
-            优先级仅表示建议的工作顺序。采用前可逐处核对原文，建议是否成立及补证内容仍需律师判断。
-          </p>
-        </section>
-        <aside className="assistant-aside">
-          {source && (
-            <section
-              className="assistant-source-preview"
-              ref={sourcePanel}
-              tabIndex={-1}
-              aria-label="原文预览"
-            >
-              <div className="assistant-section-head">
-                <h3>原文核对 · 第 {source.data.page} 页</h3>
-                <button
-                  aria-label="关闭原文预览"
-                  onClick={() => setSource(undefined)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <p>
-                {source.data.material.title} · v{source.data.material.version}
-              </p>
-              <Suspense fallback={<p>正在载入原文…</p>}>
-                <PdfPage
-                  url={`/api/cases/${matter.id}/materials/${source.data.material.id}/pdf`}
-                  page={source.data.page}
-                />
-              </Suspense>
-              <details>
-                <summary>查看提取文字</summary>
-                <pre>{source.data.text}</pre>
-              </details>
-              <button
-                className="assistant-text-link"
-                onClick={() => onTrace(source.trace)}
-              >
-                查看本次原文读取凭证 <ArrowRight size={13} />
-              </button>
-              <a
-                className="assistant-text-link"
-                href={`/api/cases/${matter.id}/materials/${source.data.material.id}/pdf#page=${source.data.page}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                打开完整 PDF <ArrowRight size={13} />
-              </a>
-            </section>
+            </div>
+          </details>
+        )}
+      </div>
+      {setupOpen && (
+        <ReviewDrawer
+          title="新建材料分析"
+          subtitle="选择本轮目标和材料，确认后开始读取。"
+          onClose={() => setSetupOpen(false)}
+        >
+          {error && (
+            <div className="assistant-alert" role="alert">
+              {error}
+            </div>
           )}
           <section className="assistant-setup">
             <div className="assistant-section-head">
@@ -680,136 +830,55 @@ export default function AssistantDesk({
                   : "生成行动建议"}
             </button>
           </section>
-          <section className="assistant-context">
-            <div className="assistant-section-head">
-              <h3>已有审查问题</h3>
-              <button onClick={() => onTab("issues")} aria-label="打开审查问题">
-                <ArrowRight size={16} />
-              </button>
-            </div>
-            {data.issues.length ? (
-              data.issues.map((i) => (
-                <button
-                  key={i.id}
-                  className="assistant-context-row"
-                  onClick={() => onTab("issues")}
-                >
-                  <span
-                    className={`assistant-dot ${i.effectiveStatus === "resolved" ? "done" : ""}`}
-                  />
-                  <div>
-                    <strong>{i.title}</strong>
-                    <small>
-                      {issueStates[i.effectiveStatus]} · {i.citations.length}{" "}
-                      处依据{i.owner ? ` · ${i.owner}` : " · 未分配责任人"}
-                    </small>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <p>暂无审查问题，采用建议后会建立带依据的复核草稿。</p>
-            )}
-          </section>
-        </aside>
-      </div>
-    </div>
-  );
-}
-
-function ActionDraft({
-  action,
-  draftKey,
-  adopted,
-  disabled,
-  onApply,
-  onError,
-}: {
-  action: AssistantAction;
-  draftKey: string;
-  adopted: boolean;
-  disabled: boolean;
-  onApply: (d: { missing: string; request: string }) => Promise<void>;
-  onError: (s: string) => void;
-}) {
-  const draft = useReviewDraft(`assistant:${draftKey}`, {
-    missing: action.missing,
-    request: action.request,
-  });
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="assistant-draft">
-      <div className="assistant-section-head">
-        <h5>补证工作草稿</h5>
-        <span>可编辑 · 未发送</span>
-      </div>
-      <label className="assistant-field">
-        待补材料与信息
-        <textarea
-          rows={3}
-          value={adopted ? action.missing : draft.value.missing}
-          maxLength={1500}
-          disabled={adopted || disabled}
-          onChange={(e) =>
-            draft.setValue({ ...draft.value, missing: e.target.value })
-          }
-        />
-      </label>
-      <label className="assistant-field">
-        补证请求正文
-        <textarea
-          rows={6}
-          value={adopted ? action.request : draft.value.request}
-          maxLength={1800}
-          disabled={adopted || disabled}
-          onChange={(e) => {
-            setCopied(false);
-            draft.setValue({ ...draft.value, request: e.target.value });
-          }}
-        />
-      </label>
-      <div className="assistant-draft-actions">
-        <button
-          className="btn secondary"
-          onClick={() =>
-            void navigator.clipboard
-              .writeText(adopted ? action.request : draft.value.request)
-              .then(() => setCopied(true))
-              .catch(() => onError("复制失败，请选中正文手动复制。"))
-          }
+        </ReviewDrawer>
+      )}
+      {source && (
+        <ReviewDrawer
+          title="原文核对"
+          subtitle={`${source.data.material.title} · v${source.data.material.version} · 第 ${source.data.page} 页`}
+          onClose={() => setSource(undefined)}
+          returnFocus={sourceTrigger.current}
+          wide
         >
-          {copied ? <Check size={14} /> : <Clipboard size={14} />}
-          {copied ? "已复制正文" : "复制正文"}
-        </button>
-        <button
-          className="btn primary"
-          disabled={
-            disabled ||
-            adopted ||
-            draft.value.missing.trim().length < 2 ||
-            draft.value.request.trim().length < 2
-          }
-          onClick={() => void onApply(draft.value)}
-        >
-          {adopted ? <Check size={14} /> : <ArrowRight size={14} />}
-          {adopted
-            ? "已带入审查问题"
-            : action.targetIssueId
-              ? "补充到已有问题"
-              : "采用为审查问题"}
-        </button>
-      </div>
-      <p>
-        {action.targetIssueId
-          ? "采用后追加到已有问题，保留原文字和意见历史。"
-          : "采用后建立复核中的问题，并附上上述原文依据。"}
-        不会自动解决问题或确认收案。
-      </p>
-      {draft.dirty && !adopted && (
-        <small className="draft-status">
-          {draft.storageAvailable
-            ? "草稿已在当前标签页暂存"
-            : "当前浏览器无法暂存，请采用或复制后离开"}
-        </small>
+          <div className="review-source-toolbar">
+            <span>
+              <FileText size={14} />
+              不可覆盖的材料版本
+            </span>
+            <a
+              href={`/api/cases/${matter.id}/materials/${source.data.material.id}/pdf#page=${source.data.page}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              打开完整 PDF <ArrowRight size={13} />
+            </a>
+          </div>
+          <blockquote className="review-selected-quote">
+            <span>本次引用</span>
+            {quote}
+          </blockquote>
+          <Suspense fallback={<p role="status">正在载入原文页面…</p>}>
+            <PdfPage
+              url={`/api/cases/${matter.id}/materials/${source.data.material.id}/pdf`}
+              page={source.data.page}
+            />
+          </Suspense>
+          <div className="review-source-tools">
+            <button
+              onClick={() => {
+                const trace = source.trace;
+                setSource(undefined);
+                onTrace(trace);
+              }}
+            >
+              查看本次读取凭证 <ArrowRight size={13} />
+            </button>
+            <details>
+              <summary>查看提取文字</summary>
+              <pre>{source.data.text}</pre>
+            </details>
+          </div>
+        </ReviewDrawer>
       )}
     </div>
   );
