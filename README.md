@@ -1,12 +1,16 @@
-# Alta Conflict Desk · v0.8
+# Alta Conflict Desk · v0.9
 
 面向律所收案环节的主体识别与潜在利益冲突核查原型。围绕一个具体问题：**新事项各方及其公开披露的母公司，是否出现在本所事项台账中；还有哪些身份、委托范围与保密义务需要律师核实？**
+
+v0.9 新增「审查总览」数据大屏：墨绿与香槟金视觉、案件阶段环图、材料变化提醒、连接状态、可筛选工作队列、7／30 天真实留存调用趋势。支持全屏、30 秒自动刷新与暂停，点击进入对应案件处理。启动后打开 `/#/overview`，或点击侧栏「审查总览」。[本轮功能与统计口径](docs/PRODUCT-EXPERIENCE-V9.md)；65 项测试及生产构建通过。本轮只聚合已有记录，不新增模型调用。
+
+![v0.9 审查总览](docs/screenshots/v9-overview-1080p.png)
 
 v0.8 将 AI 审查助理改为「审查行动台」：左侧行动目录、右侧核实要点／原文依据／补证草稿；新分析与 PDF 核对在侧栏完成。压缩案件抬头、按需展开进度，保留草稿和历史分析；桌面、平板、手机经过浏览器检查。详见 [界面与交互升级](docs/PRODUCT-EXPERIENCE-V8.md)。本轮不新增模型调用，沿用 v0.7 的真实结果。
 
 ![v0.8 审查行动台](docs/screenshots/v8-review-desk.png)
 
-v0.7 新增真实 AI 审查助理：DeepSeek 经 2 轮、4 次模型 MCP 读取，生成 3 项带原文引用的行动；浏览器完成编辑、复制并采用到已有问题。首次失败记录保留，见 [功能说明](docs/PRODUCT-EXPERIENCE-V7.md)与[只读核验](docs/V7-ASSISTANT-VERIFICATION.json)。当前 62 项回归测试和生产构建通过。v0.6 的问题建立、版本影响、人工处理与 [Word 下载](docs/V6-REVIEW-MEMO.docx)保留为历史验收，各版本调用数分别计证。
+v0.7 新增真实 AI 审查助理：DeepSeek 经 2 轮、4 次模型 MCP 读取，生成 3 项带原文引用的行动；浏览器完成编辑、复制并采用到已有问题。首次失败记录保留，见 [功能说明](docs/PRODUCT-EXPERIENCE-V7.md)与[只读核验](docs/V7-ASSISTANT-VERIFICATION.json)。v0.7 的 62 项回归测试和生产构建通过。v0.6 的问题建立、版本影响、人工处理与 [Word 下载](docs/V6-REVIEW-MEMO.docx)保留为历史验收，各版本调用数分别计证。
 
 v0.5 增加案件材料与原文复核：真实 PDF 导入、原文页预览、按版本授权 AI、带页码和 MCP 凭证的核实问题、不可覆盖的版本及摘录留存；主体匹配新增 LEI、名称、辖区逐字段解释。详见 [v0.5 功能与验收](docs/PRODUCT-EXPERIENCE-V5.md)。
 

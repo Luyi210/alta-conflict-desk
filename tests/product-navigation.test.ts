@@ -12,6 +12,9 @@ test("case deep links retain the parent, run and review tab; malformed IDs canno
   };
   assert.deepEqual(parseRoute(routeHash(route)), route);
   assert.deepEqual(parseRoute("#/new"), { page: "new" });
+  assert.deepEqual(parseRoute(routeHash({ page: "overview" })), {
+    page: "overview",
+  });
   assert.deepEqual(parseRoute("#/runs/previous-run"), {
     page: "workspace",
     runId: "previous-run",

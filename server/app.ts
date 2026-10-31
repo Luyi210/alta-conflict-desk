@@ -24,6 +24,7 @@ import { IssueService } from "./issue-service.ts";
 import { issueRouter } from "./issue-routes.ts";
 import { AssistantService } from "./assistant-service.ts";
 import { assistantRouter } from "./assistant-routes.ts";
+import { buildOverview } from "./overview.ts";
 
 export function createBackend(dir = dataDir) {
   const app = express();
@@ -84,6 +85,38 @@ export function createBackend(dir = dataDir) {
   app.post("/api/connectors/:id/connect", async (req, res) =>
     res.json(await connectors.connect(id(req.params.id))),
   );
+  app.get("/api/overview", (req, res) => {
+    const days =
+      req.query.days === undefined || req.query.days === "7"
+        ? 7
+        : req.query.days === "30"
+          ? 30
+          : null;
+    if (!days) throw new HttpError(400, "观察窗口仅支持 7 或 30 天");
+    const matters = cases.list().map((matter) => {
+      const snapshot = materials.snapshot(matter.id);
+      return {
+        matter,
+        materials: snapshot.materials,
+        reviews: snapshot.reviews,
+        issues: issues.list(matter.id),
+        assistants: assistant.snapshot(matter.id).runs,
+      };
+    });
+    res.json(
+      buildOverview(
+        {
+          matters,
+          runs: store.list(),
+          manualTraces: toolDesk
+            .snapshot()
+            .calls.flatMap((c) => (c.trace ? [c.trace] : [])),
+          connectors: connectors.list(),
+        },
+        days,
+      ),
+    );
+  });
   app.post("/api/connectors/:id/test", async (req, res) =>
     res.json(await connectors.test(id(req.params.id))),
   );

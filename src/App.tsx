@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -32,6 +39,7 @@ import {
   Unplug,
   X,
   AlertTriangle,
+  LayoutDashboard,
 } from "lucide-react";
 import { api, post } from "./api";
 import CaseWorkspace, { caseState } from "./CaseWorkspace";
@@ -53,6 +61,7 @@ import type {
   Run,
   Trace,
 } from "../shared/types";
+const OverviewScreen = lazy(() => import("./OverviewScreen"));
 
 const cn = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(" ");
@@ -353,6 +362,7 @@ export default function App() {
     });
   }
   const pageName = {
+    overview: "审查总览",
     workspace: "收案工作台",
     new: "新建收案审查",
     tools: "工具调用台",
@@ -379,7 +389,7 @@ export default function App() {
     0,
   );
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${page === "overview" ? "overview-mode" : ""}`}>
       <aside className="sidebar">
         <button
           className="brand"
@@ -406,6 +416,13 @@ export default function App() {
         </button>
         <div className="nav-heading">工作空间</div>
         <nav aria-label="主导航">
+          <button
+            className={cn("nav-item", page === "overview" && "active")}
+            onClick={() => navigate("overview")}
+          >
+            <LayoutDashboard size={18} />
+            审查总览<span className="nav-count">大屏</span>
+          </button>
           <button
             className={cn(
               "nav-item",
@@ -540,6 +557,17 @@ export default function App() {
             </div>
           ) : (
             <>
+              {page === "overview" && (
+                <Suspense
+                  fallback={
+                    <div className="loading-page" role="status">
+                      正在打开审查总览…
+                    </div>
+                  }
+                >
+                  <OverviewScreen onNavigate={navigate} onOpen={openCase} />
+                </Suspense>
+              )}
               {page === "workspace" &&
                 (routeLoading ? (
                   <div className="product-loading" role="status">
@@ -982,7 +1010,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.8</span>
+          <span>v0.9</span>
         </footer>
       </div>
       {notice && (

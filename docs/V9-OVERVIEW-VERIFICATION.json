@@ -1,0 +1,135 @@
+{
+  "verifiedAt": "2026-10-31T14:37:37.619Z",
+  "scope": "Read-only local overview; saved historical calls, no new model execution",
+  "period": {
+    "days": 7,
+    "start": "2026-10-24T16:00:00.000Z",
+    "end": "2026-10-31T14:37:37.610Z",
+    "timeZone": "Asia/Shanghai"
+  },
+  "totals": {
+    "cases": 5,
+    "active": 4,
+    "pendingFindings": 19,
+    "openIssues": 1,
+    "staleIssues": 1,
+    "openTasks": 16,
+    "documents": 1,
+    "versions": 2,
+    "pages": 4,
+    "authorizedLatest": 1
+  },
+  "stages": [
+    {
+      "key": "identity",
+      "label": "身份待确认",
+      "count": 2
+    },
+    {
+      "key": "evidence",
+      "label": "证据待完善",
+      "count": 0
+    },
+    {
+      "key": "review",
+      "label": "律师复核中",
+      "count": 2
+    },
+    {
+      "key": "recorded",
+      "label": "记录已完备",
+      "count": 0
+    },
+    {
+      "key": "closed",
+      "label": "不承接结案",
+      "count": 1
+    }
+  ],
+  "tools": {
+    "total": 101,
+    "success": 99,
+    "errors": 2,
+    "model": 54,
+    "rules": 46,
+    "user": 1,
+    "connectors": [
+      {
+        "id": "gleif",
+        "name": "GLEIF 企业主体",
+        "status": "disconnected",
+        "connected": false,
+        "enabledTools": 3,
+        "calls": 46,
+        "errors": 2
+      },
+      {
+        "id": "ledger",
+        "name": "律所客户与事项台账",
+        "status": "disconnected",
+        "connected": false,
+        "enabledTools": 2,
+        "calls": 33,
+        "errors": 0
+      },
+      {
+        "id": "documents",
+        "name": "案件材料与原文",
+        "status": "connected",
+        "connected": true,
+        "enabledTools": 2,
+        "calls": 22,
+        "errors": 0
+      }
+    ]
+  },
+  "trend": [
+    {
+      "date": "2026-10-25",
+      "cases": 0,
+      "calls": 0,
+      "errors": 0
+    },
+    {
+      "date": "2026-10-26",
+      "cases": 0,
+      "calls": 0,
+      "errors": 0
+    },
+    {
+      "date": "2026-10-27",
+      "cases": 2,
+      "calls": 21,
+      "errors": 0
+    },
+    {
+      "date": "2026-10-28",
+      "cases": 0,
+      "calls": 0,
+      "errors": 0
+    },
+    {
+      "date": "2026-10-29",
+      "cases": 0,
+      "calls": 0,
+      "errors": 0
+    },
+    {
+      "date": "2026-10-30",
+      "cases": 3,
+      "calls": 58,
+      "errors": 2
+    },
+    {
+      "date": "2026-10-31",
+      "cases": 0,
+      "calls": 22,
+      "errors": 0
+    }
+  ],
+  "checks": {
+    "caseTotalsMatch": true,
+    "activeFindingsMatch": true,
+    "dailyCallsMatch": true
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 export type Page =
+  | "overview"
   | "workspace"
   | "new"
   | "tools"
@@ -22,6 +23,7 @@ export type Route = {
   tab?: CaseTab;
 };
 const pages: Record<string, Page> = {
+  overview: "overview",
   cases: "workspace",
   new: "new",
   tools: "tools",
