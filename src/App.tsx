@@ -1010,7 +1010,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.9</span>
+          <span>v0.9.1</span>
         </footer>
       </div>
       {notice && (

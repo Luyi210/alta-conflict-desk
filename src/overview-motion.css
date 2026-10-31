@@ -1,0 +1,431 @@
+/* Decorative motion is independent of the saved records and refresh cycle. */
+.app-shell.overview-mode {
+  background: #081322;
+}
+.observatory {
+  background:
+    radial-gradient(ellipse at 48% -35%, #204e8b66, transparent 64%), #081322;
+}
+.obs-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.obs-aurora {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+}
+.obs-aurora-blue {
+  width: 950px;
+  height: 680px;
+  left: -190px;
+  top: -210px;
+  background: radial-gradient(
+    ellipse,
+    #357ef739,
+    #235fbe16 45%,
+    transparent 70%
+  );
+  animation: obs-blue-drift 24s ease-in-out infinite alternate;
+}
+.obs-aurora-cyan {
+  width: 800px;
+  height: 650px;
+  right: -180px;
+  top: 5%;
+  background: radial-gradient(
+    ellipse,
+    #22bbd929,
+    #2080ac0e 48%,
+    transparent 70%
+  );
+  animation: obs-cyan-drift 19s ease-in-out infinite alternate;
+}
+.obs-grid-light {
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  background-image:
+    linear-gradient(#7eb6f51a 1px, transparent 1px),
+    linear-gradient(90deg, #7eb6f51a 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, #0009, transparent 72%);
+}
+.obs-topbar {
+  background: #0a172999;
+  border-bottom-color: #8db8f52b;
+}
+.obs-brand > span {
+  color: #89e6f9;
+  text-shadow: 0 0 20px #5cd7f425;
+}
+.obs-current::after {
+  background: linear-gradient(90deg, #5c95ff, #89eeff);
+  box-shadow: 0 0 13px #70cfff65;
+}
+.obs-heading h1 {
+  color: #f0f5ff;
+  text-shadow: 0 2px 24px #5c91df1a;
+}
+.obs-eyebrow {
+  color: #9ab6d8;
+}
+.obs-top-actions {
+  gap: 10px;
+}
+.observatory .obs-motion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border: 1px solid #75c2ed35;
+  border-radius: 5px;
+  font-size: 10px;
+  color: #a1d4f0;
+  background: #5e9aff0a;
+  white-space: nowrap;
+}
+.observatory .obs-motion-toggle:hover {
+  background: #66b7ef18;
+  border-color: #78d5ee88;
+}
+.obs-motion-toggle[aria-pressed="true"] svg {
+  filter: drop-shadow(0 0 4px #72dff559);
+}
+.observatory .obs-kpi {
+  background: linear-gradient(115deg, #163255c7, #10213ae6);
+  border-color: #729de43a;
+  box-shadow: 0 8px 24px #01081524;
+  transition:
+    translate 0.22s ease,
+    border-color 0.22s,
+    box-shadow 0.22s,
+    background 0.22s;
+  animation: obs-card-in 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.obs-kpi:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.obs-kpi:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.obs-kpi:nth-child(4) {
+  animation-delay: 0.21s;
+}
+.observatory .obs-kpi.selected {
+  background: linear-gradient(115deg, #154467c9, #142844e6);
+  border-color: #6dd8f170;
+}
+.observatory .obs-kpi:hover {
+  translate: 0 -3px;
+  border-color: #7fdaf4a3;
+  box-shadow:
+    0 8px 28px #00122377,
+    0 0 24px #2c9bd50b;
+}
+.obs-kpi::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #7bddf500, #82dff58c, #7bddf500);
+}
+.obs-kpi::after {
+  border-color: #78b7f31a;
+  box-shadow:
+    0 0 0 15px #78b7f309,
+    0 0 0 30px #78b7f305;
+}
+.obs-kpi strong {
+  color: #f0f5ff;
+  text-shadow: 0 0 20px #7ab7ff1c;
+}
+.obs-kpi-label svg {
+  color: #83c6f3;
+}
+.obs-dot {
+  background: #70dff3;
+}
+.obs-dot.tone-1 {
+  background: #8fa9ff;
+}
+.obs-dot.tone-2 {
+  background: #ffba8a;
+}
+.obs-dot.tone-3 {
+  background: #b1dcff;
+}
+.obs-panel {
+  position: relative;
+  border-color: #719ee537;
+  background: linear-gradient(140deg, #142a43ed, #0f1d33ed);
+  box-shadow:
+    0 8px 25px #02091425,
+    inset 0 1px 0 #d0e8ff06;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.obs-panel::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9acdfb48, transparent);
+  pointer-events: none;
+}
+.obs-panel:hover {
+  border-color: #7eb5f055;
+}
+.obs-landscape {
+  background:
+    radial-gradient(ellipse at 25% 60%, #15456150, transparent 70%),
+    linear-gradient(140deg, #152b45ed, #0e1d33ed);
+}
+.obs-priority {
+  background:
+    radial-gradient(ellipse at 100% 0, #c88a4a0c, transparent 60%),
+    linear-gradient(140deg, #162b44ed, #111f34ed);
+}
+.obs-panel-head h2 {
+  color: #e5efff;
+}
+.obs-count {
+  color: #ffc394;
+}
+.obs-tag.amber {
+  color: #ffc394;
+  background: #ffb3760b;
+  border-color: #ffbd8c40;
+}
+.obs-ring {
+  box-shadow: 0 0 35px #4ba9d71a;
+  animation: obs-ring-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.obs-ring > div {
+  background: radial-gradient(circle at 45% 35%, #1a3c5a, #10233c 72%);
+  border-color: #11253d;
+}
+.obs-ring strong {
+  color: #edfbff;
+  text-shadow: 0 0 22px #6bd5ee33;
+}
+.obs-ring span {
+  color: #b5cee4;
+}
+.obs-ring small {
+  color: #8faecd;
+}
+.obs-orbit-line {
+  border-color: #a6dcff1c;
+  background:
+    conic-gradient(
+      transparent 0deg 275deg,
+      #a1ebff99 325deg,
+      transparent 347deg
+    ),
+    repeating-conic-gradient(
+      from 0deg,
+      transparent 0deg 9deg,
+      #9cd3ff5c 9deg 9.5deg,
+      transparent 9.5deg 10deg
+    );
+  animation: obs-orbit-turn 32s linear infinite;
+}
+.obs-sync > span > i {
+  background: #7ddff1;
+  box-shadow: 0 0 8px #71dafa65;
+}
+.obs-sync.is-syncing > span > i {
+  animation: obs-sync-pulse 1.2s ease-in-out infinite;
+}
+.obs-connection-status.on {
+  color: #9fe4f0;
+}
+.obs-connection-status.on > i {
+  background: #81dfea;
+  box-shadow: 0 0 8px #74dcf34d;
+}
+.obs-connector-mark {
+  color: #8ac8f1;
+  background: #77b5f40a;
+  border-color: #82bbee35;
+}
+.obs-select select {
+  background: #10243d;
+  border-color: #86b5ef38;
+  color: #c5d9f0;
+}
+.obs-period {
+  border-color: #83b4f438;
+}
+.obs-period button.selected {
+  color: #c2efff;
+  background: #5eabdf25;
+}
+.obs-chart {
+  border-bottom-color: #74b9ed4d;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0px,
+    transparent 24px,
+    #9acbfc10 24px,
+    #9acbfc10 25px
+  );
+}
+.obs-chart > button > span {
+  background: linear-gradient(to top, #3779d8, #76e1f5);
+  box-shadow: inset 0 1px 0 #b9f4ff88;
+  transform-origin: bottom;
+  animation: obs-bar-in 0.65s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+  animation-delay: calc(var(--bar-order, 0) * 35ms);
+  transition:
+    height 0.55s cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter 0.2s,
+    box-shadow 0.2s;
+}
+.obs-chart > button:hover > span,
+.obs-chart > button.selected > span {
+  background: linear-gradient(to top, #5694ee, #b5f3ff);
+  box-shadow: 0 0 14px #72d8f535;
+}
+.obs-chart > button > span > i {
+  background: #ffba8a;
+}
+.obs-trend-stats em {
+  color: #ffc494;
+}
+.obs-trend-stats strong {
+  color: #e3f0ff;
+}
+.obs-activity-items > button:hover strong,
+.obs-queue-list > button:hover .obs-case-title strong {
+  color: #92e4fa;
+}
+.obs-activity-items > button {
+  transition: border-color 0.2s;
+}
+.obs-activity-items > button:hover {
+  border-color: #88cef28a;
+}
+.obs-error {
+  color: #ffdab8;
+  background: #332b29;
+  border-color: #ffba8a66;
+}
+.obs-method {
+  background: #11263f;
+}
+@keyframes obs-blue-drift {
+  from {
+    transform: translate3d(-4%, -3%, 0) scale(0.95);
+  }
+  to {
+    transform: translate3d(16%, 12%, 0) scale(1.15);
+  }
+}
+@keyframes obs-cyan-drift {
+  from {
+    transform: translate3d(8%, 5%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-12%, 32%, 0) scale(1.13);
+  }
+}
+@keyframes obs-orbit-turn {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+@keyframes obs-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes obs-ring-in {
+  from {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes obs-bar-in {
+  from {
+    transform: scaleY(0.02);
+    opacity: 0.3;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@keyframes obs-sync-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.observatory[data-paused="true"] *,
+.observatory[data-paused="true"] *::before,
+.observatory[data-paused="true"] *::after {
+  animation-play-state: paused !important;
+}
+.observatory[data-motion="off"] *,
+.observatory[data-motion="off"] *::before,
+.observatory[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.observatory[data-motion="off"] .obs-aurora {
+  will-change: auto;
+}
+@media (max-width: 750px) {
+  .obs-top-actions {
+    gap: 7px;
+  }
+  .observatory .obs-motion-toggle {
+    font-size: 9px;
+    padding: 7px;
+  }
+  .obs-aurora-blue {
+    width: 650px;
+    left: -220px;
+  }
+  .obs-aurora-cyan {
+    width: 480px;
+    right: -230px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .observatory *,
+  .observatory *::before,
+  .observatory *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .obs-aurora {
+    will-change: auto;
+  }
+}

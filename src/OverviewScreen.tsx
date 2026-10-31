@@ -18,13 +18,15 @@ import {
   Scale,
   ShieldCheck,
   Sparkles,
+  Waves,
 } from "lucide-react";
 import type { Overview, OverviewStage } from "../shared/overview";
 import type { CaseTab, Page } from "./navigation";
 import { api } from "./api";
 import "./overview.css";
+import "./overview-motion.css";
 
-const colors = ["#ddb479", "#8bbbc5", "#85c6a6", "#cfdbb7", "#73877e"];
+const colors = ["#ffba8a", "#789eff", "#6cdef3", "#b7dcff", "#627c9f"];
 const date = (s: string) =>
   new Date(s).toLocaleString("zh-CN", {
     month: "2-digit",
@@ -59,6 +61,36 @@ export default function OverviewScreen({
   const [filter, setFilter] = useState<Filter>("active");
   const [selectedDay, setSelectedDay] = useState("");
   const [method, setMethod] = useState(false);
+  const [motion, setMotion] = useState(() => {
+    try {
+      return localStorage.getItem("alta:overview-motion") !== "off";
+    } catch {
+      return true;
+    }
+  });
+  const [reducedMotion, setReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [hidden, setHidden] = useState(document.hidden);
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const change = () => setReducedMotion(preference.matches);
+    const visibility = () => setHidden(document.hidden);
+    preference.addEventListener("change", change);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      preference.removeEventListener("change", change);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, []);
+  function toggleMotion() {
+    setMotion(!motion);
+    try {
+      localStorage.setItem("alta:overview-motion", motion ? "off" : "on");
+    } catch {
+      /* The switch still works for this visit. */
+    }
+  }
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -146,7 +178,16 @@ export default function OverviewScreen({
               : "assistant";
 
   return (
-    <div className="observatory">
+    <div
+      className="observatory"
+      data-motion={motion && !reducedMotion ? "on" : "off"}
+      data-paused={hidden}
+    >
+      <div className="obs-atmosphere" aria-hidden="true">
+        <span className="obs-aurora obs-aurora-blue" />
+        <span className="obs-aurora obs-aurora-cyan" />
+        <span className="obs-grid-light" />
+      </div>
       <header className="obs-topbar">
         <button
           className="obs-brand"
@@ -173,6 +214,20 @@ export default function OverviewScreen({
         <div className="obs-top-actions">
           <span className="obs-local">本地演示空间</span>
           <button
+            className="obs-motion-toggle"
+            onClick={toggleMotion}
+            disabled={reducedMotion}
+            aria-pressed={motion && !reducedMotion}
+            title={
+              reducedMotion
+                ? "已跟随系统的减弱动态效果设置"
+                : "仅切换视觉动效，不影响数据刷新"
+            }
+          >
+            <Waves size={15} />
+            {reducedMotion ? "减弱动效" : motion ? "动效开启" : "动效关闭"}
+          </button>
+          <button
             className="obs-icon"
             onClick={fullscreen}
             aria-label={full ? "退出全屏" : "全屏展示"}
@@ -197,7 +252,7 @@ export default function OverviewScreen({
               澄明律师事务所 <i /> 收案审查全局态势
             </p>
           </div>
-          <div className="obs-sync">
+          <div className={`obs-sync ${loading ? "is-syncing" : ""}`}>
             <span className={error ? "obs-sync-error" : ""}>
               <i />
               {error ? "更新未成功" : loading ? "正在同步" : "本地记录已同步"}
@@ -314,13 +369,13 @@ export default function OverviewScreen({
                 </div>
                 <div className="obs-landscape-body">
                   <div className="obs-orbit">
-                    <div className="obs-orbit-line" />
+                    <div className="obs-orbit-line" aria-hidden="true" />
                     <div
                       className="obs-ring"
                       style={{
                         background: data.totals.cases
                           ? `conic-gradient(from -90deg, ${gradient})`
-                          : "#2a4139",
+                          : "#263c5a",
                       }}
                       role="img"
                       aria-label={stages
@@ -596,17 +651,21 @@ export default function OverviewScreen({
                 </div>
                 <div
                   className={`obs-chart ${data.trend.length > 7 ? "dense" : ""}`}
+                  key={data.period.days}
                   role="group"
                   aria-label={`近 ${data.period.days} 天已留存工具调用柱状图`}
                   style={{ "--bars": data.trend.length } as CSSProperties}
                 >
-                  {data.trend.map((d) => (
+                  {data.trend.map((d, i) => (
                     <button
                       key={d.date}
                       className={d.date === selectedDay ? "selected" : ""}
                       aria-pressed={d.date === selectedDay}
                       aria-label={`${d.date}，${d.calls} 次调用，${d.errors} 次失败，${d.cases} 件新增案件`}
                       title={`${d.date} · ${d.calls} 次调用 / ${d.errors} 次失败`}
+                      style={
+                        { "--bar-order": Math.min(i, 10) } as CSSProperties
+                      }
                       onClick={() => setSelectedDay(d.date)}
                     >
                       <span
