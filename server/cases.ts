@@ -137,6 +137,15 @@ export class CaseService {
   list(): CaseView[] {
     return this.store.listCases().map((file) => this.get(file.id));
   }
+  materialsChanged(id: string, message: string, reopenTaskIds: string[] = []) {
+    const file = this.file(this.get(id));
+    for (const task of file.tasks)
+      if (reopenTaskIds.includes(task.id) && !task.systemManaged)
+        task.status = "open";
+    this.invalidate(file, message, "material-evidence-updated");
+    this.save(file);
+    return this.get(id);
+  }
 
   get(id: string): CaseView {
     const file = this.store.getCase(id);

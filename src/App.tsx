@@ -40,6 +40,8 @@ import MatterDashboard from "./MatterDashboard";
 import { useAppRoute, type Page, type CaseTab } from "./navigation";
 import ToolDesk from "./ToolDesk";
 import ReviewBrief from "./ReviewBrief";
+import MatchExplanation from "./MatchExplanation";
+import "./materials.css";
 import { useReviewDraft } from "./useReviewDraft";
 import type {
   AppStatus,
@@ -82,6 +84,14 @@ const statusLabel = {
   failed: "核查失败",
 };
 const connectorInfo = {
+  documents: {
+    eyebrow: "CASE EVIDENCE",
+    name: "案件材料与原文",
+    description: "按案件读取 PDF 版本与页码，原文引用可核对；AI 需逐版本授权。",
+    scope: "本机 PDF · 本案范围 · 版本留存",
+    auth: "本地进程 · 案件与版本授权",
+    icon: LedgerMark,
+  },
   gleif: {
     eyebrow: "PUBLIC ENTITY DATA",
     name: "GLEIF 企业身份",
@@ -420,7 +430,9 @@ export default function App() {
           >
             <Plug size={18} />
             连接器
-            <span className="nav-count">{status ? connected : "—"}/2</span>
+            <span className="nav-count">
+              {status ? connected : "—"}/{status?.connectors.length || 3}
+            </span>
           </button>
           <button
             className={cn("nav-item", page === "history" && "active")}
@@ -628,18 +640,19 @@ export default function App() {
                       </p>
                     </div>
                     <div className="connection-total">
-                      <span>{connected}</span> / 2<small>已连接数据源</small>
+                      <span>{connected}</span> / {status.connectors.length}
+                      <small>已连接数据源</small>
                     </div>
                   </div>
                   <div className="info-strip">
                     <ShieldCheck size={17} />
                     <span>
-                      本原型的两组工具均为只读。连接后发现工具，断开后停止后续调用。
+                      工具均为只读。案件材料另需绑定本案，AI 读取须逐版本授权。
                     </span>
                     <Badge tone="green">MCP · stdio</Badge>
                   </div>
                   <div className="connector-grid">
-                    {(["gleif", "ledger"] as const).map((id) => {
+                    {(["gleif", "ledger", "documents"] as const).map((id) => {
                       const config = connectorInfo[id];
                       const c = status.connectors.find((c) => c.id === id);
                       return (
@@ -968,7 +981,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.4</span>
+          <span>v0.5</span>
         </footer>
       </div>
       {notice && (
@@ -983,7 +996,7 @@ export default function App() {
       {trace && (
         <Modal
           title="MCP 调用凭证"
-          subtitle={`${trace.connector === "gleif" ? "GLEIF 企业身份" : "本地事项台账"} / ${trace.tool}`}
+          subtitle={`${trace.connector === "gleif" ? "GLEIF 企业身份" : trace.connector === "documents" ? "案件材料库" : "本地事项台账"} / ${trace.tool}`}
           onClose={() => setTrace(undefined)}
         >
           <div className="trace-meta">
@@ -998,8 +1011,9 @@ export default function App() {
           <label className="field-label">工具返回</label>
           <pre>{JSON.stringify(trace.error || trace.result, null, 2)}</pre>
           <p className="fineprint">
-            记录来自后端实际 MCP
-            调用。公开信息仅反映本次查询所覆盖的来源与时点。
+            {trace.connector === "documents"
+              ? "记录来自实际 MCP 调用；版本状态与授权状态是读取当时的快照，原文件及页码固定保留。"
+              : "记录来自后端实际 MCP 调用。公开信息仅反映本次查询所覆盖的来源与时点。"}
           </p>
         </Modal>
       )}
@@ -1390,6 +1404,7 @@ function Results({
                       </span>
                     </div>
                   </div>
+                  <MatchExplanation finding={finding} />
                   <div className="matter-details">
                     <h4>
                       已有事项信息<Badge>虚构</Badge>
@@ -1692,7 +1707,7 @@ function About({
           ],
           [
             "离开页面后，填写的内容会保留吗？",
-            "新建事项及未提交的复核内容会在当前标签页暂存，支持页面切换和刷新。关闭标签页后不保证恢复；点击创建或保存后，记录才进入本机案件库。",
+            "新建事项及线索复核草稿会在当前标签页暂存，支持页面切换和刷新。材料页未保存的摘录说明在切换原文前请先保存；点击创建或保存后，记录才进入本机案件库。",
           ],
           [
             "来源失败或模型未完成怎么办？",
@@ -1703,8 +1718,8 @@ function About({
             "不需要。律师可以记录不承接意见并结束本轮审查，原有缺口和线索继续留存。运行中的核查须结束后才能记录这一状态。",
           ],
           [
-            "这里会上传材料或通知合伙人吗？",
-            "当前只保存材料引用文本和人工意见，不上传文件，也不发送通知。模型模式的数据流向会在启动前明确展示。",
+            "材料会发送到哪里？",
+            "PDF 导入后保存在本机。只有明确授权某个版本并启动 AI 材料复核，才会把本案背景、问题及该版本原文发送到配置的模型。撤回授权会阻止后续读取，不能撤回已发送的数据。原型不发送合伙人通知。",
           ],
         ].map(([question, answer]) => (
           <details key={question}>
@@ -1728,11 +1743,12 @@ function About({
           <section className="panel">
             <h3>本版本已经覆盖的工作流</h3>
             <ol>
-              <li>在连接器页接入 GLEIF 与本地 SQLite MCP。</li>
+              <li>接入 GLEIF、本地 SQLite 台账和案件材料 MCP。</li>
               <li>添加拟委托人、交易对方和担保方，逐方查询并确认 LEI。</li>
               <li>检索主体及公开母公司关系，并与虚构台账交叉比对。</li>
               <li>查看匹配依据、来源链接和真实调用记录。</li>
-              <li>补齐材料引用，记录逐项与案件总意见，导出聚合报告。</li>
+              <li>导入 PDF，定位原文页，授权 AI 整理带引用的核实问题。</li>
+              <li>保留材料版本与摘录，记录人工复核及总意见，导出报告。</li>
             </ol>
           </section>
           <section className="panel">
@@ -1753,7 +1769,7 @@ function About({
           <section className="panel">
             <h3>真实接入与模拟数据</h3>
             <p>
-              <b>真实：</b>官方 SDK 的 MCP 客户端与两个独立工具服务、GLEIF
+              <b>真实：</b>官方 SDK 的 MCP 客户端与三个独立工具服务、GLEIF
               外网查询、本地 SQLite 检索、保存与导出。
             </p>
             <p>

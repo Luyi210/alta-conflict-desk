@@ -1,0 +1,211 @@
+{
+  "verifiedAt": "2026-10-31T10:47:58.001Z",
+  "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+  "verificationBasis": "Read-only validation of saved application records, model-initiated MCP results, page quotes and immutable PDF hashes. Not provider billing verification or legal validation.",
+  "newModelRequests": 0,
+  "completedReviews": 1,
+  "modelToolCalls": 2,
+  "verifiedQuestions": 5,
+  "materials": [
+    {
+      "id": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "documentId": "1bcca843-e5e4-416c-9652-73262598c124",
+      "version": 2,
+      "title": "fictional-engagement-updated.pdf",
+      "sha256": "656d8290d6eb7c9d3108b3a5479c39377dbb167e8c5cb577ea2e7ed2e599579d",
+      "size": 3712,
+      "pageCount": 2,
+      "createdAt": "2026-10-31T10:47:14.964Z",
+      "modelAllowed": false,
+      "latest": true
+    },
+    {
+      "id": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "documentId": "1bcca843-e5e4-416c-9652-73262598c124",
+      "version": 1,
+      "title": "DEMO-2026-014 委托范围说明（虚构）",
+      "sha256": "e33e05dc54c4127833748d402aff7fa13780165ab763f411d59abf715972af3f",
+      "size": 3698,
+      "pageCount": 2,
+      "createdAt": "2026-10-31T09:35:49.499Z",
+      "modelAllowed": false,
+      "latest": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "2a3649b5-0743-49a0-b20f-c0a57d1efb4c",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+      "page": 1,
+      "quote": "Financing documentation and transaction negotiations are excluded.",
+      "note": "虚构案例验收：原版示例明确排除融资文件服务，保留此页作为核实范围的依据；仍须核对真实签署材料，此操作不代表已完成补证或同意收案。",
+      "taskId": "scope-4e40087843ab66349b2c",
+      "createdAt": "2026-10-31T09:36:35.819Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "097652e5-6a59-4f2c-8eeb-c2e69f47347f",
+      "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+      "createdAt": "2026-10-31T09:36:16.501Z",
+      "status": "completed",
+      "model": "deepseek-flash",
+      "question": "请结合本案背景，指出委托范围、客户边界和保密条款中需要律师核实的问题，并引用原文。",
+      "versionIds": [
+        "94704ae8-a510-47e4-b9e0-af216d7b25dd"
+      ],
+      "traces": [
+        {
+          "id": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e",
+          "connector": "documents",
+          "tool": "read_material_page",
+          "args": {
+            "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+            "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+            "page": 1,
+            "access": "model"
+          },
+          "startedAt": "2026-10-31T09:36:17.564Z",
+          "durationMs": 3,
+          "status": "success",
+          "initiator": "model",
+          "result": {
+            "material": {
+              "id": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+              "documentId": "1bcca843-e5e4-416c-9652-73262598c124",
+              "version": 1,
+              "title": "DEMO-2026-014 委托范围说明（虚构）",
+              "sha256": "e33e05dc54c4127833748d402aff7fa13780165ab763f411d59abf715972af3f",
+              "size": 3698,
+              "pageCount": 2,
+              "createdAt": "2026-10-31T09:35:49.499Z",
+              "modelAllowed": true,
+              "latest": true
+            },
+            "page": 1,
+            "text": "ALTA CONFLICT DESK / SAMPLE MATERIAL \nEngagement scope memorandum \n01 / ENGAGEMENT SCOPE | ORIGINAL \nClient identity \nHSBC BANK PLC | LEI MP6I5ZYZBEU3UXPYFY54 \nMatter reference \nDEMO-2026-014 | Fictional regulatory advisory engagement. \n1. Scope of services \nThe firm advises on banking regulatory filings only. \n2. Excluded work \nFinancing documentation and transaction negotiations are excluded. \n3. Client boundary \nThis engagement does not automatically extend to affiliates. \nReview instruction \nVerify the actual signed scope before making an intake decision. \nFICTIONAL DEMONSTRATION - NOT AN EXECUTED LEGAL DOCUMENT \noriginal | page 1 of 2"
+          }
+        },
+        {
+          "id": "e9ee5dd1-d927-4fdc-8cd2-ca026c9662c5",
+          "connector": "documents",
+          "tool": "read_material_page",
+          "args": {
+            "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+            "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+            "page": 2,
+            "access": "model"
+          },
+          "startedAt": "2026-10-31T09:36:17.573Z",
+          "durationMs": 3,
+          "status": "success",
+          "initiator": "model",
+          "result": {
+            "material": {
+              "id": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+              "documentId": "1bcca843-e5e4-416c-9652-73262598c124",
+              "version": 1,
+              "title": "DEMO-2026-014 委托范围说明（虚构）",
+              "sha256": "e33e05dc54c4127833748d402aff7fa13780165ab763f411d59abf715972af3f",
+              "size": 3698,
+              "pageCount": 2,
+              "createdAt": "2026-10-31T09:35:49.499Z",
+              "modelAllowed": true,
+              "latest": true
+            },
+            "page": 2,
+            "text": "ALTA CONFLICT DESK / SAMPLE MATERIAL \nEngagement scope memorandum \n02 / INFORMATION AND RECORD | ORIGINAL \n4. Confidential information \nClient information remains confidential after the matter closes. \n5. Separate engagement \nAny additional scope requires a separately documented agreement. \n6. Version note \nDemonstration baseline, version A. \nEvidence limits \nThis unsigned sample is not proof of any actual engagement. \nFictional data notice \nAll matters, terms and lawyer-client relationships are invented. \nPublic identifiers \nPublic company names identify the example only; no affiliation is claimed. \nFICTIONAL DEMONSTRATION - NOT AN EXECUTED LEGAL DOCUMENT \noriginal | page 2 of 2"
+          }
+        }
+      ],
+      "items": [
+        {
+          "question": "材料记载的客户为 HSBC BANK PLC（LEI MP6I5ZYZBEU3UXPYFY54），与拟提供服务的对象 HSBC UK BANK PLC 及交易对方 HSBC BANK PLC 的身份对应关系如何？需律师核实拟委托主体究竟是哪一实体，是否与第1页所载客户一致。",
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "HSBC BANK PLC | LEI MP6I5ZYZBEU3UXPYFY54",
+              "traceId": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e"
+            }
+          ]
+        },
+        {
+          "question": "拟服务内容为融资文件专项服务，但材料第1条将服务范围限定为“banking regulatory filings only”，第2条明确排除“Financing documentation and transaction negotiations”。需律师核实实际签署的委托范围与本项目是否相符，是否存在范围冲突或需另行委托。",
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "The firm advises on banking regulatory filings only.",
+              "traceId": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e"
+            },
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "Financing documentation and transaction negotiations are excluded.",
+              "traceId": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e"
+            }
+          ]
+        },
+        {
+          "question": "客户边界条款称委托不自动延伸至关联方；本案涉及已披露母公司及交易对方是否属同一客户集团。需律师核实关联方的具体范围、是否需单独取得豁免或另行委托，以及是否已就关联方身份做过既有事项检索（材料本身未载检索结果）。",
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "This engagement does not automatically extend to affiliates.",
+              "traceId": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e"
+            },
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 2,
+              "quote": "Public company names identify the example only; no affiliation is claimed.",
+              "traceId": "e9ee5dd1-d927-4fdc-8cd2-ca026c9662c5"
+            }
+          ]
+        },
+        {
+          "question": "保密条款仅概括规定“客户信息在事项结束后仍保密”，未界定保密信息范围、期限、例外（如监管披露或诉讼使用）及交易对方信息如何处理。需律师核实实际委托文件中的保密条款文本及是否需为双主体信息设定分层保密安排。",
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 2,
+              "quote": "Client information remains confidential after the matter closes.",
+              "traceId": "e9ee5dd1-d927-4fdc-8cd2-ca026c9662c5"
+            }
+          ]
+        },
+        {
+          "question": "材料明确为未签署的虚构样本，且载明“本样本不构成任何实际委托的证明”，并要求在作出收案决定前核实实际签署的范围。需律师确认是否存在经签署的委托合同/委托书原件，以及第5条所称“任何额外范围须另行书面约定”是否已履行。",
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "Verify the actual signed scope before making an intake decision.",
+              "traceId": "2b891e7e-316a-4e9c-8c0b-d9409ac87f5e"
+            },
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 2,
+              "quote": "Any additional scope requires a separately documented agreement.",
+              "traceId": "e9ee5dd1-d927-4fdc-8cd2-ca026c9662c5"
+            },
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 2,
+              "quote": "This unsigned sample is not proof of any actual engagement.",
+              "traceId": "e9ee5dd1-d927-4fdc-8cd2-ca026c9662c5"
+            }
+          ]
+        }
+      ],
+      "rounds": 2,
+      "completedAt": "2026-10-31T09:36:23.003Z"
+    }
+  ]
+}

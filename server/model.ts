@@ -13,7 +13,7 @@ export const modelConfigured = () =>
   Boolean(process.env.MODEL_API_KEY?.trim() && process.env.MODEL_NAME?.trim());
 export const modelName = () => process.env.MODEL_NAME?.trim() || "待配置";
 type Call = <T>(
-  id: ConnectorId,
+  id: Exclude<ConnectorId, "documents">,
   tool: string,
   args: Record<string, unknown>,
 ) => Promise<{ data: T; trace: Trace }>;

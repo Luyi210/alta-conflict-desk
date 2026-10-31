@@ -61,3 +61,20 @@ MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失�
 模型可选 OpenAI-compatible API 环境变量。未配置时 `rules` 可实际调用 MCP，但不能称为 AI 验收通过。配置后通过 function calling 转发至同一权限和校验入口，检查允许工具、已确认主体边界、调用次数与真实引用。`Run.modelExecution` 记录状态、模型、轮次与工具调用数；配置存在不等于执行通过。
 
 当前 DeepSeek `deepseek-flash` 已完成一次实际验收：一个已确认企业、2 轮、4 次 `initiator:model` 成功 MCP 调用，另有 4 次 `rules` 预核查。证据见 [AI-LIVE-VERIFICATION.json](AI-LIVE-VERIFICATION.json)；案件仍存在未确认主体和补证缺口。`npm run verify:ai -- --case <id>` 只读检查已有记录，不新建任务、不请求模型、不读取 `.env`；mock 测试仅验证协议边界，原规则验收不因此改变模式。
+
+## v0.5 案件材料
+
+前缀 `/api/cases/:id/materials`：
+
+| 方法 / 路径 | 用途 |
+| --- | --- |
+| GET `/` | 本案版本、AI 轮次、人工摘录及材料工具状态 |
+| POST `/upload?title=...&previous=...` | `application/pdf` 原始字节，8 MB；previous 可选，生成同材料新版本 |
+| POST `/sample` | `{variant:"original"或"updated", previous?}`，导入内置虚构 PDF，真实解析 |
+| POST `/:versionId/permission` | `{allowed:boolean}`，按版本授权模型 |
+| GET `/:versionId/pdf` | 本案该版本原始 PDF |
+| GET `/:versionId/pages/:page` | 通过 MCP 读取原文及 trace |
+| POST `/reviews` | `{versionIds:string[],question:string}`，异步模型复核，通过 GET `/` 查看状态 |
+| POST `/evidence` | `{versionId,page,quote,note,taskId?,expectedRevision}`，验证连续原文并保存依据 |
+
+材料 MCP `read_material_page` 参数：`caseId`、`versionId`、`page`、`access`（user/model）。后端传入绑定案件的调用 scope，模型不可自行更改 caseId/access。模型阅读同时检查全局工具启用、案件范围和版本授权；返回后再次复查。全局工具台不能直接发起案件页面读取。`materials_info` 仅返回能力，不暴露案件内容。上述范围不是多用户鉴权；原型仅本机单用户。

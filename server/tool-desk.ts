@@ -11,14 +11,14 @@ import { Store } from "./store.ts";
 
 export const toolCallSchema = z
   .object({
-    connector: z.enum(["gleif", "ledger"]),
+    connector: z.enum(["gleif", "ledger", "documents"]),
     tool: z.string().min(1).max(100),
-    args: z.record(z.unknown()),
+    args: z.record(z.string(), z.unknown()),
   })
   .strict();
 export const toolPermissionSchema = z
   .object({
-    connector: z.enum(["gleif", "ledger"]),
+    connector: z.enum(["gleif", "ledger", "documents"]),
     tool: z.string().min(1).max(100),
     enabled: z.boolean(),
   })

@@ -30,10 +30,11 @@ export class ToolError extends Error {
     super(message);
   }
 }
-export const connectorIds: ConnectorId[] = ["gleif", "ledger"];
+export const connectorIds: ConnectorId[] = ["gleif", "ledger", "documents"];
 const allowedTools: Record<ConnectorId, string[]> = {
   gleif: ["search_entities", "get_entity", "get_relationships"],
   ledger: ["ledger_info", "search_matters"],
+  documents: ["materials_info", "read_material_page"],
 };
 const root = fileURLToPath(new URL("../", import.meta.url));
 type Entry = {
@@ -47,7 +48,24 @@ export class ConnectorManager {
   private schemaValidator = new AjvJsonSchemaValidator();
   private enabled: (id: ConnectorId, tool: string) => boolean = () => true;
   private discovered: (id: ConnectorId, tools: ToolInfo[]) => void = () => {};
+  private casePolicy: (
+    caseId: string,
+    versionId: string,
+    model: boolean,
+  ) => void = () => {
+    throw new HttpError(403, "材料访问策略尚未配置");
+  };
   private entries: Record<ConnectorId, Entry> = {
+    documents: {
+      state: {
+        id: "documents",
+        name: "案件材料与原文",
+        connected: false,
+        status: "disconnected",
+        tools: [],
+      },
+      changing: false,
+    },
     gleif: {
       state: {
         id: "gleif",
@@ -91,6 +109,11 @@ export class ConnectorManager {
   setDiscoveryObserver(observer: (id: ConnectorId, tools: ToolInfo[]) => void) {
     this.discovered = observer;
   }
+  setCasePolicy(
+    policy: (caseId: string, versionId: string, model: boolean) => void,
+  ) {
+    this.casePolicy = policy;
+  }
   restoreDiscovered(id: ConnectorId, tools: ToolInfo[]) {
     const e = this.entry(id);
     if (!e.state.connected)
@@ -112,7 +135,21 @@ export class ConnectorManager {
         })),
     );
   }
-  validateCall(id: ConnectorId, tool: string, args: Record<string, unknown>) {
+  validateCall(
+    id: ConnectorId,
+    tool: string,
+    args: Record<string, unknown>,
+    scope?: { caseId: string; model: boolean },
+  ) {
+    if (id === "documents" && tool !== "materials_info") {
+      if (
+        !scope ||
+        args.caseId !== scope.caseId ||
+        args.access !== (scope.model ? "model" : "user")
+      )
+        throw new HttpError(403, "材料工具只能在已绑定的案件内调用");
+      this.casePolicy(scope.caseId, String(args.versionId), scope.model);
+    }
     const e = this.entry(id);
     if (!allowedTools[id].includes(tool))
       throw new HttpError(403, "该 MCP 工具未获授权");
@@ -247,9 +284,10 @@ export class ConnectorManager {
     tool: string,
     args: Record<string, unknown>,
     initiator: Trace["initiator"] = "user",
+    scope?: { caseId: string; model: boolean },
   ): Promise<{ data: T; trace: Trace }> {
     const e = this.entry(id);
-    this.validateCall(id, tool, args);
+    this.validateCall(id, tool, args, scope);
     const started = Date.now();
     const trace: Trace = {
       id: randomUUID(),
@@ -274,6 +312,9 @@ export class ConnectorManager {
         .join("\n");
       if (output.isError) throw new Error(text || "MCP 工具返回错误");
       const data = JSON.parse(text || "{}") as T;
+      // Recheck grants after the MCP return, including revocation during an in-flight call.
+      if (id === "documents" && tool !== "materials_info")
+        this.validateCall(id, tool, args, scope);
       trace.durationMs = Date.now() - started;
       trace.result = data;
       this.audit("mcp-tool-call", trace);
@@ -291,7 +332,11 @@ export class ConnectorManager {
     try {
       await this.call(
         id,
-        id === "gleif" ? "get_entity" : "ledger_info",
+        id === "gleif"
+          ? "get_entity"
+          : id === "documents"
+            ? "materials_info"
+            : "ledger_info",
         id === "gleif" ? { lei: "MP6I5ZYZBEU3UXPYFY54" } : {},
       );
       e.state.lastTestAt = new Date().toISOString();

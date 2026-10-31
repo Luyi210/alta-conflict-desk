@@ -98,7 +98,9 @@ export default function MatterDashboard({
   const [sort, setSort] = useState("updated");
   const active = cases.filter((c) => !finished(c));
   const attention = active.filter((c) => c.status !== "running");
-  const connected = status.connectors.filter((c) => c.connected).length;
+  const connected = status.connectors.filter(
+    (c) => c.id !== "documents" && c.connected,
+  ).length;
   const filtered = cases
     .filter((c) => {
       const search =
@@ -247,7 +249,7 @@ export default function MatterDashboard({
               <Plug size={17} />
             </span>
             <span>
-              <strong>数据连接</strong>
+              <strong>主体核查数据源</strong>
               <small>公开身份 · 本地虚构台账</small>
             </span>
             <b className={connected === 2 ? "ready" : ""}>{connected} / 2</b>

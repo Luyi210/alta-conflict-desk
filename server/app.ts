@@ -18,6 +18,8 @@ import { createCaseRouter } from "./case-routes.ts";
 import { ToolDeskService } from "./tool-desk.ts";
 import { createToolDeskRouter } from "./tool-routes.ts";
 import type { ConnectorId, Entity } from "../shared/types.ts";
+import { MaterialService } from "./material-service.ts";
+import { materialRouter } from "./material-routes.ts";
 
 export function createBackend(dir = dataDir) {
   const app = express();
@@ -28,6 +30,7 @@ export function createBackend(dir = dataDir) {
   const screening = new ScreeningService(store, connectors);
   const cases = new CaseService(store, screening);
   const toolDesk = new ToolDeskService(store, connectors);
+  const materials = new MaterialService(dir, cases, connectors, store);
   app.disable("x-powered-by");
   app.use((req, res, next) => {
     if (!["127.0.0.1", "localhost", "[::1]"].includes(req.hostname)) {
@@ -118,7 +121,8 @@ export function createBackend(dir = dataDir) {
     );
     res.type("text/markdown").send(report(run));
   });
-  app.use("/api/cases", createCaseRouter(cases));
+  app.use("/api/cases/:id/materials", materialRouter(materials));
+  app.use("/api/cases", createCaseRouter(cases, materials));
   app.use("/api/tool-desk", createToolDeskRouter(toolDesk));
   app.use("/api", (_req, res) => res.status(404).json({ error: "API 不存在" }));
   const dist = resolve(fileURLToPath(new URL("../", import.meta.url)), "dist");
@@ -148,8 +152,8 @@ export function createBackend(dir = dataDir) {
           ? error.status
           : error instanceof ToolError
             ? 502
-            : error.status === 400
-              ? 400
+            : error.status === 400 || error.status === 413
+              ? error.status
               : 500;
       res.status(code).json({
         error:
@@ -164,9 +168,11 @@ export function createBackend(dir = dataDir) {
     screening,
     cases,
     toolDesk,
+    materials,
     async close() {
       await screening.close();
       await toolDesk.close();
+      await materials.close();
       await connectors.close();
       store.close();
     },

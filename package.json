@@ -1,6 +1,6 @@
 {
   "name": "alta-conflict-desk",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -17,15 +17,17 @@
     "format": "prettier --write src server mcp shared tests scripts/*.ts vite.config.ts",
     "test:case-live": "node --env-file-if-exists=.env --import tsx scripts/case-live-smoke.ts",
     "test:tools-live": "node --env-file-if-exists=.env --import tsx scripts/tool-live-smoke.ts",
-    "verify:ai": "node --import tsx scripts/verify-ai-run.ts"
+    "verify:ai": "node --import tsx scripts/verify-ai-run.ts",
+    "verify:materials": "node --import tsx scripts/verify-material-review.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
+    "pdfjs-dist": "6.4.299",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "zod": "^3.25.0"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

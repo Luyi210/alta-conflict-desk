@@ -108,3 +108,7 @@ SDK 当前 `main` 已是 v2，使用拆分的 `@modelcontextprotocol/server` 与
 - 文档内容：对原始资料作摘要并链接到来源，没有嵌入长篇规范原文。
 
 如果后续实施实际复制或移植了任何代码，应在交付前更新本节，注明仓库、提交/版本、文件、修改范围及保留的许可声明。
+
+## v0.5 实际复用：PDF.js
+
+2026-10-31 阅读 [Mozilla PDF.js 官方仓库](https://github.com/mozilla/pdf.js)，新增 `pdfjs-dist` 6.4.299（Apache-2.0）。直接复用 PDF 加载、页文本提取和 canvas 渲染；没有复制其完整 viewer UI。版本指纹、案件范围、模型工具权限和引用校验由本原型实现。OpenContracts 仍为证据定位与审阅思路参考，没有引入其后端或前端组件。曾查看 pdf-lib，但未安装或复用，因此不将其列作实际依赖。

@@ -37,9 +37,19 @@ type Catalog = { tools: CatalogTool[]; calls: ToolExecution[] };
 const sources: Record<ConnectorId, string> = {
   gleif: "GLEIF 企业身份",
   ledger: "律所事项台账",
+  documents: "案件材料与原文",
 };
 // These labels explain discovered tools; they never add tools to the catalog.
 const labels: Record<string, { title: string; purpose: string }> = {
+  materials_info: {
+    title: "检查材料连接",
+    purpose: "查看本机材料连接能力，不返回任何案件内容。",
+  },
+  read_material_page: {
+    title: "读取材料原文页",
+    purpose:
+      "仅能从案件内的「材料与原文」页发起；全局工具台不接受自由指定案件的读取。",
+  },
   search_entities: {
     title: "查找企业身份",
     purpose: "用名称或 LEI 找到候选企业，供律师核实是否为同一主体。",
@@ -411,7 +421,8 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
       requestLock.current ||
       busy ||
       !selected.available ||
-      !selected.enabled
+      !selected.enabled ||
+      selected.name === "read_material_page"
     )
       return;
     let args: Record<string, unknown>;
@@ -847,23 +858,27 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
                   </div>
                 )}
 
-                {Boolean(labels[selected.name]) && fields.length > 0 && (
-                  <button
-                    className="td-example"
-                    type="button"
-                    onClick={fillExample}
-                    disabled={busy}
-                  >
-                    填入 HSBC 公开企业示例
-                    <ArrowRight size={13} />
-                  </button>
-                )}
+                {selected.connector !== "documents" &&
+                  Boolean(labels[selected.name]) &&
+                  fields.length > 0 && (
+                    <button
+                      className="td-example"
+                      type="button"
+                      onClick={fillExample}
+                      disabled={busy}
+                    >
+                      填入 HSBC 公开企业示例
+                      <ArrowRight size={13} />
+                    </button>
+                  )}
                 <div className="td-data-note">
                   <ShieldCheck size={15} />
                   <p>
                     {selected.connector === "gleif"
                       ? "查询名称或 LEI 将发送至 GLEIF 公开服务。仅覆盖已登记 LEI 的主体；母公司信息指会计合并关系。"
-                      : "仅检索本机隔离的虚构律所台账；不代表任何真实客户关系，也不覆盖完整律所记录。"}
+                      : selected.connector === "documents"
+                        ? "材料保存在本机，原文读取须从案件内发起；AI 还需该版本的明确授权。连接测试只返回能力信息。"
+                        : "仅检索本机隔离的虚构律所台账；不代表任何真实客户关系，也不覆盖完整律所记录。"}
                   </p>
                 </div>
                 {formError && (
@@ -874,15 +889,17 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
                 )}
                 <div className="td-submit-row">
                   <span>
-                    {!selected.enabled
-                      ? "请先启用此工具"
-                      : !selected.available
-                        ? "请先连接数据源"
-                        : busy
-                          ? "已有调用正在处理，请等待结果"
-                          : selected.readOnly
-                            ? "只读调用，结果需人工核实"
-                            : "执行前请核对参数和工具说明"}
+                    {selected.name === "read_material_page"
+                      ? "请进入案件的材料与原文页调用"
+                      : !selected.enabled
+                        ? "请先启用此工具"
+                        : !selected.available
+                          ? "请先连接数据源"
+                          : busy
+                            ? "已有调用正在处理，请等待结果"
+                            : selected.readOnly
+                              ? "只读调用，结果需人工核实"
+                              : "执行前请核对参数和工具说明"}
                   </span>
                   <button
                     className="btn primary"
@@ -891,7 +908,8 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
                       busy ||
                       savingPermission ||
                       !selected.enabled ||
-                      !selected.available
+                      !selected.available ||
+                      selected.name === "read_material_page"
                     }
                   >
                     {busy ? (

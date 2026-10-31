@@ -24,6 +24,7 @@ import "./case-workbench.css";
 import "./review-refinements.css";
 import { useReviewDraft } from "./useReviewDraft";
 import type { CaseTab } from "./navigation";
+import MaterialDesk from "./MaterialDesk";
 
 const date = (value: string) =>
   new Date(value).toLocaleString("zh-CN", { hour12: false });
@@ -572,6 +573,7 @@ export default function CaseResults({
         {(
           [
             ["parties", "主体与线索", Users],
+            ["materials", "材料与原文", FileCheck2],
             ["tasks", `补证清单 · ${value.progress.openTasks}`, FileCheck2],
             ["review", "案件总意见", Check],
             ["activity", "操作记录", History],
@@ -736,6 +738,15 @@ export default function CaseResults({
             </button>
           </div>
         </>
+      )}
+      {tab === "materials" && (
+        <MaterialDesk
+          key={value.id}
+          matter={value}
+          onUpdate={onUpdate}
+          onError={onError}
+          onTrace={onTrace}
+        />
       )}
       {tab === "tasks" && (
         <div>

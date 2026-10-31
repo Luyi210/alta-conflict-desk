@@ -264,9 +264,9 @@ export default function CaseWorkspace({
   }, [value, step, hasContent]);
   const update = (change: Partial<CaseInput>) =>
     setValue((current) => ({ ...current, ...change }));
-  const ready =
-    status.connectors.length === 2 &&
-    status.connectors.every((c) => c.connected);
+  const ready = ["gleif", "ledger"].every((id) =>
+    status.connectors.some((c) => c.id === id && c.connected),
+  );
   const confirmed = parties.filter((p) => p.confirmed && p.entity);
   const duplicate =
     new Set(confirmed.map((p) => p.entity!.lei)).size !== confirmed.length;

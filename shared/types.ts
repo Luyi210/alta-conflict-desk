@@ -1,4 +1,4 @@
-export type ConnectorId = "gleif" | "ledger";
+export type ConnectorId = "gleif" | "ledger" | "documents";
 export type ToolInfo = {
   name: string;
   description: string;
