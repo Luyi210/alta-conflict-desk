@@ -1,6 +1,6 @@
 {
   "name": "alta-conflict-desk",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,7 +19,8 @@
     "test:tools-live": "node --env-file-if-exists=.env --import tsx scripts/tool-live-smoke.ts",
     "verify:ai": "node --import tsx scripts/verify-ai-run.ts",
     "verify:materials": "node --import tsx scripts/verify-material-review.ts",
-    "verify:issues": "node --import tsx scripts/verify-issues.ts"
+    "verify:issues": "node --import tsx scripts/verify-issues.ts",
+    "verify:assistant": "node --import tsx scripts/verify-assistant.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

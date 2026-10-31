@@ -32,6 +32,7 @@ export type MaterialReview = {
   traces: Trace[];
   rounds: number;
   formatRetries?: number;
+  formatIssues?: string[];
   error?: string;
   items: { question: string; citations: MaterialCitation[] }[];
 };

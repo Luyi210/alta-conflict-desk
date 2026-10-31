@@ -38,6 +38,7 @@ export type IssueReview = {
   versions: { documentId: string; versionId: string; sha256: string }[];
 };
 export type ReviewIssue = {
+  assistantApplications?: string[];
   id: string;
   caseId: string;
   revision: number;

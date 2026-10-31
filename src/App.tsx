@@ -283,7 +283,7 @@ export default function App() {
     );
     return () => clearInterval(timer);
   }, [hasRunningCases, activeCase?.status]);
-  function openCase(id: string, tab: CaseTab = "parties") {
+  function openCase(id: string, tab: CaseTab = "assistant") {
     go({ page: "workspace", caseId: id, tab });
   }
   function updateCase(value: CaseView) {
@@ -580,6 +580,7 @@ export default function App() {
                   />
                 ) : route.caseId && activeCase ? (
                   <CaseResults
+                    onConnectionChange={refresh}
                     key={activeCase.id}
                     value={activeCase}
                     tab={route.tab || "parties"}
@@ -981,7 +982,7 @@ export default function App() {
         <footer className="page-footer">
           <span>ALTA CONFLICT DESK</span>
           <span>独立概念原型 · 律所台账为虚构数据 · 不自动作出收案决定</span>
-          <span>v0.6</span>
+          <span>v0.7</span>
         </footer>
       </div>
       {notice && (

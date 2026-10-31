@@ -81,6 +81,13 @@ export async function reviewMaterials(
   ) => Promise<{ data: MaterialPage; trace: Trace }>,
   assertAccess: () => void,
   progress: () => void,
+  outputSpec?: {
+    schema: z.ZodType;
+    system: string;
+    instruction: string;
+    format: unknown;
+    accept: (raw: unknown) => void;
+  },
 ) {
   if (!modelConfigured()) throw new Error("模型尚未配置");
   const base = (
@@ -135,6 +142,7 @@ export async function reviewMaterials(
       }),
     },
   ];
+  if (outputSpec) messages[0].content = outputSpec.system;
   const used = new Set<string>();
   let requests = 0;
   let formatRetries = 0;
@@ -159,8 +167,9 @@ export async function reviewMaterials(
         role: "user",
         content: JSON.stringify({
           instruction:
+            outputSpec?.instruction ||
             "所有选定页已实际读取。现在输出最多3个待核实问题的JSON，不新增工具调用。每条citations必须包含versionId、page、quote、traceId四个字段，traceId从下方实际凭证索引复制，quote从对应页原文连续摘录，不得改写。所有选定版本至少引用一次。不需要输出工具索引本身。",
-          format: {
+          format: outputSpec?.format || {
             items: [
               {
                 question: "待核实问题",
@@ -182,6 +191,9 @@ export async function reviewMaterials(
               page: t.args.page,
               traceId: t.id,
             })),
+          ...(outputSpec
+            ? { jsonSchema: z.toJSONSchema(outputSpec.schema) }
+            : {}),
         }),
       });
     }
@@ -261,15 +273,22 @@ export async function reviewMaterials(
       let output: unknown;
       try {
         output = JSON.parse(message.content || "");
-        outputSchema.parse(output);
-      } catch {
+        (outputSpec?.schema || outputSchema).parse(output);
+      } catch (error) {
+        review.formatIssues =
+          error instanceof z.ZodError
+            ? error.issues
+                .slice(0, 12)
+                .map((i) => `${i.path.join(".")}: ${i.message}`)
+            : ["JSON 语法错误或空响应"];
         if (formatRetries++ === 0 && round < 4) {
           review.formatRetries = formatRetries;
           progress();
           messages.push({
             role: "user",
-            content:
-              "上轮返回不是合法 JSON、内容为空或缺少必填字段。请使用已有工具结果重新输出规定的 JSON 对象，正确转义字符串中的引号；每条引用必须包含versionId、page、quote、traceId（复制实际凭证索引）。不加代码围栏，不新增读取，不改写原文引用。最多 3 个待核实问题，仍须引用所有选定版本。",
+            content: outputSpec
+              ? `上轮格式校验错误：${review.formatIssues.join("；")}。只用已有读取结果按此JSON Schema修正输出，不添加字段或工具调用，引用保留实际traceId与连续原文：${JSON.stringify(z.toJSONSchema(outputSpec.schema))}。示例：${JSON.stringify(outputSpec.format)}`
+              : "上轮返回不是合法 JSON、内容为空或缺少必填字段。请使用已有工具结果重新输出规定的 JSON 对象，正确转义字符串中的引号；每条引用必须包含versionId、page、quote、traceId（复制实际凭证索引）。不加代码围栏，不新增读取，不改写原文引用。最多 3 个待核实问题，仍须引用所有选定版本。",
           });
           continue;
         }
@@ -277,7 +296,8 @@ export async function reviewMaterials(
           "模型结果格式校验未通过，已保留原文读取凭证。请重新运行分析。",
         );
       }
-      review.items = validateMaterialOutput(output, review);
+      if (outputSpec) outputSpec.accept(output);
+      else review.items = validateMaterialOutput(output, review);
       assertAccess();
       return;
     }

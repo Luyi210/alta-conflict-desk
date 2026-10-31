@@ -13,6 +13,7 @@ import { CaseService } from "./cases.ts";
 import { MaterialService } from "./material-service.ts";
 import { HttpError } from "./connectors.ts";
 import { verifyQuote } from "./material-model.ts";
+import type { AssistantAction } from "../shared/assistant.ts";
 
 const category = z.enum(["scope", "boundary", "confidentiality", "other"]);
 const editable = z.object({
@@ -109,6 +110,85 @@ export class IssueService {
       evidence: this.materials.data.evidence(caseId),
       caseRevision: matter.revision,
     };
+  }
+  adoptAssistant(
+    caseId: string,
+    key: string,
+    action: AssistantAction,
+    expected: number,
+  ) {
+    const existing = this.list(caseId).find((i) =>
+      i.assistantApplications?.includes(key),
+    );
+    if (existing) return existing.id;
+    this.check(caseId, expected);
+    const target = action.targetIssueId
+      ? this.get(caseId, action.targetIssueId)
+      : undefined;
+    if (!target && this.list(caseId).length >= 50)
+      throw new HttpError(409, "本案最多保存 50 个审查问题");
+    for (const c of action.citations) {
+      const source = this.materials.data.page(caseId, c.versionId, c.page);
+      if (!verifyQuote(source.text, c.quote))
+        throw new HttpError(400, "建议引用无法对应原文");
+    }
+    const now = new Date().toISOString();
+    const issue: ReviewIssue = target
+      ? { ...target }
+      : {
+          id: randomUUID(),
+          caseId,
+          revision: 0,
+          title: action.title,
+          category: action.category,
+          partyIds: action.partyIds,
+          sourceKey: key,
+          owner: "",
+          missing: "",
+          note: "",
+          status: "reviewing",
+          citations: [],
+          reviews: [],
+          createdAt: now,
+          updatedAt: now,
+        };
+    issue.missing = [issue.missing, action.missing]
+      .filter(Boolean)
+      .join("\n\n");
+    issue.note = [
+      issue.note,
+      `【AI 补证请求草稿 · 待律师核实】\n${action.request}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    if (issue.note.length > 4000 || issue.missing.length > 3000)
+      throw new HttpError(
+        400,
+        "原记录与草稿合并后过长，请缩短补证草稿；原记录未修改",
+      );
+    issue.citations = [...issue.citations];
+    for (const c of action.citations)
+      if (
+        !issue.citations.some(
+          (old) =>
+            old.versionId === c.versionId &&
+            old.page === c.page &&
+            old.quote === c.quote,
+        )
+      )
+        issue.citations.push({
+          id: randomUUID(),
+          versionId: c.versionId,
+          page: c.page,
+          quote: c.quote,
+          relation: "context",
+        });
+    if (issue.citations.length > 20)
+      throw new HttpError(400, "该问题的原文依据已达上限，请手动整理后重试");
+    issue.status = "reviewing";
+    issue.assistantApplications = [...(issue.assistantApplications || []), key];
+    this.change(issue, `采用 AI 补证草稿至「${issue.title}」；仍待律师复核。`);
+    return issue.id;
   }
   private get(caseId: string, id: string) {
     this.cases.get(caseId);

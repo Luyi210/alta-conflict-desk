@@ -8,6 +8,7 @@ export type Page =
   | "history"
   | "about";
 export type CaseTab =
+  | "assistant"
   | "parties"
   | "tasks"
   | "review"
@@ -29,6 +30,7 @@ const pages: Record<string, Page> = {
   about: "about",
 };
 const tabs: CaseTab[] = [
+  "assistant",
   "parties",
   "tasks",
   "review",

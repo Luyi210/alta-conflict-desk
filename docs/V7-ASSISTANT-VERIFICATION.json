@@ -1,0 +1,217 @@
+{
+  "verifiedAt": "2026-10-31T12:15:41.675Z",
+  "caseId": "745ef599-51c2-4b47-9199-d72d71636d72",
+  "caseRevision": 14,
+  "decisionStatus": "draft",
+  "verificationBasis": "Read-only saved application records: actual model-initiated page receipts, immutable PDF hashes/text, quote and case boundaries, edited adoption snapshots. Not legal correctness or provider billing verification.",
+  "newModelRequests": 0,
+  "attempts": [
+    {
+      "id": "5abdd51b-478c-44e4-9af3-e4d3b188ccc2",
+      "status": "completed",
+      "createdAt": "2026-10-31T12:12:33.820Z",
+      "completedAt": "2026-10-31T12:12:45.827Z",
+      "model": "deepseek-flash",
+      "rounds": 2,
+      "formatRetries": 0,
+      "modelCalls": 4,
+      "caseRevision": 13,
+      "basisRevision": 14,
+      "summary": "本轮仅分析两份未签署的虚构委托范围示例（同一文件的两个版本），并读取全部4页。两份材料均明确标注为虚构演示、非已签署法律文件，且客户主体均记载为 HSBC BANK PLC，与本事项拟委托人 HSBC UK BANK PLC 不同。据此建议先核实客户主体与关联方边界及保密义务覆盖范围（复用现有未决问题），再核实拟议融资文件专项服务是否落入或超出既有委托范围，最后核对两版本的范围差异及相应签署与授权基础。未提供既往核查原始凭证，本轮不检索外部主体，不判断收案或利益冲突，待律师复核。",
+      "actions": [
+        {
+          "title": "客户主体与关联方边界、保密义务是否覆盖拟委托人 HSBC UK BANK PLC？",
+          "priority": "first",
+          "reason": "示例材料记载的客户身份为 HSBC BANK PLC，而本事项拟委托人为 HSBC UK BANK PLC，交易对方为 HSBC BANK PLC；文件同时说明委托不自动延伸至关联方，且保密义务延续至事项结束后。材料原文仅为虚构示例，不能据以确认实际客户主体、关联方范围及保密义务覆盖拟委托主体，需待签署版本核实。",
+          "missing": "拟委托人及交易对方的完整注册主体信息与唯一标识；实际已签署的委托协议或委托书（含客户主体条款、关联方定义与范围、保密条款及延续期限）；曾向拟委托人披露的客户信息清册或相关往来；母公司及关联方清单；既往核查的工作底稿与原始凭证（如有）。",
+          "request": "为核实客户边界与保密义务的覆盖范围，请提供：（1）拟签署或已签署的委托协议/委托书完整版本，含客户主体、关联方定义与范围、保密条款及保密期限；（2）拟委托人 HSBC UK BANK PLC 与交易对方 HSBC BANK PLC 的注册主体信息及唯一标识；（3）双方及已披露母公司的关联方清单；（4）曾向拟委托人披露的客户信息清册或相关往来记录。目前提供的委托范围说明为未签署的虚构示例，请一并说明其与实际委托文件的关系。",
+          "category": "boundary",
+          "partyIds": [
+            "aca6a590-eb88-4b17-bbcf-d9c4668c72b8",
+            "59370c64-e1c4-4a2a-8c9d-cffd068d82e0"
+          ],
+          "targetIssueId": "27b6753f-770d-4457-98b2-3bb6e5d2c651",
+          "citations": [
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 1,
+              "quote": "HSBC BANK PLC | LEI MP6I5ZYZBEU3UXPYFY54",
+              "traceId": "01688587-ec64-4d80-a645-0da733d172ed"
+            },
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 1,
+              "quote": "This engagement does not automatically extend to affiliates.",
+              "traceId": "01688587-ec64-4d80-a645-0da733d172ed"
+            },
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 2,
+              "quote": "Client information remains confidential after the matter closes.",
+              "traceId": "41a51b8b-908a-4a23-94df-79c4f5a23fb2"
+            }
+          ]
+        },
+        {
+          "title": "拟议的融资文件专项服务是否落入既有委托范围，是否需另行签署委托？",
+          "priority": "next",
+          "reason": "最版本将融资文件纳入服务范围并保留交易谈判除外，原始版本则仅限银行监管申报且明确排除融资文件与交易谈判；两版本还均说明增加范围需另行书面协议。因此拟议的融资文件专项服务是否属于既有范围、是否需要单独委托，须凭实际签署文件与律师对范围的复核确认，现有虚构示例不足以判断。",
+          "missing": "拟议专项服务的服务范围描述与交付清单；实际签署的既有委托协议及其全部修订件；关于新增范围的另行书面协议（如有）；确认交易谈判是否持续排除的说明。",
+          "request": "为核对拟议的融资文件专项服务与既有委托范围的关系，请提供：（1）既有委托协议及全部修订件的签署版本；（2）拟议专项服务的范围描述与交付清单；（3）如已就新增范围签署另行协议，请提供该协议；（4）请说明本次服务中是否涉及交易谈判及如何处理。现有材料为两份未签署的虚构示例，其中一份将融资文件纳入范围、另一份明确排除，需以实际签署文件为准。",
+          "category": "scope",
+          "partyIds": [
+            "aca6a590-eb88-4b17-bbcf-d9c4668c72b8",
+            "59370c64-e1c4-4a2a-8c9d-cffd068d82e0"
+          ],
+          "targetIssueId": null,
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "Financing documentation and transaction negotiations are excluded.",
+              "traceId": "5c9de2fa-6fc2-4782-9ce4-3c706278ed65"
+            },
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 1,
+              "quote": "The firm advises on regulatory filings and financing documentation.",
+              "traceId": "01688587-ec64-4d80-a645-0da733d172ed"
+            },
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 2,
+              "quote": "Demonstration amendment, version B: financing documentation added.",
+              "traceId": "41a51b8b-908a-4a23-94df-79c4f5a23fb2"
+            }
+          ]
+        },
+        {
+          "title": "两份示例版本的效力、签署状态与授权依据是否已核实？",
+          "priority": "next",
+          "reason": "两份材料均自我标注为未签署的虚构演示，不构成任何实际委托的证据，且互不一致（一版排除融资文件、一版纳入融资文件）。在据此开展任何工作前，须核实实际现行有效版本、其签署与授权情况，以及是否存在其他版本或往来函件。",
+          "missing": "实际现行有效的委托范围文件及其签署页、签署日期与授权代表信息；全部历史版本清单及版本变更记录；相关往来函件或电子邮件；说明示例文件与实际文件对应关系的说明。",
+          "request": "为确认委托范围文件的版本与效力，请提供：（1）现行有效的委托范围文件及其签署页、签署日期和授权代表信息；（2）全部历史版本清单及变更记录；（3）与范围变更相关的往来函件或电子邮件。现有两份文件均标注为虚构演示、非已签署法律文件，请说明其与实际委托文件的对应关系，以及是否存在其他版本。",
+          "category": "other",
+          "partyIds": [
+            "aca6a590-eb88-4b17-bbcf-d9c4668c72b8",
+            "59370c64-e1c4-4a2a-8c9d-cffd068d82e0"
+          ],
+          "targetIssueId": null,
+          "citations": [
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 2,
+              "quote": "This unsigned sample is not proof of any actual engagement.",
+              "traceId": "aaf551f6-2cb0-4468-a670-4af81878c1b7"
+            },
+            {
+              "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+              "page": 2,
+              "quote": "This unsigned sample is not proof of any actual engagement.",
+              "traceId": "41a51b8b-908a-4a23-94df-79c4f5a23fb2"
+            },
+            {
+              "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+              "page": 1,
+              "quote": "Verify the actual signed scope before making an intake decision.",
+              "traceId": "5c9de2fa-6fc2-4782-9ce4-3c706278ed65"
+            }
+          ]
+        }
+      ],
+      "applications": {
+        "0": "27b6753f-770d-4457-98b2-3bb6e5d2c651"
+      },
+      "adoptedDrafts": {
+        "0": {
+          "missing": "拟委托人及交易对方的完整注册主体信息与唯一标识；实际已签署的委托协议或委托书（含客户主体条款、关联方定义与范围、保密条款及延续期限）；曾向拟委托人披露的客户信息清册或相关往来；母公司及关联方清单；既往核查的工作底稿与原始凭证（如有）。",
+          "request": "【虚构样例 · 软件验收，尚未发送】为核实本次拟委托的客户边界与保密义务，请提供实际委托协议完整签署版，并标明客户主体、关联方是否纳入服务范围，以及既往客户信息使用或披露的授权依据。请分别确认 HSBC UK BANK PLC 与 HSBC BANK PLC 在本次事项中的角色；如相关文件尚未取得，请注明待补状态。"
+        }
+      },
+      "receipts": [
+        {
+          "id": "01688587-ec64-4d80-a645-0da733d172ed",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 1
+        },
+        {
+          "id": "41a51b8b-908a-4a23-94df-79c4f5a23fb2",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 2
+        },
+        {
+          "id": "5c9de2fa-6fc2-4782-9ce4-3c706278ed65",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 1
+        },
+        {
+          "id": "aaf551f6-2cb0-4468-a670-4af81878c1b7",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 2
+        }
+      ]
+    },
+    {
+      "id": "4566cd3e-6950-4178-a2ce-0713550df2f5",
+      "status": "failed",
+      "createdAt": "2026-10-31T12:11:13.436Z",
+      "completedAt": "2026-10-31T12:11:36.557Z",
+      "model": "deepseek-flash",
+      "rounds": 3,
+      "formatRetries": 1,
+      "error": "模型结果格式校验未通过，已保留原文读取凭证。请重新运行分析。",
+      "modelCalls": 4,
+      "caseRevision": 13,
+      "basisRevision": 13,
+      "summary": "",
+      "actions": [],
+      "applications": {},
+      "receipts": [
+        {
+          "id": "c118870d-80b8-44c5-aaf0-ed05a7ee6e7f",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 1
+        },
+        {
+          "id": "8231e758-caa3-4e12-97e8-d855afacaf96",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "cb1abc08-ed19-4e14-a2f4-beb55960e989",
+          "page": 2
+        },
+        {
+          "id": "5aa59338-2b43-4c56-bf14-a53883aadd42",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 1
+        },
+        {
+          "id": "240bcd9a-ff5c-4311-ab16-b595548ab3dc",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "94704ae8-a510-47e4-b9e0-af216d7b25dd",
+          "page": 2
+        }
+      ]
+    }
+  ]
+}

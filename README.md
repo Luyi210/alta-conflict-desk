@@ -1,10 +1,10 @@
-# Alta Conflict Desk · v0.6
+# Alta Conflict Desk · v0.7
 
 面向律所收案环节的主体识别与潜在利益冲突核查原型。围绕一个具体问题：**新事项各方及其公开披露的母公司，是否出现在本所事项台账中；还有哪些身份、委托范围与保密义务需要律师核实？**
 
-v0.6 新增「审查问题」工作台：把疑问、责任人、支持/矛盾依据与处理意见关联；材料出现新版后提示重新复核，并保留旧意见。支持实际 MCP 双版本对照、AI 影响问题及可编辑 Word 备忘录。详见 [本轮功能与验收](docs/PRODUCT-EXPERIENCE-V6.md)。
+v0.7 新增「AI 审查助理」：结合案件背景和已有问题，通过真实 MCP 读 PDF，提出核实顺序、材料缺口和可编辑补证请求，采用后连同依据带入审查问题。支持原文核对、历史建议、修订失效和草稿持久化。详见 [本轮功能与真实验收](docs/PRODUCT-EXPERIENCE-V7.md)。
 
-![v0.6 审查问题](docs/screenshots/v6-issues.png)
+![v0.7 AI 审查助理](docs/screenshots/v7-assistant.png)
 
 **本轮实际 DeepSeek 验收：2 轮、4 次模型 MCP 读取、3 个带原文引用的核实问题。** 前两次格式失败及修复保留在 [工作台核验](docs/V6-WORKBENCH-VERIFICATION.json)。浏览器已跑通问题建立、版本影响、人工处理和 [Word 下载](docs/V6-REVIEW-MEMO.docx)；59 项自动测试通过。下方 v0.5/v0.4 是历史验收，不并入本轮新增调用数。
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,6 +9,7 @@ import {
   LoaderCircle,
   RefreshCw,
   Users,
+  Sparkles,
 } from "lucide-react";
 import type {
   CaseDecision,
@@ -26,6 +27,7 @@ import { useReviewDraft } from "./useReviewDraft";
 import type { CaseTab } from "./navigation";
 import MaterialDesk from "./MaterialDesk";
 import IssueDesk from "./IssueDesk";
+const AssistantDesk = lazy(() => import("./AssistantDesk"));
 
 const date = (value: string) =>
   new Date(value).toLocaleString("zh-CN", { hour12: false });
@@ -359,6 +361,7 @@ function DecisionForm({
 }
 
 export default function CaseResults({
+  onConnectionChange,
   value,
   tab,
   onTabChange,
@@ -368,6 +371,7 @@ export default function CaseResults({
   onTrace,
   onError,
 }: {
+  onConnectionChange: () => Promise<void>;
   value: CaseView;
   tab: CaseTab;
   onTabChange: (tab: CaseTab) => void;
@@ -460,44 +464,46 @@ export default function CaseResults({
           </button>
         ))}
       </nav>
-      <div className="case-summary-strip">
-        <div>
-          <span>核查范围</span>
-          <strong>
-            {value.progress.confirmed}
-            <small> / {value.progress.total} 方已确认</small>
-          </strong>
+      {tab !== "assistant" && (
+        <div className="case-summary-strip">
+          <div>
+            <span>核查范围</span>
+            <strong>
+              {value.progress.confirmed}
+              <small> / {value.progress.total} 方已确认</small>
+            </strong>
+          </div>
+          <div>
+            <span>真实核查完成</span>
+            <strong>
+              {value.progress.completed}
+              <small> 方</small>
+            </strong>
+          </div>
+          <div>
+            <span>待复核线索</span>
+            <strong>
+              {pending}
+              <small> 条</small>
+            </strong>
+          </div>
+          <div>
+            <span>待补材料</span>
+            <strong>
+              {value.progress.openTasks}
+              <small> 项</small>
+            </strong>
+          </div>
+          <div className="case-summary-state">
+            <span
+              className={`badge ${value.status === "recorded" ? "green" : "amber"}`}
+            >
+              {caseState[value.status]}
+            </span>
+            <small>{decisionLabels[value.decision.status]}</small>
+          </div>
         </div>
-        <div>
-          <span>真实核查完成</span>
-          <strong>
-            {value.progress.completed}
-            <small> 方</small>
-          </strong>
-        </div>
-        <div>
-          <span>待复核线索</span>
-          <strong>
-            {pending}
-            <small> 条</small>
-          </strong>
-        </div>
-        <div>
-          <span>待补材料</span>
-          <strong>
-            {value.progress.openTasks}
-            <small> 项</small>
-          </strong>
-        </div>
-        <div className="case-summary-state">
-          <span
-            className={`badge ${value.status === "recorded" ? "green" : "amber"}`}
-          >
-            {caseState[value.status]}
-          </span>
-          <small>{decisionLabels[value.decision.status]}</small>
-        </div>
-      </div>
+      )}
       {value.status === "closed" && (
         <div className="case-hint closed-notice">
           <FileCheck2 size={18} />
@@ -510,48 +516,50 @@ export default function CaseResults({
           </div>
         </div>
       )}
-      {value.status !== "closed" && value.status !== "running" && (
-        <div className="case-next-action">
-          <div>
-            <span className="eyebrow small">NEXT ACTION</span>
-            <strong>
-              {value.status === "recorded"
-                ? "本轮审查记录已完备"
-                : value.progress.pendingFindings
-                  ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
-                  : value.progress.openTasks
-                    ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
-                    : value.blockers.some((b) => b.includes("审查问题"))
-                      ? "继续处理审查问题与材料变化"
-                      : "记录本轮审查总意见"}
-            </strong>
-            <p>
-              {value.status === "recorded"
-                ? "可查看总意见或导出记录。后续证据变更会重新开启复核。"
-                : value.progress.pendingFindings
-                  ? "逐条查看依据，选择升级复核、保留问题或排除线索。"
-                  : "已完成的操作会保存至案件记录，可随时导出。"}
-            </p>
+      {tab !== "assistant" &&
+        value.status !== "closed" &&
+        value.status !== "running" && (
+          <div className="case-next-action">
+            <div>
+              <span className="eyebrow small">NEXT ACTION</span>
+              <strong>
+                {value.status === "recorded"
+                  ? "本轮审查记录已完备"
+                  : value.progress.pendingFindings
+                    ? `还有 ${value.progress.pendingFindings} 条线索需要律师处理`
+                    : value.progress.openTasks
+                      ? `补齐 ${value.progress.openTasks} 项身份或范围材料`
+                      : value.blockers.some((b) => b.includes("审查问题"))
+                        ? "继续处理审查问题与材料变化"
+                        : "记录本轮审查总意见"}
+              </strong>
+              <p>
+                {value.status === "recorded"
+                  ? "可查看总意见或导出记录。后续证据变更会重新开启复核。"
+                  : value.progress.pendingFindings
+                    ? "逐条查看依据，选择升级复核、保留问题或排除线索。"
+                    : "已完成的操作会保存至案件记录，可随时导出。"}
+              </p>
+            </div>
+            <button
+              className="btn secondary"
+              onClick={() =>
+                setTab(
+                  value.progress.pendingFindings
+                    ? "parties"
+                    : value.progress.openTasks
+                      ? "tasks"
+                      : value.blockers.some((b) => b.includes("审查问题"))
+                        ? "issues"
+                        : "review",
+                )
+              }
+            >
+              {value.status === "recorded" ? "查看总意见" : "继续处理"}{" "}
+              <ArrowRight size={15} />
+            </button>
           </div>
-          <button
-            className="btn secondary"
-            onClick={() =>
-              setTab(
-                value.progress.pendingFindings
-                  ? "parties"
-                  : value.progress.openTasks
-                    ? "tasks"
-                    : value.blockers.some((b) => b.includes("审查问题"))
-                      ? "issues"
-                      : "review",
-              )
-            }
-          >
-            {value.status === "recorded" ? "查看总意见" : "继续处理"}{" "}
-            <ArrowRight size={15} />
-          </button>
-        </div>
-      )}
+        )}
       {value.status === "running" && (
         <div className="case-hint case-live" role="status">
           <LoaderCircle className="spin" size={16} /> 正在通过 MCP
@@ -578,6 +586,7 @@ export default function CaseResults({
       <div className="case-tabs" role="tablist" aria-label="案件审查步骤">
         {(
           [
+            ["assistant", "AI 审查助理", Sparkles],
             ["parties", "主体与线索", Users],
             ["materials", "材料与原文", FileCheck2],
             ["issues", "审查问题", FileCheck2],
@@ -598,6 +607,25 @@ export default function CaseResults({
           </button>
         ))}
       </div>
+      {tab === "assistant" && (
+        <Suspense
+          fallback={
+            <div className="panel assistant-loading" role="status">
+              正在载入 AI 审查助理…
+            </div>
+          }
+        >
+          <AssistantDesk
+            onConnectionChange={onConnectionChange}
+            key={value.id}
+            matter={value}
+            onUpdate={onUpdate}
+            onTab={setTab}
+            onTrace={onTrace}
+            onError={onError}
+          />
+        </Suspense>
+      )}
       {tab === "parties" && (
         <>
           {value.context && (
