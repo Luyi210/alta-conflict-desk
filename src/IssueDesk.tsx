@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import {
   ArrowRight,
   Check,
+  FileDown,
   FileSearch,
   GitCompareArrows,
   LoaderCircle,
@@ -183,6 +184,10 @@ export default function IssueDesk({
           <h2>审查问题与处理意见</h2>
           <p>登记依据、责任人和待补事项；材料变化后复核影响。</p>
         </div>
+        <a className="btn primary" href={`/api${base}/memo.docx`} download>
+          <FileDown size={16} />
+          导出 Word 备忘录
+        </a>
       </div>
       <div className="issue-stats">
         <div>
@@ -202,9 +207,9 @@ export default function IssueDesk({
           <span>已记录处理意见</span>
         </div>
         <p>
-          未决问题与旧版依据会保留在案件中。
+          导出包含未决问题与旧版依据。
           <br />
-          材料变化后需重新复核相关问题。
+          生成文档不会变更案件审查状态。
         </p>
       </div>
       <div className="issue-mode">

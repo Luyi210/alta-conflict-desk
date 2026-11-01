@@ -80,7 +80,7 @@ MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失�
 材料 MCP `read_material_page` 参数：`caseId`、`versionId`、`page`、`access`（user/model）。后端传入绑定案件的调用 scope，模型不可自行更改 caseId/access。模型阅读同时检查全局工具启用、案件范围和版本授权；返回后再次复查。全局工具台不能直接发起案件页面读取。`materials_info` 仅返回能力，不暴露案件内容。上述范围不是多用户鉴权；原型仅本机单用户。
 
 
-## 审查问题
+## v0.6 审查问题与 Word
 
 类型见 shared/issues.ts，保存在 materials.sqlite 的 review_issues 表。已有数据库自动建表，无需手工迁移。
 
@@ -92,6 +92,7 @@ MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失�
 | POST /:issueId/citations | 添加 versionId/page/quote/relation，连续原文校验 |
 | GET /comparison?from=&to= | 同案同文档旧→新版，真实 MCP 页读取及行差异 |
 | POST /compare-review | from/to，沿用逐版本 AI 授权，返回异步材料复核记录 |
+| GET /memo.docx | 导出当前保存记录的可编辑 Word；不改变案件修订或意见 |
 
 创建、更新与添加引用均须 expectedRevision，防止旧页面覆盖新案件记录。已处理问题的修改仍会令案件总意见恢复草稿。记录 resolved 要求责任人、原文依据、至少 10 字说明、missing 为空；有版本影响时须 acknowledgedVersionIds 包含最新版本且已关联其原文。历史意见保存引用与版本哈希快照，不能通过编辑当前问题覆盖。
 

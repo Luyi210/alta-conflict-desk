@@ -1,7 +1,5 @@
 # 本轮交付验收 · 2026-11-01
 
-> 本文记录当日验收。此后按用户要求移除 Word 导出功能及仓库中的 Word 样本；当前可用功能见[交付清单](DELIVERY-CHECKLIST.md)。
-
 结论：v0.9.1 的本机运行与核心律师工作流程通过本轮验证。没有发现阻断本轮流程的新问题，未改动业务代码。视频依用户最新指示暂缓；评审访问仍等待指定 GitHub 用户名。
 
 ## 干净安装与启动
@@ -40,7 +38,7 @@
 
 - [主体 AI 核验](FINAL-AI-VERIFICATION-20261101.json)与[模型报告](FINAL-AI-REPORT-20261101.md)
 - [材料助理核验](FINAL-ASSISTANT-VERIFICATION-20261101.json)与[问题引用核验](FINAL-ISSUES-VERIFICATION-20261101.json)
-- [实际下载案件报告](FINAL-CASE-REPORT-20261101.md)
+- [实际下载案件报告](FINAL-CASE-REPORT-20261101.md)与[Word 备忘录](FINAL-REVIEW-MEMO-20261101.docx)
 - [脱敏沟通原文](AI-CONVERSATION-REDACTED.md)：34 回合／210 条用户及助手公开消息，不含系统配置、内部推理和工具原始输出；与协作摘要分开保存
 
 这些凭证独立命名，未覆盖旧版本。新克隆不含本机数据库，需要自己建立案件；以下链接仅适用于开发机现有数据：[打开本轮验收案件](http://127.0.0.1:5178/#/cases/a0f550f6-2bbe-42b8-9c04-f14ebd746f3d?tab=assistant)。

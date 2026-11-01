@@ -10,6 +10,8 @@
 | Zod | 4.6.7 | MIT | 服务端输入校验与工具 schema |
 | pdfjs-dist（Mozilla PDF.js） | 6.4.299 | Apache-2.0 | 服务端逐页提取和浏览器 PDF 原文渲染，复用公开 npm 库，无源码移植 |
 | diff（jsdiff） | 9.0.0 | BSD-3-Clause | 提取文本的行级增删比较，非法律语义判断 |
+| docx | 9.15.0 | MIT | 本地生成可编辑 OOXML Word 备忘录 |
+| fflate | 0.8.3 | MIT | 开发测试中解压并检查 Word XML；也是 docx 的传递依赖 |
 | lucide-react | 0.468.0 | ISC | 界面图标 |
 | Vite | 6.4.5 | MIT | 开发与生产构建 |
 | @vitejs/plugin-react | 4.7.0 | MIT | React 构建插件 |

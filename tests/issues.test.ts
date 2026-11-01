@@ -4,11 +4,13 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { unzipSync, strFromU8 } from "fflate";
 import { Store } from "../server/store.ts";
 import { CaseService } from "../server/cases.ts";
 import { MaterialService } from "../server/material-service.ts";
 import { ConnectorManager } from "../server/connectors.ts";
 import { IssueService } from "../server/issue-service.ts";
+import { buildMemo } from "../server/memo.ts";
 import type { ScreeningService } from "../server/screening.ts";
 import type { Run, RunInput } from "../shared/types.ts";
 import type { ReviewIssue } from "../shared/issues.ts";
@@ -308,6 +310,30 @@ test("AI suggestions require a completed same-case source and are imported idemp
         }),
       /本案/,
     );
+  } finally {
+    await f.close();
+  }
+});
+test("editable Word memo preserves pending issues, version fingerprints and historical opinions without changing case state", async () => {
+  const f = fixture();
+  try {
+    const i = f.createIssue(),
+      old = await f.materials.upload(f.a.id, "委托书原版", pdf);
+    f.cite(i.id, old.id);
+    f.update(f.issues.list(f.a.id)[0]);
+    await f.materials.upload(f.a.id, "委托书修订版", revised, old.id);
+    const before = f.cases.get(f.a.id);
+    const bytes = await buildMemo(before, f.issues.snapshot(f.a.id));
+    const zip = unzipSync(new Uint8Array(bytes)),
+      xml = strFromU8(zip["word/document.xml"]);
+    assert.ok(xml.includes("收案审查备忘录"));
+    assert.ok(xml.includes("材料变化待复核"));
+    assert.ok(xml.includes("旧版依据"));
+    assert.ok(xml.includes(old.sha256));
+    assert.ok(xml.includes(quote));
+    assert.ok(xml.includes("人工意见历史"));
+    assert.ok(!zip["word/media/image1.png"]);
+    assert.equal(f.cases.get(f.a.id).revision, before.revision);
   } finally {
     await f.close();
   }
