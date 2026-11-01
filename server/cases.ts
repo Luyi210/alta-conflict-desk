@@ -94,6 +94,14 @@ export const caseDecisionSchema = z
     "请填写审查人姓名和至少 2 字的审查说明",
   );
 
+const decisionLabels: Record<CaseDecision["status"], string> = {
+  draft: "草稿",
+  "needs-information": "待补充材料",
+  "needs-partner-review": "待进一步复核",
+  "review-recorded": "审查记录完备",
+  declined: "不承接，结束审查",
+};
+
 const hash = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const stableTaskId = (kind: CaseTask["kind"], key: string) =>
@@ -301,7 +309,7 @@ export class CaseService {
     this.event(
       file,
       "decision-recorded",
-      `人工审查状态：${{ draft: "草稿", "needs-information": "待补充材料", "needs-partner-review": "待进一步复核", "review-recorded": "审查记录完备", declined: "不承接，结束审查" }[input.status]}；填写人：${input.reviewer || "未填写"}（身份未验证）；说明：${input.note || "未填写"}。此记录不批准收案，也不发送通知。`,
+      `人工审查状态：${decisionLabels[input.status]}；填写人：${input.reviewer || "未填写"}（身份未验证）；说明：${input.note || "未填写"}。此记录不批准收案，也不发送通知。`,
     );
     this.save(file);
     return this.get(id);
@@ -393,7 +401,7 @@ export class CaseService {
       this.event(
         file,
         "decision-invalidated",
-        `旧审查状态 ${previous.status}（修订 ${previous.revision}，填写人 ${previous.reviewer}，说明 ${previous.note}）已失效：${reason}`,
+        `旧审查状态「${decisionLabels[previous.status]}」（修订 ${previous.revision}，填写人 ${previous.reviewer}，说明 ${previous.note}）已失效：${reason}`,
       );
     file.decision = {
       status: "draft",

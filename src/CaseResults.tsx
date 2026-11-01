@@ -5,11 +5,11 @@ import {
   Check,
   Download,
   FileCheck2,
+  FileSearch,
   History,
   LoaderCircle,
   RefreshCw,
   Users,
-  Sparkles,
   ChevronDown,
 } from "lucide-react";
 import type {
@@ -238,7 +238,7 @@ function DecisionForm({
       <section className="panel case-decision">
         <div className="case-section-title">
           <div>
-            <span className="eyebrow small">HUMAN REVIEW</span>
+            <span className="eyebrow small">人工审查</span>
             <h2>案件总意见</h2>
           </div>
           <FileCheck2 size={24} />
@@ -337,7 +337,7 @@ function DecisionForm({
         )}
       </section>
       <aside className="panel case-blockers">
-        <span className="eyebrow small">COMPLETENESS CHECK</span>
+        <span className="eyebrow small">记录完整性</span>
         <h2>
           {value.blockers.length > 0
             ? `${value.blockers.length} 项仍需处理`
@@ -412,15 +412,13 @@ export default function CaseResults({
       </button>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">
-            MATTER REVIEW · REVISION {String(value.revision).padStart(2, "0")}
-          </div>
+          <div className="eyebrow">收案审查 · 第 {value.revision} 次修订</div>
           <h1>{value.name}</h1>
           <p>
             {value.jurisdiction || "未填写事项辖区"} ·{" "}
             {value.mode === "rules"
-              ? "规则预览 / 真实 MCP 调用"
-              : "AI 工具调用"}{" "}
+              ? "规则核查 / MCP 调用"
+              : "模型核查 / MCP 调用"}{" "}
             · {date(value.createdAt)}
           </p>
         </div>
@@ -545,7 +543,7 @@ export default function CaseResults({
         value.status !== "running" && (
           <div className="case-next-action">
             <div>
-              <span className="eyebrow small">NEXT ACTION</span>
+              <span className="eyebrow small">下一步工作</span>
               <strong>
                 {value.status === "recorded"
                   ? "本轮审查记录已完备"
@@ -600,7 +598,7 @@ export default function CaseResults({
                 <strong>{run.entity.name}</strong>
                 <span>
                   {run.modelExecution?.status === "running"
-                    ? `AI 正在取证与整理 · 已完成 ${run.modelExecution.toolCallCount} 次工具调用`
+                    ? `模型正在读取来源 · 已完成 ${run.modelExecution.toolCallCount} 次工具调用`
                     : `正在读取公开来源与台账 · 已完成 ${run.traces.filter((t) => t.status === "success").length} 次调用`}
                 </span>
               </div>
@@ -610,9 +608,9 @@ export default function CaseResults({
       <div className="case-tabs" role="tablist" aria-label="案件审查步骤">
         {(
           [
-            ["assistant", "AI 审查助理", Sparkles],
             ["parties", "主体与线索", Users],
             ["materials", "材料与原文", FileCheck2],
+            ["assistant", "核实建议", FileSearch],
             ["issues", "审查问题", FileCheck2],
             ["tasks", `补证清单 · ${value.progress.openTasks}`, FileCheck2],
             ["review", "案件总意见", Check],
@@ -635,7 +633,7 @@ export default function CaseResults({
         <Suspense
           fallback={
             <div className="panel assistant-loading" role="status">
-              正在载入 AI 审查助理…
+              正在载入核实建议…
             </div>
           }
         >
@@ -860,7 +858,7 @@ export default function CaseResults({
         <section className="panel case-activity">
           <div className="case-section-title">
             <div>
-              <span className="eyebrow small">LOCAL AUDIT TRAIL</span>
+              <span className="eyebrow small">本案留痕</span>
               <h2>案件操作记录</h2>
             </div>
             <span className="badge muted">修订 {value.revision}</span>

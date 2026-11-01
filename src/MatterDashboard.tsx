@@ -6,12 +6,12 @@ import {
   CircleCheck,
   ClipboardList,
   FilePlus2,
+  FileSearch,
   FolderOpen,
   LoaderCircle,
   Plug,
   Search,
   ShieldCheck,
-  Sparkles,
   X,
 } from "lucide-react";
 import type { AppStatus, CaseView } from "../shared/types";
@@ -152,9 +152,9 @@ export default function MatterDashboard({
     <div className="matter-dashboard page-enter">
       <div className="dashboard-heading">
         <div>
-          <div className="eyebrow">YOUR MATTERS, IN FOCUS</div>
+          <div className="eyebrow">案件概览</div>
           <h1>收案工作台</h1>
-          <p>先看待办，再进入每一份委托。</p>
+          <p>查看待办事项与各案当前进度。</p>
         </div>
         <button className="btn primary" onClick={onNew}>
           <FilePlus2 size={17} /> 新建收案审查{" "}
@@ -194,7 +194,7 @@ export default function MatterDashboard({
         <section className="work-queue">
           <div className="section-heading">
             <div>
-              <span className="eyebrow small">NEXT UP</span>
+              <span className="eyebrow small">待办队列</span>
               <h2>继续处理</h2>
             </div>
             <span className="subtle-count">{attention.length} 份待办案件</span>
@@ -239,7 +239,7 @@ export default function MatterDashboard({
         <aside className="readiness-panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow small">WORKSPACE READY</span>
+              <span className="eyebrow small">运行状态</span>
               <h2>核查环境</h2>
             </div>
             <ShieldCheck size={20} />
@@ -257,10 +257,10 @@ export default function MatterDashboard({
           </button>
           <button className="readiness-row" onClick={onModelHelp}>
             <span className="readiness-icon">
-              <Sparkles size={17} />
+              <FileSearch size={17} />
             </span>
             <span>
-              <strong>AI 辅助核查</strong>
+              <strong>模型核查</strong>
               <small>
                 {status.model.configured
                   ? status.model.model
@@ -298,7 +298,7 @@ export default function MatterDashboard({
       <section className="matter-register" aria-label="案件列表">
         <div className="section-heading">
           <div>
-            <span className="eyebrow small">MATTER REGISTER</span>
+            <span className="eyebrow small">案件名册</span>
             <h2>
               全部案件 <span>{cases.length}</span>
             </h2>
@@ -382,11 +382,11 @@ export default function MatterDashboard({
                         </button>
                         <span className="matter-subtitle">
                           {c.mode === "ai" ? (
-                            <Sparkles size={12} />
+                            <FileSearch size={12} />
                           ) : (
                             <ClipboardList size={12} />
                           )}{" "}
-                          {c.mode === "ai" ? "AI 辅助" : "规则核查"}
+                          {c.mode === "ai" ? "模型核查" : "规则核查"}
                           <i /> {c.parties.length} 方 ·{" "}
                           {c.parties[0]?.entity?.name || c.parties[0]?.name}
                         </span>

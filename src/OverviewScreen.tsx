@@ -17,7 +17,6 @@ import {
   RefreshCw,
   Scale,
   ShieldCheck,
-  Sparkles,
   Waves,
 } from "lucide-react";
 import type { Overview, OverviewStage } from "../shared/overview";
@@ -36,6 +35,23 @@ const date = (s: string) =>
     hour12: false,
     timeZone: "Asia/Shanghai",
   });
+const legacyDecisionLabels: Record<string, string> = {
+  draft: "草稿",
+  "needs-information": "待补充材料",
+  "needs-partner-review": "待进一步复核",
+  "review-recorded": "审查记录完备",
+  declined: "不承接，结束审查",
+};
+const displayActivity = (message: string) =>
+  message.replace(
+    /旧审查状态 (draft|needs-information|needs-partner-review|review-recorded|declined)/g,
+    (_, status: string) =>
+      `旧审查状态「${legacyDecisionLabels[status] || status}」`,
+  );
+const activitySummary = (message: string) => {
+  const compact = displayActivity(message).replace(/\s+/g, " ").trim();
+  return compact.length > 48 ? `${compact.slice(0, 48)}…` : compact;
+};
 type Filter =
   | "active"
   | "all"
@@ -132,7 +148,7 @@ export default function OverviewScreen({
       void document.exitFullscreen().catch(() => {});
     onNavigate(page);
   }
-  function open(id: string, tab: CaseTab = "assistant") {
+  function open(id: string, tab: CaseTab = "parties") {
     if (document.fullscreenElement)
       void document.exitFullscreen().catch(() => {});
     onOpen(id, tab);
@@ -246,16 +262,16 @@ export default function OverviewScreen({
       <div className="obs-content">
         <div className="obs-heading">
           <div>
-            <span className="obs-eyebrow">MATTER INTELLIGENCE / 01</span>
-            <h1>每一份委托，尽在视野。</h1>
+            <span className="obs-eyebrow">案件、待办与来源</span>
+            <h1>收案审查总览</h1>
             <p>
-              澄明律师事务所 <i /> 收案审查全局态势
+              澄明律师事务所 <i /> 本机案件与工具记录
             </p>
           </div>
           <div className={`obs-sync ${loading ? "is-syncing" : ""}`}>
             <span className={error ? "obs-sync-error" : ""}>
               <i />
-              {error ? "更新未成功" : loading ? "正在同步" : "本地记录已同步"}
+              {error ? "更新未成功" : loading ? "正在刷新" : "本机记录已更新"}
             </span>
             <small>
               {data
@@ -360,7 +376,7 @@ export default function OverviewScreen({
               <section className="obs-panel obs-landscape">
                 <div className="obs-panel-head">
                   <div>
-                    <span className="obs-eyebrow">REVIEW LANDSCAPE</span>
+                    <span className="obs-eyebrow">案件阶段</span>
                     <h2>审查态势</h2>
                   </div>
                   <span className="obs-caption">
@@ -387,11 +403,11 @@ export default function OverviewScreen({
                         <strong>
                           {String(data.totals.active).padStart(2, "0")}
                         </strong>
-                        <small>ACTIVE MATTERS</small>
+                        <small>进行中案件</small>
                       </div>
                     </div>
                     <span className="obs-orbit-caption">
-                      <ShieldCheck size={12} /> 专业判断 · 律师掌舵
+                      <ShieldCheck size={12} /> 按当前案件状态统计
                     </span>
                   </div>
                   <div className="obs-stage-list">
@@ -421,8 +437,8 @@ export default function OverviewScreen({
               <section className="obs-panel obs-priority">
                 <div className="obs-panel-head">
                   <div>
-                    <span className="obs-eyebrow">REQUIRES YOUR ATTENTION</span>
-                    <h2>需要你关注</h2>
+                    <span className="obs-eyebrow">问题清单</span>
+                    <h2>待处理问题</h2>
                   </div>
                   <span className="obs-count">{data.totals.openIssues}</span>
                 </div>
@@ -473,7 +489,7 @@ export default function OverviewScreen({
               <section className="obs-panel obs-connections">
                 <div className="obs-panel-head">
                   <div>
-                    <span className="obs-eyebrow">CONNECTED INTELLIGENCE</span>
+                    <span className="obs-eyebrow">接入状态</span>
                     <h2>数据连接</h2>
                   </div>
                   <Plug size={16} />
@@ -532,7 +548,7 @@ export default function OverviewScreen({
                 </div>
                 <div className="obs-panel-foot">
                   <span>
-                    {data.totals.authorizedLatest} 份最新材料已授权 AI
+                    {data.totals.authorizedLatest} 份最新材料已授权模型读取
                   </span>
                   <button onClick={() => navigate("connectors")}>
                     管理连接 <ArrowUpRight size={12} />
@@ -544,7 +560,7 @@ export default function OverviewScreen({
               <section className="obs-panel obs-queue">
                 <div className="obs-panel-head">
                   <div>
-                    <span className="obs-eyebrow">NEXT ACTIONS</span>
+                    <span className="obs-eyebrow">按当前状态筛选</span>
                     <h2>
                       案件工作队列 <small>{queue.length} 件</small>
                     </h2>
@@ -617,8 +633,8 @@ export default function OverviewScreen({
               <section className="obs-panel obs-trend">
                 <div className="obs-panel-head">
                   <div>
-                    <span className="obs-eyebrow">TOOL ACTIVITY</span>
-                    <h2>工具调用脉搏</h2>
+                    <span className="obs-eyebrow">调用记录</span>
+                    <h2>工具调用趋势</h2>
                   </div>
                   <div className="obs-period" aria-label="工具趋势观察窗口">
                     {([7, 30] as const).map((n) => (
@@ -701,7 +717,7 @@ export default function OverviewScreen({
                     </>
                   ) : (
                     <>
-                      <Sparkles size={12} />
+                      <Activity size={12} />
                       <span>
                         {data.tools.model} 次由模型发起 ·{" "}
                         {data.trend.reduce((n, d) => n + d.cases, 0)}{" "}
@@ -726,7 +742,9 @@ export default function OverviewScreen({
                       onClick={() => open(a.caseId, "activity")}
                     >
                       <time>{date(a.at)}</time>
-                      <strong>{a.message}</strong>
+                      <strong title={displayActivity(a.message)}>
+                        {activitySummary(a.message)}
+                      </strong>
                       <span>{a.caseName}</span>
                       <ArrowUpRight size={13} />
                     </button>
@@ -744,8 +762,8 @@ export default function OverviewScreen({
                 </p>
                 <p>
                   阶段互斥：先区分结案，再检查身份确认、当前核查完成度及失败／部分完成状态，其余归入律师复核。工具趋势按北京时间的自然日统计，包含今天；按凭证
-                  ID 去重，仅覆盖已保存的主体核查、材料分析、AI
-                  助理及独立工具台记录，不覆盖未留存的临时读取。柱条可显示当日新增案件；选择
+                  ID
+                  去重，仅覆盖已保存的主体核查、材料复核、核实建议及独立工具台记录，不覆盖未留存的临时读取。柱条可显示当日新增案件；选择
                   7／30
                   天不会改变全量案件指标。调用成功表示工具返回成功，不代表法律判断正确。
                 </p>
@@ -757,7 +775,7 @@ export default function OverviewScreen({
         <footer className="obs-footer">
           <span>
             <span className="obs-footer-mark">a.</span>ALTA CONFLICT DESK <i />{" "}
-            OBSERVATORY
+            收案审查总览
           </span>
           <span>律所委托数据为虚构演示 · 不自动作出收案决定</span>
           <button onClick={() => setMethod(!method)} aria-expanded={method}>

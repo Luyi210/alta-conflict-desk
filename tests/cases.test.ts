@@ -306,8 +306,47 @@ test("manual evidence requires notes and references, persists, and later review 
     assert.equal(reopened.get(view.id).decision.status, "draft");
     assert.ok(reopened.get(view.id).blockers.some((b) => b.includes("待复核")));
     assert.match(caseReport(view), /实际 MCP 调用轨迹/);
+    assert.match(caseReport(view), /当前核查：已完成/);
+    assert.doesNotMatch(caseReport(view), /当前核查：.*completed/);
+    assert.match(caseReport(view), /旧意见失效/);
     assert.match(caseReport(view), /不批准收案/);
     assert.match(caseReport(view), /身份未验证/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("invalidated decision activity uses the lawyer-facing status label", () => {
+  const f = fixture((i) => ({ findings: [finding(i.entity, "dismissed")] }));
+  try {
+    let view = f.cases.create(input());
+    const task = view.tasks.find((t) => !t.systemManaged);
+    assert.ok(task);
+    view = f.cases.recordDecision(view.id, {
+      status: "needs-information",
+      note: "等待委托范围材料",
+      reviewer: "测试律师",
+    });
+    view = f.cases.updateTask(view.id, task.id, {
+      status: "open",
+      note: "新增材料需要核对",
+      reference: "",
+    });
+    const activity = view.activity.find(
+      (item) => item.type === "decision-invalidated",
+    );
+    assert.ok(activity);
+    assert.match(activity.message, /旧审查状态「待补充材料」/);
+    assert.doesNotMatch(activity.message, /needs-information/);
+    assert.match(activity.message, /等待委托范围材料/);
+    view.activity.push({
+      ...activity,
+      id: "legacy-decision-activity",
+      message: "旧审查状态 needs-information（修订 1）已失效：材料换版",
+    });
+    const markdown = caseReport(view);
+    assert.match(markdown, /旧审查状态「待补充材料」（修订 1）/);
+    assert.doesNotMatch(markdown, /旧审查状态 needs-information/);
   } finally {
     f.cleanup();
   }
@@ -490,7 +529,7 @@ test("case HTTP routes validate input, expose aggregate state and return a Markd
     const report = await fetch(`${base}/${file.id}/report`);
     assert.equal(report.status, 200);
     assert.match(report.headers.get("content-disposition") || "", /attachment/);
-    assert.match(await report.text(), /非|不代表 AI 模型实跑/);
+    assert.match(await report.text(), /规则核查（不含模型分析）/);
     const listing = (await (await fetch(base)).json()) as {
       cases: { id: string }[];
     };

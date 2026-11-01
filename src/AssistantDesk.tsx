@@ -8,7 +8,6 @@ import {
   LoaderCircle,
   Play,
   RefreshCw,
-  Sparkles,
   Plus,
   ChevronRight,
   FileText,
@@ -197,12 +196,12 @@ export default function AssistantDesk({
       <section className="review-hero">
         <div className="review-hero-title">
           <span className="review-emblem">
-            <Sparkles size={24} strokeWidth={1.3} />
+            <FileSearch size={24} strokeWidth={1.3} />
           </span>
           <div>
-            <span className="review-kicker">MATTER INTELLIGENCE</span>
-            <h2>审查行动台</h2>
-            <p>从核实依据，到下一份工作草稿。</p>
+            <span className="review-kicker">材料核实</span>
+            <h2>核实建议</h2>
+            <p>结合本案材料整理待办，由律师核对后采用。</p>
           </div>
         </div>
         <div className="review-hero-metrics">
@@ -221,7 +220,7 @@ export default function AssistantDesk({
         </div>
         <button className="review-new-task" onClick={() => setSetupOpen(true)}>
           <Plus size={16} />
-          {running ? "查看运行范围" : "发起新分析"}
+          {running ? "查看运行范围" : "发起材料核实"}
         </button>
       </section>
       {error && !setupOpen && (
@@ -257,10 +256,10 @@ export default function AssistantDesk({
           />
           <strong>
             {run?.status === "completed"
-              ? "本轮核实行动"
+              ? "本轮核实建议"
               : run?.status === "running"
-                ? "正在准备行动建议"
-                : "审查工作区"}
+                ? "正在整理核实建议"
+                : "材料核实工作区"}
           </strong>
           {run?.status === "completed" && (
             <span className="review-pill">
@@ -313,16 +312,16 @@ export default function AssistantDesk({
           <aside className="review-index">
             <div className="review-index-label">
               <ListChecks size={14} />
-              <span>行动目录</span>
+              <span>建议目录</span>
               <small>{String(run.actions.length).padStart(2, "0")}</small>
             </div>
-            <nav aria-label="行动建议目录">
+            <nav aria-label="核实建议目录">
               {run.actions.map((a, index) => (
                 <button
                   key={index}
                   className={`review-index-item ${index === active ? "selected" : ""}`}
                   aria-current={index === active ? "true" : undefined}
-                  aria-label={`查看行动 ${index + 1}：${a.title}`}
+                  aria-label={`查看建议 ${index + 1}：${a.title}`}
                   onClick={() => changeAction(index)}
                 >
                   <span className="review-index-number">
@@ -361,7 +360,7 @@ export default function AssistantDesk({
                 onClick={() => setBriefOpen(!briefOpen)}
               >
                 <span>
-                  <Sparkles size={13} />
+                  <FileText size={13} />
                   本轮摘要
                 </span>
                 <ChevronDown size={14} />
@@ -380,12 +379,12 @@ export default function AssistantDesk({
           </aside>
           <section
             className="review-detail"
-            aria-label={`行动 ${active + 1} 的详情`}
+            aria-label={`建议 ${active + 1} 的详情`}
           >
             <header className="review-detail-head">
               <div className="review-detail-meta">
                 <span className="review-kicker">
-                  ACTION {String(active + 1).padStart(2, "0")} /{" "}
+                  建议 {String(active + 1).padStart(2, "0")} /{" "}
                   {String(run.actions.length).padStart(2, "0")}
                 </span>
                 <span
@@ -566,7 +565,7 @@ export default function AssistantDesk({
               <footer className="review-detail-footer">
                 <span>
                   <ShieldCheck size={14} />
-                  AI 建议 · 待律师复核
+                  模型生成 · 待律师复核
                 </span>
                 <button
                   className="btn primary"
@@ -584,13 +583,13 @@ export default function AssistantDesk({
           <div className="review-welcome-symbol">
             <Layers size={38} strokeWidth={1} />
           </div>
-          <span className="review-kicker">EVIDENCE TO ACTION</span>
+          <span className="review-kicker">本案材料</span>
           <h3>
             {run?.status === "running"
-              ? "正在从材料中整理核实行动"
+              ? "正在整理材料核实建议"
               : run?.status === "failed"
-                ? "本轮分析尚未完成"
-                : "让下一步工作，有据可循。"}
+                ? "本轮分析未完成"
+                : "根据材料确定后续核实事项"}
           </h3>
           {run?.status === "running" ? (
             <>
@@ -635,7 +634,7 @@ export default function AssistantDesk({
                 className="btn primary"
                 onClick={() => setSetupOpen(true)}
               >
-                开始一次材料分析 <Plus size={15} />
+                发起材料核实 <Plus size={15} />
               </button>
             </>
           )}
@@ -672,7 +671,7 @@ export default function AssistantDesk({
       </div>
       {setupOpen && (
         <ReviewDrawer
-          title="新建材料分析"
+          title="材料核实范围"
           subtitle="选择本轮目标和材料，确认后开始读取。"
           onClose={() => setSetupOpen(false)}
         >
@@ -684,7 +683,7 @@ export default function AssistantDesk({
           <section className="assistant-setup">
             <div className="assistant-section-head">
               <h3>
-                <Sparkles size={16} /> 新的审查任务
+                <FileSearch size={16} /> 本轮核实目标
               </h3>
               <span className="assistant-model">
                 {data.model.configured ? "模型已配置" : "模型未配置"}
@@ -754,7 +753,7 @@ export default function AssistantDesk({
                       <small>
                         v{m.version} · {m.pageCount} 页 ·{" "}
                         {m.latest ? "最新版本" : "历史版本"} ·{" "}
-                        {m.modelAllowed ? "已授权 AI" : "未授权 AI"}
+                        {m.modelAllowed ? "已授权模型读取" : "未授权模型读取"}
                       </small>
                     </span>
                   </label>
@@ -772,7 +771,7 @@ export default function AssistantDesk({
                         })
                       }
                     >
-                      授权 AI 读取此版本 <ArrowRight size={12} />
+                      授权模型读取此版本 <ArrowRight size={12} />
                     </button>
                   )}
                 </div>
@@ -827,7 +826,7 @@ export default function AssistantDesk({
                 ? "正在分析授权材料…"
                 : run
                   ? "生成新一轮建议"
-                  : "生成行动建议"}
+                  : "生成核实建议"}
             </button>
           </section>
         </ReviewDrawer>

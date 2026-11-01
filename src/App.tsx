@@ -94,7 +94,7 @@ const statusLabel = {
 };
 const connectorInfo = {
   documents: {
-    eyebrow: "CASE EVIDENCE",
+    eyebrow: "本案材料",
     name: "案件材料与原文",
     description: "按案件读取 PDF 版本与页码，原文引用可核对；AI 需逐版本授权。",
     scope: "本机 PDF · 本案范围 · 版本留存",
@@ -102,7 +102,7 @@ const connectorInfo = {
     icon: LedgerMark,
   },
   gleif: {
-    eyebrow: "PUBLIC ENTITY DATA",
+    eyebrow: "公开登记",
     name: "GLEIF 企业身份",
     description:
       "查询法人身份、LEI 编码与公开母公司关系，为名称匹配增加可靠的身份依据。",
@@ -111,7 +111,7 @@ const connectorInfo = {
     icon: GlobeMark,
   },
   ledger: {
-    eyebrow: "PRIVATE MATTER RECORDS",
+    eyebrow: "本机台账",
     name: "律所客户与事项台账",
     description:
       "在本地客户及事项记录中检索潜在线索。使用隔离的虚构台账，演示律师的复核过程。",
@@ -292,7 +292,7 @@ export default function App() {
     );
     return () => clearInterval(timer);
   }, [hasRunningCases, activeCase?.status]);
-  function openCase(id: string, tab: CaseTab = "assistant") {
+  function openCase(id: string, tab: CaseTab = "parties") {
     go({ page: "workspace", caseId: id, tab });
   }
   function updateCase(value: CaseView) {
@@ -464,11 +464,11 @@ export default function App() {
         </nav>
         <div className="sidebar-note">
           <ShieldCheck size={21} />
-          <p>审慎接受每一份委托</p>
+          <p>收案审查</p>
           <span>
-            以可追溯证据支持判断，
+            主体、来源与处理意见
             <br />
-            让专业决定留在律师手中。
+            在同一案件中留痕。
           </span>
         </div>
         <div className="sidebar-bottom">
@@ -662,7 +662,7 @@ export default function App() {
                 <div className="page-enter">
                   <div className="page-heading">
                     <div>
-                      <div className="eyebrow">CONNECTIONS</div>
+                      <div className="eyebrow">连接器管理</div>
                       <h1>数据连接</h1>
                       <p>
                         连接公开企业身份与本地客户事项，让每条核查线索都有来处。
@@ -837,7 +837,7 @@ export default function App() {
                 <div className="page-enter">
                   <div className="page-heading">
                     <div>
-                      <div className="eyebrow">MATTER REGISTER</div>
+                      <div className="eyebrow">核查记录</div>
                       <h1>执行记录</h1>
                       <p>
                         保留主体身份、来源证据与人工复核，支持后续收案判断。
@@ -958,9 +958,7 @@ export default function App() {
                                   </td>
                                   <td>{stamp(r.createdAt)}</td>
                                   <td>
-                                    {r.mode === "ai"
-                                      ? "AI 工具调用"
-                                      : "规则预览"}
+                                    {r.mode === "ai" ? "模型核查" : "规则预览"}
                                   </td>
                                   <td>{r.findings.length}</td>
                                   <td>
@@ -1169,13 +1167,13 @@ function Results({
       </div>
       <div className="page-heading result-heading">
         <div>
-          <div className="eyebrow">PRE-ENGAGEMENT SCREENING</div>
+          <div className="eyebrow">收案前核查</div>
           <h1>
             {run.status === "running"
-              ? "正在连接事实，梳理关系。"
+              ? "正在核查主体与相关事项"
               : run.status === "failed"
-                ? "核查暂未完成。"
-                : "线索已整理，等待专业判断。"}
+                ? "核查暂未完成"
+                : "主体核查结果"}
           </h1>
           <p>
             {run.matterName}
@@ -1374,7 +1372,7 @@ function Results({
               <>
                 <section className="evidence-panel">
                   <div className="evidence-title">
-                    <div className="eyebrow small">EVIDENCE CHAIN</div>
+                    <div className="eyebrow small">来源依据</div>
                     <h2>{typeLabel[finding.type]}的核查依据</h2>
                     <p>{finding.summary}</p>
                   </div>
@@ -1678,15 +1676,15 @@ function About({
     <div className="page-enter about-page">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">GETTING STARTED</div>
+          <div className="eyebrow">操作说明</div>
           <h1>使用指南</h1>
           <p>从建立委托到记录意见，让每一步都有据可查。</p>
         </div>
       </div>
       <div className="guide-start">
         <div>
-          <span className="eyebrow small">YOUR FIRST MATTER</span>
-          <h2>第一次使用，从一份事项开始。</h2>
+          <span className="eyebrow small">新建案件</span>
+          <h2>从一份收案审查开始</h2>
           <p>
             可以填入融资示例体验完整流程；示例只填写表单，公开身份仍需实际查询确认。
           </p>
@@ -1831,8 +1829,8 @@ function About({
           </section>
         </div>
         <div className="references">
-          <div className="eyebrow small">OPEN SOURCE & PRIMARY SOURCES</div>
-          <h3>参考透明，边界明确。</h3>
+          <div className="eyebrow small">技术与来源</div>
+          <h3>开源依赖与资料来源</h3>
           <p>
             直接使用官方 MCP
             SDK；参考开源主体匹配、证据审阅与人工接管设计。详细版本、许可证和研究链接随代码交付。

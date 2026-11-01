@@ -96,8 +96,12 @@ export class ScreeningService {
     private connectors: ConnectorManager,
   ) {}
   create(input: RunInput) {
-    for (const c of this.connectors.list())
+    // Subject screening only reads the public registry and the matter ledger.
+    // PDF access is checked separately when a material review starts.
+    for (const id of ["gleif", "ledger"] as const) {
+      const c = this.connectors.get(id);
       if (!c.connected) throw new HttpError(409, `请先连接${c.name}`);
+    }
     if (input.mode === "ai" && !modelConfigured())
       throw new HttpError(
         409,

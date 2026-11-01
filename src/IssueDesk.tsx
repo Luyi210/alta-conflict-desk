@@ -180,9 +180,9 @@ export default function IssueDesk({
     <div className="issue-desk">
       <div className="issue-heading">
         <div>
-          <span className="eyebrow small">REVIEW WORKBENCH</span>
-          <h2>让每个问题都有处理依据</h2>
-          <p>把疑问、原文和律师意见放在一起；材料变化后继续追踪。</p>
+          <span className="eyebrow small">问题处理</span>
+          <h2>审查问题与处理意见</h2>
+          <p>登记依据、责任人和待补事项；材料变化后复核影响。</p>
         </div>
         <a className="btn primary" href={`/api${base}/memo.docx`} download>
           <FileDown size={16} />

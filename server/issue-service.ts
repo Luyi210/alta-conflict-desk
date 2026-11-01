@@ -8,7 +8,7 @@ import type {
   MaterialComparison,
   ReviewIssue,
 } from "../shared/issues.ts";
-import { issueCategories } from "../shared/issues.ts";
+import { issueCategories, issueStates } from "../shared/issues.ts";
 import { CaseService } from "./cases.ts";
 import { MaterialService } from "./material-service.ts";
 import { HttpError } from "./connectors.ts";
@@ -470,12 +470,17 @@ export class IssueService {
     });
   }
   markdown(caseId: string) {
+    const text = (value: string) =>
+      value
+        .replace(/[\r\n]+/g, " ")
+        .replace(/[<>]/g, "")
+        .replace(/([\\`*_{}\[\]|#])/g, "\\$1");
     return (
       "\n\n## 审查问题与处理意见\n\n" +
       this.list(caseId)
         .map(
           (i) =>
-            `### ${i.title}\n\n类别：${issueCategories[i.category]}；状态：${i.effectiveStatus}；责任人：${i.owner || "未指定"}\n\n待补：${i.missing || "未记录"}\n\n意见：${i.note || "未记录"}\n\n历史意见 ${i.reviews.length} 次；原文依据 ${i.citations.length} 条；待复核材料变更 ${i.impacts.length} 份\n`,
+            `### ${text(i.title)}\n\n类别：${issueCategories[i.category]}；状态：${issueStates[i.effectiveStatus]}；责任人：${text(i.owner || "未指定")}\n\n待补：${text(i.missing || "未记录")}\n\n意见：${text(i.note || "未记录")}\n\n历史意见 ${i.reviews.length} 次；原文依据 ${i.citations.length} 条；待复核材料变更 ${i.impacts.length} 份\n`,
         )
         .join("\n")
     );

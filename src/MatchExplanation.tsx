@@ -4,7 +4,7 @@ export default function MatchExplanation({ finding }: { finding: Finding }) {
   const e = explainMatch(finding);
   return (
     <section className="match-explanation">
-      <span className="eyebrow small">IDENTITY COMPARISON</span>
+      <span className="eyebrow small">主体比对</span>
       <h3>{e.summary}</h3>
       <p>逐项比对：{e.subject} 与台账记录</p>
       <div className="match-comparison-scroll">

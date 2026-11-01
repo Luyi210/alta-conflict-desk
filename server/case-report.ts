@@ -1,4 +1,10 @@
-import type { CaseView } from "../shared/types.ts";
+import type {
+  CaseTask,
+  CaseView,
+  Finding,
+  Run,
+  Trace,
+} from "../shared/types.ts";
 import { briefReport } from "./report.ts";
 
 const text = (value: string) =>
@@ -19,10 +25,67 @@ const reviewLabels = {
 const decisionLabels = {
   declined: "不承接，结束审查（未核实事项仍保留）",
   draft: "草稿",
-  "needs-information": "待补充资料",
+  "needs-information": "待补充材料",
   "needs-partner-review": "待合伙人复核（本地标记）",
   "review-recorded": "审查记录完备（不等于批准收案）",
 };
+const runLabels: Record<Run["status"], string> = {
+  running: "核查中",
+  completed: "已完成",
+  partial: "来源不完整",
+  failed: "失败",
+};
+const modelLabels: Record<
+  NonNullable<Run["modelExecution"]>["status"],
+  string
+> = {
+  running: "运行中",
+  completed: "已完成",
+  failed: "失败",
+};
+const taskLabels: Record<CaseTask["kind"], string> = {
+  identity: "主体身份",
+  coverage: "来源覆盖",
+  scope: "委托范围",
+  confidentiality: "保密义务",
+};
+const findingLabels: Record<Finding["type"], string> = {
+  direct: "同一主体",
+  related: "关联主体",
+  similar: "名称近似",
+};
+const matchLabels: Record<Finding["match"]["matchType"], string> = {
+  "exact-lei": "LEI 一致",
+  "exact-name": "名称一致，身份待核实",
+  "similar-name": "名称近似，身份待核实",
+};
+const traceLabels: Record<Trace["status"], string> = {
+  success: "成功",
+  error: "失败",
+};
+const activityLabels: Record<string, string> = {
+  created: "建立案件",
+  "decision-recorded": "记录人工意见",
+  "decision-invalidated": "旧意见失效",
+  "evidence-updated": "核查依据变化",
+  "identity-resolved": "确认主体身份",
+  "party-retried": "重新核查主体",
+  "task-updated": "更新补证待办",
+  "material-evidence-updated": "更新材料或审查问题",
+};
+const legacyDecisionLabels: Record<string, string> = {
+  draft: "草稿",
+  "needs-information": "待补充材料",
+  "needs-partner-review": "待进一步复核",
+  "review-recorded": "审查记录完备",
+  declined: "不承接，结束审查",
+};
+const activityMessage = (message: string) =>
+  message.replace(
+    /^旧审查状态 (draft|needs-information|needs-partner-review|review-recorded|declined)/,
+    (_, status: string) =>
+      `旧审查状态「${legacyDecisionLabels[status] || status}」`,
+  );
 
 export function caseReport(file: CaseView) {
   return [
@@ -34,7 +97,7 @@ export function caseReport(file: CaseView) {
     `- 创建：${file.createdAt}；更新：${file.updatedAt}`,
     `- 事项背景：${text(file.context || "未填写")}`,
     `- 司法辖区（仅作背景）：${text(file.jurisdiction)}`,
-    `- 执行模式：${file.mode === "rules" ? "规则预览，真实 MCP 调用；不代表 AI 模型实跑" : "AI 辅助核查，实际完成情况见每个主体的模型状态及调用轨迹"}`,
+    `- 执行模式：${file.mode === "rules" ? "规则核查（不含模型分析）；来源结果见调用轨迹" : "模型辅助核查；完成情况见每个主体的模型状态及调用轨迹"}`,
     `- 覆盖进度：${file.progress.completed}/${file.progress.total} 个主体来源核查完整，${file.progress.confirmed} 个身份已确认。`,
     "",
     "> 本原型的内部事项及律师姓名全部为虚构数据；公开企业名称与 LEI 不代表真实委托关系。系统生成核查线索和补证清单，不自动判断法律利益冲突，也不批准收案。GLEIF 母公司关系采用会计合并口径，不是完整股权、控制或法律关联图谱。未命中不等于不存在利益冲突。",
@@ -48,7 +111,7 @@ export function caseReport(file: CaseView) {
         "",
         `- 主体编号：${p.id}`,
         `- 身份：${p.confirmed && p.entity ? `已选择确认；LEI ${p.entity.lei}` : "未确认，尚未核查"}`,
-        `- 当前核查：${run ? `${run.id} / ${run.status}` : "无"}`,
+        `- 当前核查：${run ? `${runLabels[run.status]}（编号 ${run.id}）` : "无"}`,
         ...(run
           ? [
               `- 实际取得主体：${text(run.entity.name)}`,
@@ -58,7 +121,7 @@ export function caseReport(file: CaseView) {
           : []),
         ...(run?.modelExecution
           ? [
-              `- 模型执行：${run.modelExecution.status}；模型 ${text(run.modelExecution.model)}；工具调用 ${run.modelExecution.toolCallCount} 次；${run.modelExecution.rounds} 轮。${run.modelExecution.error ? text(run.modelExecution.error) : ""}`,
+              `- 模型执行：${modelLabels[run.modelExecution.status]}；模型 ${text(run.modelExecution.model)}；工具调用 ${run.modelExecution.toolCallCount} 次；${run.modelExecution.rounds} 轮。${run.modelExecution.error ? text(run.modelExecution.error) : ""}`,
             ]
           : []),
         "",
@@ -94,7 +157,7 @@ export function caseReport(file: CaseView) {
       ? file.tasks.flatMap((t) => [
           `### ${text(t.title)}`,
           "",
-          `- 编号：${t.id}；种类：${t.kind}；状态：${t.status === "resolved" ? "已补齐" : "待补充"}${t.systemManaged ? "（系统根据身份/来源状态管理）" : ""}`,
+          `- 编号：${t.id}；类别：${taskLabels[t.kind]}；状态：${t.status === "resolved" ? "已补齐" : "待补充"}${t.systemManaged ? "（系统根据身份/来源状态管理）" : ""}`,
           `- 涉及主体：${t.partyIds.map((id) => text(file.parties.find((p) => p.id === id)?.name || id)).join("、")}`,
           `- 要求：${text(t.description)}`,
           `- 核实说明：${text(t.note || "未填写")}`,
@@ -112,7 +175,7 @@ export function caseReport(file: CaseView) {
         `- 核查 / 线索编号：${run.id} / ${f.id}`,
         `- 涉及实体：${text(f.entity.name)} / ${f.entity.lei}`,
         `- 虚构事项：${text(f.match.matterName)} / ${text(f.match.matterRef)}`,
-        `- 匹配依据：${f.match.matchType}；线索类型：${f.type}`,
+        `- 匹配依据：${matchLabels[f.match.matchType]}；线索类型：${findingLabels[f.type]}`,
         `- 说明：${text(f.summary)}`,
         `- 人工复核：${reviewLabels[f.review]}；${text(f.reviewNote || "尚未填写理由")}`,
         `- 复核时间：${f.reviewedAt || "尚未复核"}`,
@@ -146,7 +209,10 @@ export function caseReport(file: CaseView) {
     "",
     "## 活动与旧意见失效记录",
     "",
-    ...file.activity.map((a) => `- ${a.at} · ${a.type} · ${text(a.message)}`),
+    ...file.activity.map(
+      (a) =>
+        `- ${a.at} · ${activityLabels[a.type] || `其他记录（${text(a.type)}）`} · ${text(activityMessage(a.message))}`,
+    ),
     "",
     "## 实际 MCP 调用轨迹",
     "",
@@ -156,7 +222,7 @@ export function caseReport(file: CaseView) {
         "",
         `- 核查编号：${run.id}；调用编号：${t.id}`,
         `- 发起方：${t.initiator === "model" ? "模型工具调用" : t.initiator === "rules" ? "规则编排" : "用户操作"}`,
-        `- 时间：${t.startedAt}；耗时：${t.durationMs} ms；状态：${t.status}`,
+        `- 时间：${t.startedAt}；耗时：${t.durationMs} ms；状态：${traceLabels[t.status]}`,
         "",
         "```json",
         JSON.stringify(

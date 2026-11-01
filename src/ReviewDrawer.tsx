@@ -77,7 +77,7 @@ export default function ReviewDrawer({
     >
       <div className="review-drawer-head">
         <div>
-          <span className="review-kicker">ALTA · REVIEW DESK</span>
+          <span className="review-kicker">本案复核</span>
           <h2 id={titleId}>{title}</h2>
           <p>{subtitle}</p>
         </div>

@@ -8,7 +8,6 @@ import {
   LoaderCircle,
   Plug,
   ShieldCheck,
-  Sparkles,
   Upload,
 } from "lucide-react";
 import { api, post } from "./api";
@@ -151,7 +150,7 @@ export default function MaterialDesk({
     <div className="material-desk">
       <div className="material-heading">
         <div>
-          <span className="eyebrow small">CASE EVIDENCE LIBRARY</span>
+          <span className="eyebrow small">材料版本</span>
           <h2>案件材料与原文</h2>
           <p>保留每一版材料，让复核依据回到具体一页。</p>
         </div>
@@ -512,9 +511,9 @@ export default function MaterialDesk({
       <section className="material-ai">
         <div className="section-heading">
           <div>
-            <span className="eyebrow small">GROUNDED REVIEW</span>
+            <span className="eyebrow small">模型读取范围</span>
             <h2>
-              <Sparkles size={20} /> AI 材料复核
+              <BookOpen size={20} /> 材料核实建议
             </h2>
           </div>
           <span className="badge">
@@ -562,10 +561,10 @@ export default function MaterialDesk({
           {running ? (
             <LoaderCircle className="spin" size={16} />
           ) : (
-            <Sparkles size={16} />
+            <BookOpen size={16} />
           )}{" "}
           {running
-            ? `AI 正在读取与整理 · ${currentReview?.traces.length || 0} 次调用`
+            ? `模型正在读取材料 · ${currentReview?.traces.length || 0} 次调用`
             : "运行已授权材料复核"}
         </button>
         {snapshot?.reviews.map((r, i) => (

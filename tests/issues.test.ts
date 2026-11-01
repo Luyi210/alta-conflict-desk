@@ -119,6 +119,25 @@ function fixture() {
     },
   };
 }
+
+test("issue export uses readable status and keeps user text inside its section", async () => {
+  const f = fixture();
+  try {
+    f.issues.create(f.a.id, {
+      title: "范围核实\n## 伪造结论",
+      category: "scope",
+      expectedRevision: f.cases.get(f.a.id).revision,
+    });
+    const markdown = f.issues.markdown(f.a.id);
+    assert.match(markdown, /状态：待核实/);
+    assert.doesNotMatch(markdown, /状态：open/);
+    assert.doesNotMatch(markdown, /\n## 伪造结论/);
+    assert.match(markdown, /范围核实 \\#\\# 伪造结论/);
+  } finally {
+    await f.close();
+  }
+});
+
 test("issue boundaries reject cross-case sources, forged quotes and stale writes; unresolved issues block completion", async () => {
   const f = fixture();
   try {

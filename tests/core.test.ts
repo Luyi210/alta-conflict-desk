@@ -116,7 +116,7 @@ test("AI mode is refused when no model credential is configured", () => {
     const service = new ScreeningService(
       {} as Store,
       {
-        list: () => [{ connected: true }, { connected: true }],
+        get: (id: string) => ({ id, name: id, connected: true }),
       } as unknown as ConnectorManager,
     );
     assert.throws(
@@ -155,11 +155,19 @@ test("reviews and reports retain reasons across database reopen, and interrupted
     store = new Store(dir);
     assert.equal(store.get(run.id)?.findings[0].review, "dismissed");
     const markdown = report(store.get(run.id)!);
+    assert.match(markdown, /- 状态：已完成/);
+    assert.match(markdown, /匹配依据：LEI 一致/);
     assert.match(markdown, /经核实为不同事项/);
-    assert.match(markdown, /非 AI 推理验收/);
+    assert.match(markdown, /规则核查（不含模型分析）/);
     assert.match(markdown, /虚构/);
     assert.match(markdown, /发现 1 条核查线索/);
     assert.doesNotMatch(markdown, /条待律师复核的线索/);
+    const modelMarkdown = report({
+      ...sampleRun(),
+      modelSummary: "## 未核实结论\n仍须律师判断",
+    });
+    assert.match(modelMarkdown, /\\#\\# 未核实结论 仍须律师判断/);
+    assert.doesNotMatch(modelMarkdown, /^## 未核实结论/m);
     assert.equal(store.get("interrupted")?.status, "failed");
   } finally {
     store.close();
@@ -207,11 +215,64 @@ test("real SQLite MCP lists tools, reads synthetic data, and stops calls after d
   }
 });
 
+test("subject screening needs GLEIF and ledger but not the PDF connector", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "conflict-required-connectors-"));
+  const store = new Store(dir);
+  const connected = { gleif: true, ledger: true, documents: false };
+  const manager = {
+    get(id: keyof typeof connected) {
+      return { id, name: id, connected: connected[id] };
+    },
+    async call(id: string, tool: string, args: Record<string, unknown>) {
+      const data =
+        tool === "get_entity"
+          ? { entity }
+          : tool === "search_matters"
+            ? { matches: [] }
+            : { relations: [], gaps: [] };
+      return {
+        data,
+        trace: {
+          id: `${tool}-${id}`,
+          connector: id,
+          tool,
+          args,
+          startedAt: entity.fetchedAt,
+          durationMs: 1,
+          status: "success",
+          result: data,
+        } as Trace,
+      };
+    },
+  } as unknown as ConnectorManager;
+  const service = new ScreeningService(store, manager);
+  const input = {
+    matterName: "虚构事项",
+    prospectiveClient: "虚构客户",
+    partyRole: "交易对方",
+    entity,
+    mode: "rules" as const,
+  };
+  try {
+    const run = service.create(input);
+    await service.close();
+    assert.equal(store.get(run.id)?.status, "completed");
+    connected.ledger = false;
+    assert.throws(() => service.create(input), /请先连接ledger/);
+    connected.ledger = true;
+    connected.gleif = false;
+    assert.throws(() => service.create(input), /请先连接gleif/);
+  } finally {
+    store.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("unavailable parent data yields a partial result with an explicit gap, never a fabricated relationship", async () => {
   const dir = mkdtempSync(join(tmpdir(), "conflict-gap-"));
   const store = new Store(dir);
   const fakeManager = {
-    list: () => [{ connected: true }, { connected: true }],
+    get: (id: string) => ({ id, name: id, connected: true }),
     async call(_id: string, tool: string, args: Record<string, unknown>) {
       const data =
         tool === "get_entity"

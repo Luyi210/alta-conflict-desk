@@ -515,7 +515,7 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
     <div className="tool-desk page-enter">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">CONNECTED TOOLS</div>
+          <div className="eyebrow">MCP 工具目录</div>
           <h1>工具调用台</h1>
           <p>
             先核对数据来源，再独立验证一项查询。每次调用都保留参数、结果与来源。
@@ -532,8 +532,8 @@ export default function ToolDesk({ onError, onTrace, onConnections }: Props) {
         <div>
           <ShieldCheck size={19} />
           <span>
-            <strong>真实 MCP 调用</strong>
-            手动测试已接入工具，便于核查数据范围及排查失败。
+            <strong>手动调用记录</strong>
+            查询直接发送到已连接工具，保留参数、返回与失败原因。
           </span>
         </div>
         <span className="td-intro-note">

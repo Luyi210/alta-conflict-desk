@@ -1,12 +1,12 @@
-import type { Run } from "../shared/types.ts";
+import type { Finding, Run, Trace } from "../shared/types.ts";
 import { evidenceFacts } from "../shared/evidence-facts.ts";
 export function briefReport(run: Run): string[] {
   if (!run.modelSummary) return [];
   return [
-    "## AI 核查简报",
+    "## 核查简报（模型辅助）",
     "",
-    "AI 摘要（待律师核对）：",
-    run.modelSummary,
+    "模型整理的摘要（待律师核对）：",
+    text(run.modelSummary),
     "",
     ...(
       [
@@ -33,8 +33,23 @@ const text = (value: string) =>
   value
     .replace(/[\r\n]+/g, " ")
     .replace(/[<>]/g, "")
-    .replace(/([\[\]`])/g, "\\$1");
+    .replace(/([\\`*_{}\[\]|#])/g, "\\$1");
 export function report(run: Run) {
+  const runStatus: Record<Run["status"], string> = {
+    running: "核查中",
+    completed: "已完成",
+    partial: "来源不完整",
+    failed: "失败",
+  };
+  const matchType: Record<Finding["match"]["matchType"], string> = {
+    "exact-lei": "LEI 一致",
+    "exact-name": "名称一致，身份待核实",
+    "similar-name": "名称近似，身份待核实",
+  };
+  const traceStatus: Record<Trace["status"], string> = {
+    success: "成功",
+    error: "失败",
+  };
   const review = {
     pending: "待复核",
     escalated: "已标记进一步复核",
@@ -51,8 +66,8 @@ export function report(run: Run) {
     `- 主体角色：${text(run.partyRole)}`,
     `- 委托背景：${text(run.context || "未提供")}`,
     `- 事项辖区（背景信息，不是法律适用结论）：${text(run.jurisdiction || "未提供")}`,
-    `- 模式：${run.mode === "rules" ? "规则预览（非 AI 推理验收）" : "AI 工具核查（见调用记录与缺口）"}`,
-    `- 状态：${run.status}`,
+    `- 模式：${run.mode === "rules" ? "规则核查（不含模型分析）" : "模型辅助核查（见调用记录与缺口）"}`,
+    `- 状态：${runStatus[run.status]}`,
     `- 开始：${run.createdAt}`,
     `- 完成：${run.completedAt || "尚未完成"}`,
     "",
@@ -85,7 +100,7 @@ export function report(run: Run) {
       `- 对应主体：${text(finding.entity.name)}`,
       `- 虚构内部记录：${text(finding.match.clientName)} / ${text(finding.match.matterRef)}`,
       `- 虚构事项：${text(finding.match.matterName)}`,
-      `- 匹配依据：${finding.match.matchType}`,
+      `- 匹配依据：${matchType[finding.match.matchType]}`,
       `- 复核状态：${review[finding.review]}`,
       `- 复核理由：${text(finding.reviewNote || "尚未填写")}`,
       `- 最近复核时间：${finding.reviewedAt || "尚未复核"}`,
@@ -102,7 +117,7 @@ export function report(run: Run) {
       `- 发起方：${trace.initiator === "model" ? "模型工具调用" : trace.initiator === "rules" ? "规则编排" : "用户操作"}`,
       `- 开始：${trace.startedAt}`,
       `- 耗时：${trace.durationMs} ms`,
-      `- 状态：${trace.status}`,
+      `- 状态：${traceStatus[trace.status]}`,
       "",
       "```json",
       JSON.stringify(

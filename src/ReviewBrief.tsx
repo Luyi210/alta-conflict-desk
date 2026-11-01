@@ -1,10 +1,4 @@
-import {
-  ArrowUpRight,
-  Check,
-  CircleHelp,
-  FileCheck2,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, Check, CircleHelp, FileCheck2 } from "lucide-react";
 import type { Run, Trace } from "../shared/types";
 import { evidenceFacts } from "../shared/evidence-facts";
 import "./review-refinements.css";
@@ -56,16 +50,16 @@ export default function ReviewBrief({
       );
     });
   return (
-    <section className="review-brief" aria-label="AI 核查简报">
+    <section className="review-brief" aria-label="模型核查简报">
       <header>
         <div>
-          <span className="eyebrow small">REVIEW BRIEF</span>
+          <span className="eyebrow small">本轮核查</span>
           <h2>
-            <Sparkles size={19} /> AI 核查简报
+            <FileCheck2 size={19} /> 模型核查简报
           </h2>
         </div>
         <span className="badge muted">
-          {run.modelExecution?.model || "AI 辅助"} ·{" "}
+          {run.modelExecution?.model || "模型辅助"} ·{" "}
           {run.modelExecution?.toolCallCount || citations.length} 次工具调用
         </span>
       </header>
@@ -76,7 +70,7 @@ export default function ReviewBrief({
         </details>
       ) : (
         <p className="brief-summary">
-          <span className="brief-summary-label">AI 摘要 · 待律师核对</span>
+          <span className="brief-summary-label">模型摘要 · 待律师核对</span>
           {summary}
         </p>
       )}

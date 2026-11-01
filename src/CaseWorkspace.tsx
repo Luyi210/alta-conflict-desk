@@ -321,7 +321,7 @@ export default function CaseWorkspace({
       </button>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">NEW MATTER</div>
+          <div className="eyebrow">收案登记</div>
           <h1>新建收案审查</h1>
           <p>把委托范围说清楚，再核实每一方的身份。</p>
         </div>
@@ -365,12 +365,12 @@ export default function CaseWorkspace({
       <div className="intake-layout">
         <section className="panel intake-main">
           <div className="intake-panel-heading">
-            <span className="eyebrow small">STEP 0{step} / 03</span>
+            <span className="eyebrow small">第 {step} 步 / 共 3 步</span>
             <h2>{stepTitles[step - 1]}</h2>
             <p>
               {
                 [
-                  "先建立这份委托的背景，帮助 AI 提出更相关的复核问题。",
+                  "说明拟提供的服务和相关方，供后续核查与复核使用。",
                   "名称相似不等于同一主体。请核对登记名称与 LEI 后确认。",
                   "核对本次范围和运行方式，启动后会保存独立的案件记录。",
                 ][step - 1]
@@ -696,11 +696,11 @@ export default function CaseWorkspace({
           </div>
         </section>
         <aside className="intake-aside">
-          <span className="eyebrow small">A CLEAR REVIEW PATH</span>
+          <span className="eyebrow small">审查步骤</span>
           <h2>
-            一份委托，
+            先确认范围，
             <br />
-            一条完整的审查路径。
+            再核对来源。
           </h2>
           <ol>
             <li className={step === 1 ? "active" : ""}>
