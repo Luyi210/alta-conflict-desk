@@ -2,6 +2,8 @@
 
 ## 当前资料
 
+最新入口：[2026-11-01 完整验收](FINAL-ACCEPTANCE-20261101.md)，包含干净安装、14 次模型 MCP 调用及实际导出文件。
+
 | 文档 | 用途 |
 | --- | --- |
 | [项目首页](../README.md) | 当前功能、启动与目录 |
@@ -10,7 +12,7 @@
 | [运行指南](OPERATIONS.md) | 配置、数据、材料限制和复验命令 |
 | [工具台](TOOLS.md)／[API](API-CONTRACT.md) | 使用与接口 |
 | [研究](RESEARCH.md)／[复用](THIRD-PARTY-NOTICES.md) | 参考、依赖和许可 |
-| [协作记录](AI-COLLABORATION.md) | 脱敏沟通摘要 |
+| [协作摘要](AI-COLLABORATION.md)／[原文导出](AI-CONVERSATION-REDACTED.md) | 脱敏摘要与 210 条可见原文 |
 | [演示顺序](DEMO.md) | 新版待录流程 |
 | [清理记录](CLEANUP-2026-11-01.md) | 删除、归档和保留范围 |
 

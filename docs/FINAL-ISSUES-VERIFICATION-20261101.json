@@ -1,0 +1,48 @@
+{
+  "verifiedAt": "2026-11-01T01:58:15.402Z",
+  "caseId": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d",
+  "caseRevision": 7,
+  "verificationBasis": "Read-only local records: same-case current/historical quotes, immutable PDF hashes, opinion version snapshots and validated completed comparison outputs. Not legal validation or provider billing verification.",
+  "newModelRequests": 0,
+  "decisionStatus": "draft",
+  "issues": [
+    {
+      "id": "6713ed5b-18fe-48f9-95f0-fc2b7496be2a",
+      "caseId": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d",
+      "revision": 2,
+      "title": "核实签署版原委托的范围与排除项：是否仅限银行监管申报、是否明确排除融资文件与交易谈判",
+      "category": "scope",
+      "partyIds": [
+        "59e78d9e-e052-4715-9296-cf6394811183"
+      ],
+      "sourceKey": "assistant:66a96a58-90a0-482f-be46-4fa2f63b0b73:0",
+      "owner": "演示复核人（虚构验收）",
+      "missing": "实际签署的委托书或委托范围说明（含签署方、签署日期、生效与终止条款）；范围条款与排除条款原文；任何对排除项作出变更的补充协议或书面变更记录；事项编号与文件版本对照表。",
+      "note": "【虚构软件验收人工记录】已逐页核对示例 PDF，原文确实包含监管申报范围和融资文件排除项。本次只验证依据追溯与审查流程；签署版及变更文件尚缺，保留复核中，不据此判断实际委托或是否承接。\n\n【虚构软件验收草稿，未发送】请提供 DEMO-2026-014 实际签署的委托范围文件及全部补充协议，明确融资文件审阅与交易谈判是否属于服务范围，并列明签署主体、适用期间和版本沿革。请同时说明本次拟委托人与文件所列 HSBC BANK PLC 的关系；未取得材料前保留待核实状态。",
+      "status": "reviewing",
+      "citations": [
+        {
+          "id": "80c8f0d1-bea9-40e3-a8b7-a9dfd51ea5c5",
+          "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+          "page": 1,
+          "quote": "The firm advises on banking regulatory filings only.",
+          "relation": "context"
+        },
+        {
+          "id": "763c2511-dacb-4425-86dc-a9f12245a6e6",
+          "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+          "page": 1,
+          "quote": "Financing documentation and transaction negotiations are excluded.",
+          "relation": "context"
+        }
+      ],
+      "reviews": [],
+      "createdAt": "2026-11-01T01:56:22.349Z",
+      "updatedAt": "2026-11-01T01:56:39.686Z",
+      "assistantApplications": [
+        "assistant:66a96a58-90a0-482f-be46-4fa2f63b0b73:0"
+      ]
+    }
+  ],
+  "comparisonAttempts": []
+}

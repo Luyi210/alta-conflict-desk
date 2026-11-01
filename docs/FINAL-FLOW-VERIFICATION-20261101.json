@@ -1,0 +1,63 @@
+{
+  "verifiedAt": "2026-11-01T01:58:41.091269+00:00",
+  "caseId": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d",
+  "caseRevision": 7,
+  "modelSource": "deepseek-flash, real configured provider",
+  "publicScreening": {
+    "completedSubjects": 2,
+    "modelCalls": 12,
+    "ruleCalls": 8,
+    "hardenedVerifierPassed": true
+  },
+  "assistant": {
+    "runId": "66a96a58-90a0-482f-be46-4fa2f63b0b73",
+    "rounds": 2,
+    "modelCalls": 2,
+    "actions": 3,
+    "adoptedActions": 1,
+    "failedAttempts": 0
+  },
+  "browserActions": {
+    "newCaseAndIdentityConfirmation": true,
+    "pdfSampleImport": true,
+    "versionPermission": true,
+    "modelAssistant": true,
+    "originalPageViewed": true,
+    "editedDraftCopied": true,
+    "editedDraftAdopted": true,
+    "manualReviewerNoteSaved": true,
+    "needsInformationDecisionSaved": true,
+    "secondVersionImported": true,
+    "oldCitationsPreserved": true,
+    "versionComparisonViaMcp": true,
+    "wordAndMarkdownDownloaded": true
+  },
+  "afterVersionChange": {
+    "decisionResetToDraft": true,
+    "previousDecisionTextPreserved": true,
+    "bothVersionsAiPermissionRevokedOrOff": true,
+    "versions": 2,
+    "issueEffectiveStatus": "stale",
+    "oldCitations": 2
+  },
+  "remainingBlockers": [
+    "1 个审查问题尚待核实或材料变更复核",
+    "6 条线索仍待复核或进一步复核",
+    "4 项委托范围或保密补证尚未补齐"
+  ],
+  "automatedLegalDecision": false,
+  "externalMessagesSent": false,
+  "videoRecorded": false,
+  "downloads": [
+    {
+      "path": "docs/FINAL-REVIEW-MEMO-20261101.docx",
+      "sha256": "8d70e25491c9f35bd68a3d81b6cb06c0f287df257aac8befd974e2291a25cf42",
+      "bytes": 13589
+    },
+    {
+      "path": "docs/FINAL-CASE-REPORT-20261101.md",
+      "sha256": "5f5b7c1bf6f641baf0a2754b82eefff81fdfe4ee692e0a526f5101a9cffe8d98",
+      "bytes": 52302
+    }
+  ]
+}

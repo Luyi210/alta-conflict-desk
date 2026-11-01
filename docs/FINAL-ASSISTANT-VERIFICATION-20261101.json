@@ -1,0 +1,132 @@
+{
+  "verifiedAt": "2026-11-01T01:58:15.142Z",
+  "caseId": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d",
+  "caseRevision": 7,
+  "decisionStatus": "draft",
+  "verificationBasis": "Read-only saved application records: actual model-initiated page receipts, immutable PDF hashes/text, quote and case boundaries, edited adoption snapshots. Not legal correctness or provider billing verification.",
+  "newModelRequests": 0,
+  "attempts": [
+    {
+      "id": "66a96a58-90a0-482f-be46-4fa2f63b0b73",
+      "status": "completed",
+      "createdAt": "2026-11-01T01:54:48.371Z",
+      "completedAt": "2026-11-01T01:54:59.926Z",
+      "model": "deepseek-flash",
+      "rounds": 2,
+      "formatRetries": 0,
+      "modelCalls": 2,
+      "caseRevision": 4,
+      "basisRevision": 5,
+      "summary": "本轮仅读取并分析了 DEMO-2026-014《委托范围说明（虚构）》第1–2页（versionId fd2c161b-e7dc-4263-afc7-677509f0bde7，sha256 e33e05dc…）。须注意：该文件正文标注为虚构示例，且写明“This unsigned sample is not proof of any actual engagement.”。因此，文件内容只能作为待核实的线索，不能作为实际委托范围或实际当事人身份的证明。核实路径按工作顺序如下：先确认原委托的签署范围与融资服务边界，再核实拟委托的 HSBC UK BANK PLC 是否落入客户边界或关联方范围，最后确认既往保密义务在事项结束后及新委托下的延续与信息使用限制。材料限制：未提供签署版委托书、关联方名单、既往事项清单或保密承诺原件；本轮不重新检索外部主体，不作承接或排除冲突决定。",
+      "actions": [
+        {
+          "title": "核实签署版原委托的范围与排除项：是否仅限银行监管申报、是否明确排除融资文件与交易谈判",
+          "priority": "first",
+          "reason": "第1页原文将服务范围限定为银行监管申报，并明确排除融资文件与交易谈判；但同一页又标注“Verify the actual signed scope before making an intake decision.”，且文件为未签署示例。故拟委托的“融资文件审阅”是否与原委托范围重叠，须以实际签署文件为准；本文件本身待确认，不能据以认定范围已定。",
+          "missing": "实际签署的委托书或委托范围说明（含签署方、签署日期、生效与终止条款）；范围条款与排除条款原文；任何对排除项作出变更的补充协议或书面变更记录；事项编号与文件版本对照表。",
+          "request": "请提供与 DEMO-2026-014 相对应的、经签署的委托书及全部补充协议（含附件与变更记录），并请标明：服务范围条款中“银行监管申报”的具体定义、融资文件与交易谈判排除条款的原文，以及是否存在任何书面变更或例外安排。如仅有未签署稿，请一并说明其版本沿革及与拟签署文本的差异。",
+          "category": "scope",
+          "partyIds": [
+            "59e78d9e-e052-4715-9296-cf6394811183"
+          ],
+          "targetIssueId": null,
+          "citations": [
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 1,
+              "quote": "The firm advises on banking regulatory filings only.",
+              "traceId": "b67724b0-09b4-4370-9377-6672394e209b"
+            },
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 1,
+              "quote": "Financing documentation and transaction negotiations are excluded.",
+              "traceId": "b67724b0-09b4-4370-9377-6672394e209b"
+            }
+          ]
+        },
+        {
+          "title": "核实拟委托人 HSBC UK BANK PLC 是否被原委托的客户边界或关联方安排覆盖",
+          "priority": "next",
+          "reason": "第1页记载原委托的客户为 HSBC BANK PLC（LEI MP6I5ZYZBEU3UXPYFY54），并注明委托不自动延伸至关联方。拟委托人为 HSBC UK BANK PLC，交易对方为 HSBC BANK PLC；两者是否为关联方、原委托是否另有集团或关联方条款，须以实际文件确认。文件标注为虚构示例，文件中“no affiliation is claimed”不能反推两者不存在关联关系，属待确认推断。",
+          "missing": "原委托的客户身份与 LEI 条款原文；关联方、集团客户或“ affiliates”定义与适用条款；既往事项清单或客户主数据记录；HSBC UK BANK PLC 与 HSBC BANK PLC 的关联关系文件（如集团架构说明）；如拟委托由关联方引入，相关的委托引入或同意文件。",
+          "request": "请提供原委托中关于客户身份及关联方范围的完整条款原文（包括对“affiliates”的定义），以及能够说明 HSBC UK BANK PLC 与 HSBC BANK PLC 关系的集团架构或客户主数据材料。同时请确认：原委托是否包含集团或关联方延伸条款；若拟委托人并非原委托客户，是否有书面同意或单独委托安排。上述材料用于核实客户边界，不代表对任何关系或冲突作出判断。",
+          "category": "boundary",
+          "partyIds": [
+            "59e78d9e-e052-4715-9296-cf6394811183",
+            "e0767c8d-e318-4a52-92ed-783e2343139b"
+          ],
+          "targetIssueId": null,
+          "citations": [
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 1,
+              "quote": "This engagement does not automatically extend to affiliates.",
+              "traceId": "b67724b0-09b4-4370-9377-6672394e209b"
+            },
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 2,
+              "quote": "Public company names identify the example only; no affiliation is claimed.",
+              "traceId": "4f731e07-a95f-4b27-aaa4-e497d2015b0d"
+            }
+          ]
+        },
+        {
+          "title": "核实既往保密义务在事项结束后的存续范围及对新委托的限制",
+          "priority": "next",
+          "reason": "第2页原文写明客户信息在事项结束后仍属保密，且任何额外范围需另行书面协议。拟代表 HSBC UK BANK PLC 审阅融资文件，若涉及原委托客户信息，则需确认保密义务的存续期限、信息使用与披露限制，以及新委托是否已按“另行书面协议”要求处理。该页同时声明本示例未签署、不构成实际委托证明，故既往保密义务是否存在及内容仍待核实。",
+          "missing": "原委托的保密条款全文（含存续期限、例外情形、返还或销毁义务）；既往事项的结案文件；如涉及交叉使用信息，相关的信息隔离或书面同意安排；任何已签署的单独委托协议。",
+          "request": "请提供原委托中保密条款的完整原文，说明事项结束后保密义务的存续期限、允许披露的例外情形及信息使用限制；并请提供既往相关事项的结案记录。若拟进行的融资文件审阅可能涉及原委托客户的信息，请说明已采取的信息隔离安排，或提供客户就交叉使用信息出具的书面同意。此外，请确认是否存在依据“另行书面协议”条款签署的单独委托文件。",
+          "category": "confidentiality",
+          "partyIds": [
+            "59e78d9e-e052-4715-9296-cf6394811183",
+            "e0767c8d-e318-4a52-92ed-783e2343139b"
+          ],
+          "targetIssueId": null,
+          "citations": [
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 2,
+              "quote": "Client information remains confidential after the matter closes.",
+              "traceId": "4f731e07-a95f-4b27-aaa4-e497d2015b0d"
+            },
+            {
+              "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+              "page": 2,
+              "quote": "Any additional scope requires a separately documented agreement.",
+              "traceId": "4f731e07-a95f-4b27-aaa4-e497d2015b0d"
+            }
+          ]
+        }
+      ],
+      "applications": {
+        "0": "6713ed5b-18fe-48f9-95f0-fc2b7496be2a"
+      },
+      "adoptedDrafts": {
+        "0": {
+          "missing": "实际签署的委托书或委托范围说明（含签署方、签署日期、生效与终止条款）；范围条款与排除条款原文；任何对排除项作出变更的补充协议或书面变更记录；事项编号与文件版本对照表。",
+          "request": "【虚构软件验收草稿，未发送】请提供 DEMO-2026-014 实际签署的委托范围文件及全部补充协议，明确融资文件审阅与交易谈判是否属于服务范围，并列明签署主体、适用期间和版本沿革。请同时说明本次拟委托人与文件所列 HSBC BANK PLC 的关系；未取得材料前保留待核实状态。"
+        }
+      },
+      "receipts": [
+        {
+          "id": "b67724b0-09b4-4370-9377-6672394e209b",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+          "page": 1
+        },
+        {
+          "id": "4f731e07-a95f-4b27-aaa4-e497d2015b0d",
+          "tool": "read_material_page",
+          "initiator": "model",
+          "status": "success",
+          "versionId": "fd2c161b-e7dc-4263-afc7-677509f0bde7",
+          "page": 2
+        }
+      ]
+    }
+  ]
+}

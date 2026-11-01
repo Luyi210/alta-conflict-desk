@@ -1,0 +1,1246 @@
+{
+  "verifiedAt": "2026-11-01T01:54:25.467Z",
+  "source": {
+    "baseUrl": "http://127.0.0.1:4318",
+    "kind": "case",
+    "id": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d"
+  },
+  "aiVerified": true,
+  "hardenedVerified": true,
+  "actualModel": true,
+  "syntheticLedger": true,
+  "verificationBasis": "Read-only validation of saved local application model execution records and successful model-initiated MCP traces. This script does not invoke the model or independently verify provider billing.",
+  "modelRequestsByVerifier": 0,
+  "case": {
+    "id": "a0f550f6-2bbe-42b8-9c04-f14ebd746f3d",
+    "name": "交付验收 · 融资收案审查（虚构 · 2026-11-01）",
+    "status": "needs-attention",
+    "unconfirmedParties": [],
+    "blockers": [
+      "6 条线索仍待复核或进一步复核",
+      "4 项委托范围或保密补证尚未补齐"
+    ]
+  },
+  "runs": [
+    {
+      "id": "0a4944a6-5c00-460a-bddb-91da731069a9",
+      "matterName": "交付验收 · 融资收案审查（虚构 · 2026-11-01）",
+      "partyRole": "拟委托人",
+      "mode": "ai",
+      "status": "completed",
+      "createdAt": "2026-11-01T01:52:53.158Z",
+      "completedAt": "2026-11-01T01:53:07.343Z",
+      "entity": {
+        "lei": "21380081EP12LC86CB82",
+        "name": "HSBC UK BANK PLC",
+        "jurisdiction": "GB",
+        "status": "ACTIVE",
+        "address": "1 CENTENARY SQUARE, BIRMINGHAM, GB",
+        "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+        "fetchedAt": "2026-11-01T01:52:54.631Z"
+      },
+      "model": "deepseek-flash",
+      "modelExecution": {
+        "status": "completed",
+        "model": "deepseek-flash",
+        "toolCallCount": 6,
+        "rounds": 2
+      },
+      "summary": "发现 3 条核查线索。结论仅限已列明的来源与核查范围。",
+      "modelSummary": "已按 LEI 核查 HSBC UK BANK PLC（21380081EP12LC86CB82，ACTIVE）及其唯一披露母公司 HSBC HOLDINGS PLC（MLU0ZO3ML4LN2LL2TL39，ACTIVE）；后者母公司关系查询返回 404 缺口。台账中仅见近似名称记录（无 exact-lei 命中）与母公司 exact-lei 既往事项，身份、范围与保密义务均待律师复核。\n\n引用调用：478a0328-ae41-4f65-99f5-c25e01cb034a、4f9fb6cc-89d6-4d86-8469-6967fd6d7a10、960672a2-3d73-4177-881d-8749898d46ff、8343282d-281b-4a67-987d-fa9693d5c211、a526d2f8-a946-406d-95fe-3f455f0ea564、a9e5493b-278c-4982-8f3c-0402ee49b84f",
+      "citedTraceIds": [
+        "478a0328-ae41-4f65-99f5-c25e01cb034a",
+        "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10",
+        "960672a2-3d73-4177-881d-8749898d46ff",
+        "8343282d-281b-4a67-987d-fa9693d5c211",
+        "a526d2f8-a946-406d-95fe-3f455f0ea564",
+        "a9e5493b-278c-4982-8f3c-0402ee49b84f"
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。"
+      ],
+      "syntheticLedger": true,
+      "actualModel": true,
+      "calls": [
+        {
+          "id": "98f5acfd-fcb7-4487-80c8-0dfdebddb634",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:53.160Z",
+          "durationMs": 1476,
+          "status": "success",
+          "args": {
+            "lei": "21380081EP12LC86CB82"
+          },
+          "result": {
+            "entity": {
+              "lei": "21380081EP12LC86CB82",
+              "name": "HSBC UK BANK PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "1 CENTENARY SQUARE, BIRMINGHAM, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+              "fetchedAt": "2026-11-01T01:52:54.631Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:53.162Z",
+                    "durationMs": 1469,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 1469
+              }
+            ]
+          }
+        },
+        {
+          "id": "c9bf7d6f-c53c-4168-b22a-b9806f6f8d98",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:54.639Z",
+          "durationMs": 16,
+          "status": "success",
+          "args": {
+            "name": "HSBC UK BANK PLC",
+            "lei": "21380081EP12LC86CB82"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-1",
+                "clientName": "HSBC BANK PLC",
+                "lei": "MP6I5ZYZBEU3UXPYFY54",
+                "matterName": "银行监管咨询（虚构）",
+                "matterRef": "DEMO-2026-014",
+                "role": "委托人",
+                "relationship": "现有客户",
+                "status": "进行中",
+                "partner": "林律师（虚构）",
+                "note": "纯演示委托，不代表该企业与任何律所存在关系。LEI 精确一致，仍需律师判断具体事项与义务。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC UK BANK PLC"
+              },
+              {
+                "id": "demo-3",
+                "clientName": "HSBC BANK SERVICES LIMITED",
+                "lei": null,
+                "matterName": "信息技术采购咨询（虚构）",
+                "matterRef": "DEMO-2026-027",
+                "role": "委托人",
+                "relationship": "待识别记录",
+                "status": "进行中",
+                "partner": "陈律师（虚构）",
+                "note": "完全虚构的近似名称记录，无 LEI，专门演示同名/近似名误报的人工排除。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC UK BANK PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "0a113432-641b-4d31-b151-18f8a7c259db",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:54.661Z",
+          "durationMs": 1157,
+          "status": "success",
+          "args": {
+            "lei": "21380081EP12LC86CB82"
+          },
+          "result": {
+            "relations": [
+              {
+                "type": "direct-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:55.129Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/direct-parent",
+                "fetchedAt": "2026-11-01T01:52:55.129Z"
+              },
+              {
+                "type": "ultimate-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:55.808Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/ultimate-parent",
+                "fetchedAt": "2026-11-01T01:52:55.808Z"
+              }
+            ],
+            "gaps": [],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:54.662Z",
+                    "durationMs": 467,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 467
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:54.662Z",
+                    "durationMs": 1146,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 1146
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "20e91205-e346-4fe2-bf5c-12787707b532",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:55.820Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "name": "HSBC HOLDINGS PLC",
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-2",
+                "clientName": "HSBC HOLDINGS PLC",
+                "lei": "MLU0ZO3ML4LN2LL2TL39",
+                "matterName": "集团治理专项（虚构）",
+                "matterRef": "DEMO-2025-038",
+                "role": "委托人",
+                "relationship": "既往客户",
+                "status": "已结案",
+                "partner": "周律师（虚构）",
+                "note": "纯演示委托。母子公司关系本身不自动构成法律利益冲突；既往事项和保密义务需人工核实。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC HOLDINGS PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "478a0328-ae41-4f65-99f5-c25e01cb034a",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:57.812Z",
+          "durationMs": 771,
+          "status": "success",
+          "args": {
+            "lei": "21380081EP12LC86CB82"
+          },
+          "result": {
+            "entity": {
+              "lei": "21380081EP12LC86CB82",
+              "name": "HSBC UK BANK PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "1 CENTENARY SQUARE, BIRMINGHAM, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+              "fetchedAt": "2026-11-01T01:52:58.583Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:57.813Z",
+                    "durationMs": 770,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 770
+              }
+            ]
+          }
+        },
+        {
+          "id": "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:58.586Z",
+          "durationMs": 1126,
+          "status": "success",
+          "args": {
+            "lei": "21380081EP12LC86CB82"
+          },
+          "result": {
+            "relations": [
+              {
+                "type": "direct-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:59.029Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/direct-parent",
+                "fetchedAt": "2026-11-01T01:52:59.029Z"
+              },
+              {
+                "type": "ultimate-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:59.711Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/ultimate-parent",
+                "fetchedAt": "2026-11-01T01:52:59.711Z"
+              }
+            ],
+            "gaps": [],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:58.586Z",
+                    "durationMs": 443,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 443
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/21380081EP12LC86CB82/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:58.586Z",
+                    "durationMs": 1125,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 1125
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "960672a2-3d73-4177-881d-8749898d46ff",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:59.715Z",
+          "durationMs": 451,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "entity": {
+              "lei": "MLU0ZO3ML4LN2LL2TL39",
+              "name": "HSBC HOLDINGS PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "8 CANADA SQUARE, LONDON, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+              "fetchedAt": "2026-11-01T01:53:00.166Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:59.715Z",
+                    "durationMs": 451,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 451
+              }
+            ]
+          }
+        },
+        {
+          "id": "8343282d-281b-4a67-987d-fa9693d5c211",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:00.169Z",
+          "durationMs": 1232,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "relations": [],
+            "gaps": [
+              "直接母公司查询未完成：GLEIF HTTP 404: 未提供该记录/关系",
+              "最终母公司查询未完成：GLEIF HTTP 404: 未提供该记录/关系"
+            ],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:53:00.169Z",
+                    "durationMs": 423,
+                    "status": 404,
+                    "error": "Error"
+                  }
+                ],
+                "durationMs": 423
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:53:00.169Z",
+                    "durationMs": 1231,
+                    "status": 404,
+                    "error": "Error"
+                  }
+                ],
+                "durationMs": 1231
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "a526d2f8-a946-406d-95fe-3f455f0ea564",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:01.404Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "lei": "21380081EP12LC86CB82",
+            "name": "HSBC UK BANK PLC"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-1",
+                "clientName": "HSBC BANK PLC",
+                "lei": "MP6I5ZYZBEU3UXPYFY54",
+                "matterName": "银行监管咨询（虚构）",
+                "matterRef": "DEMO-2026-014",
+                "role": "委托人",
+                "relationship": "现有客户",
+                "status": "进行中",
+                "partner": "林律师（虚构）",
+                "note": "纯演示委托，不代表该企业与任何律所存在关系。LEI 精确一致，仍需律师判断具体事项与义务。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC UK BANK PLC"
+              },
+              {
+                "id": "demo-3",
+                "clientName": "HSBC BANK SERVICES LIMITED",
+                "lei": null,
+                "matterName": "信息技术采购咨询（虚构）",
+                "matterRef": "DEMO-2026-027",
+                "role": "委托人",
+                "relationship": "待识别记录",
+                "status": "进行中",
+                "partner": "陈律师（虚构）",
+                "note": "完全虚构的近似名称记录，无 LEI，专门演示同名/近似名误报的人工排除。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC UK BANK PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "a9e5493b-278c-4982-8f3c-0402ee49b84f",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:01.407Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39",
+            "name": "HSBC HOLDINGS PLC"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-2",
+                "clientName": "HSBC HOLDINGS PLC",
+                "lei": "MLU0ZO3ML4LN2LL2TL39",
+                "matterName": "集团治理专项（虚构）",
+                "matterRef": "DEMO-2025-038",
+                "role": "委托人",
+                "relationship": "既往客户",
+                "status": "已结案",
+                "partner": "周律师（虚构）",
+                "note": "纯演示委托。母子公司关系本身不自动构成法律利益冲突；既往事项和保密义务需人工核实。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC HOLDINGS PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        }
+      ],
+      "hardenedVerified": true,
+      "context": "软件交付验收场景，交易、委托及内部事项全部虚构。拟代表 HSBC UK BANK PLC 提供融资文件审阅服务，对方为 HSBC BANK PLC。需核实本所既有事项与拟委托范围是否重叠，以及示例委托说明中的客户边界、集团关联和保密安排。公众企业名称仅用于真实身份检索，不代表存在实际委托或冲突。",
+      "modelBrief": {
+        "summary": "已按 LEI 核查 HSBC UK BANK PLC（21380081EP12LC86CB82，ACTIVE）及其唯一披露母公司 HSBC HOLDINGS PLC（MLU0ZO3ML4LN2LL2TL39，ACTIVE）；后者母公司关系查询返回 404 缺口。台账中仅见近似名称记录（无 exact-lei 命中）与母公司 exact-lei 既往事项，身份、范围与保密义务均待律师复核。",
+        "questions": [
+          {
+            "text": "拟委托人 HSBC UK BANK PLC 在演示台账中仅获近似名称线索（DEMO-2026-014 的客户为 HSBC BANK PLC，LEI 为 MP6I5ZYZBEU3UXPYFY54，与本次确认 LEI 不同；DEMO-2026-027 客户无 LEI），该等记录的真实主体身份以及与本次拟委托的同一性应由律师人工确认；本核查不构成身份结论。",
+            "traceIds": [
+              "a526d2f8-a946-406d-95fe-3f455f0ea564"
+            ]
+          },
+          {
+            "text": "母公司 HSBC HOLDINGS PLC 在演示台账中为 exact-lei 既往客户（DEMO-2025-038 集团治理专项，已结案）。需核实该事项的实际服务范围是否覆盖融资文件审阅、现时保密义务与信息隔离安排是否延伸到子公司相关事务，以及既往客户关系在本次委托下的处理立场。",
+            "traceIds": [
+              "a9e5493b-278c-4982-8f3c-0402ee49b84f"
+            ]
+          },
+          {
+            "text": "事项背景中的对方 HSBC BANK PLC 未在本轮授权范围内核查（其 LEI 仅出现在台账字段中，未经 exact-lei 身份确认）；此外 HSBC HOLDINGS PLC 的直接与最终母公司查询返回 404 缺口，其上层关联链条未获证据，均需律师另行安排核查或补充查询。",
+            "traceIds": [
+              "8343282d-281b-4a67-987d-fa9693d5c211"
+            ]
+          }
+        ],
+        "nextSteps": [
+          {
+            "text": "调取 DEMO-2026-014 与 DEMO-2026-027 的委托书、立项表与客户主体登记信息（含注册编号、地址、LEI），逐项与本次确认主体比对，判断是同一法人还是不同主体，并出具身份核实说明。",
+            "traceIds": [
+              "a526d2f8-a946-406d-95fe-3f455f0ea564"
+            ]
+          },
+          {
+            "text": "调取 DEMO-2025-038 的委托范围、结案文件与保密条款，评估其是否涵盖融资文件审阅或同类交付验收服务；就信息隔离墙与母公司—子公司保密边界形成书面意见。",
+            "traceIds": [
+              "a9e5493b-278c-4982-8f3c-0402ee49b84f"
+            ]
+          },
+          {
+            "text": "向拟委托人取得法人注册证明与 LEI 归属材料，并对 HSBC BANK PLC 及 HSBC HOLDINGS PLC 上层关联主体在后续单独轮次中按 exact-lei 核查；对 404 缺口记录在案并说明数据仅覆盖 GLEIF 会计合并口径。",
+            "traceIds": [
+              "478a0328-ae41-4f65-99f5-c25e01cb034a",
+              "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10",
+              "960672a2-3d73-4177-881d-8749898d46ff",
+              "8343282d-281b-4a67-987d-fa9693d5c211"
+            ]
+          }
+        ],
+        "citedTraceIds": [
+          "478a0328-ae41-4f65-99f5-c25e01cb034a",
+          "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10",
+          "960672a2-3d73-4177-881d-8749898d46ff",
+          "8343282d-281b-4a67-987d-fa9693d5c211",
+          "a526d2f8-a946-406d-95fe-3f455f0ea564",
+          "a9e5493b-278c-4982-8f3c-0402ee49b84f"
+        ],
+        "facts": [
+          {
+            "text": "登记主体：HSBC UK BANK PLC；LEI 21380081EP12LC86CB82；辖区 GB；状态 ACTIVE。",
+            "traceIds": [
+              "478a0328-ae41-4f65-99f5-c25e01cb034a"
+            ]
+          },
+          {
+            "text": "直接会计合并母公司：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39。关系口径不等于全部法律关联。",
+            "traceIds": [
+              "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10"
+            ]
+          },
+          {
+            "text": "最终会计合并母公司：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39。关系口径不等于全部法律关联。",
+            "traceIds": [
+              "4f9fb6cc-89d6-4d86-8469-6967fd6d7a10"
+            ]
+          },
+          {
+            "text": "登记主体：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39；辖区 GB；状态 ACTIVE。",
+            "traceIds": [
+              "960672a2-3d73-4177-881d-8749898d46ff"
+            ]
+          },
+          {
+            "text": "DEMO-2026-014 · HSBC BANK PLC：仅名称匹配，身份未确认；事项「银行监管咨询（虚构）」；现有客户，进行中。",
+            "traceIds": [
+              "a526d2f8-a946-406d-95fe-3f455f0ea564"
+            ]
+          },
+          {
+            "text": "DEMO-2026-027 · HSBC BANK SERVICES LIMITED：仅名称匹配，身份未确认；事项「信息技术采购咨询（虚构）」；待识别记录，进行中。",
+            "traceIds": [
+              "a526d2f8-a946-406d-95fe-3f455f0ea564"
+            ]
+          },
+          {
+            "text": "DEMO-2025-038 · HSBC HOLDINGS PLC：LEI 一致；事项「集团治理专项（虚构）」；既往客户，已结案。",
+            "traceIds": [
+              "a9e5493b-278c-4982-8f3c-0402ee49b84f"
+            ]
+          }
+        ]
+      },
+      "requiredLedgerLeis": [
+        "21380081EP12LC86CB82",
+        "MLU0ZO3ML4LN2LL2TL39"
+      ]
+    },
+    {
+      "id": "5ac8fd8f-2ad4-487e-97aa-decbdb7a36d8",
+      "matterName": "交付验收 · 融资收案审查（虚构 · 2026-11-01）",
+      "partyRole": "交易对方",
+      "mode": "ai",
+      "status": "completed",
+      "createdAt": "2026-11-01T01:52:53.161Z",
+      "completedAt": "2026-11-01T01:53:06.203Z",
+      "entity": {
+        "lei": "MP6I5ZYZBEU3UXPYFY54",
+        "name": "HSBC BANK PLC",
+        "jurisdiction": "GB",
+        "status": "ACTIVE",
+        "address": "8 CANADA SQUARE, LONDON, GB",
+        "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+        "fetchedAt": "2026-11-01T01:52:55.453Z"
+      },
+      "model": "deepseek-flash",
+      "modelExecution": {
+        "status": "completed",
+        "model": "deepseek-flash",
+        "toolCallCount": 6,
+        "rounds": 2
+      },
+      "summary": "发现 3 条核查线索。结论仅限已列明的来源与核查范围。",
+      "modelSummary": "已按 exact-LEI 核对 HSBC BANK PLC（当前主体）与 HSBC HOLDINGS PLC（其直接及最终母公司）的公开身份、GLEIF 母公司关系及虚构台账。台账显示，当前主体有一件进行中的监管咨询事项，母公司有一件已结案事项，另有一条无 LEI 的近似名记录需人工排除。是否构成冲突及可收案性均待律师复核。\n\n引用调用：a1fdccc9-50ff-442b-9178-be88ff3a7cef、02411906-4385-4d81-a7d3-e91bb2ddfa76、3648a3da-93c7-4e0b-8416-c13b2f116769、ea015f95-0da5-4887-b2bc-f36c7e359491、734edc69-f3ff-48af-946d-d253e0cd9267、67cd7056-0258-4191-af6c-cc753ef0a2c8",
+      "citedTraceIds": [
+        "a1fdccc9-50ff-442b-9178-be88ff3a7cef",
+        "02411906-4385-4d81-a7d3-e91bb2ddfa76",
+        "3648a3da-93c7-4e0b-8416-c13b2f116769",
+        "ea015f95-0da5-4887-b2bc-f36c7e359491",
+        "734edc69-f3ff-48af-946d-d253e0cd9267",
+        "67cd7056-0258-4191-af6c-cc753ef0a2c8"
+      ],
+      "gaps": [
+        "本次单主体核查仅覆盖所选企业及 GLEIF 披露的直接/最终母公司；其他主体须查看案件覆盖清单，事项背景字段不等于已核验身份。",
+        "GLEIF 仅覆盖注册 LEI 的实体；母公司关系为会计合并口径，不等于所有法律关联关系。",
+        "内部台账全部为虚构演示记录；匹配线索不构成法律利益冲突结论，未命中不等于可接受委托。"
+      ],
+      "syntheticLedger": true,
+      "actualModel": true,
+      "calls": [
+        {
+          "id": "de46a5a7-0f42-45c9-8b8e-9182f7cddb6e",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:53.162Z",
+          "durationMs": 2291,
+          "status": "success",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "result": {
+            "entity": {
+              "lei": "MP6I5ZYZBEU3UXPYFY54",
+              "name": "HSBC BANK PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "8 CANADA SQUARE, LONDON, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+              "fetchedAt": "2026-11-01T01:52:55.453Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:53.165Z",
+                    "durationMs": 2288,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 2288
+              }
+            ]
+          }
+        },
+        {
+          "id": "9b2debe4-f474-4e4e-bff0-5c21a7016302",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:55.455Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "name": "HSBC BANK PLC",
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-1",
+                "clientName": "HSBC BANK PLC",
+                "lei": "MP6I5ZYZBEU3UXPYFY54",
+                "matterName": "银行监管咨询（虚构）",
+                "matterRef": "DEMO-2026-014",
+                "role": "委托人",
+                "relationship": "现有客户",
+                "status": "进行中",
+                "partner": "林律师（虚构）",
+                "note": "纯演示委托，不代表该企业与任何律所存在关系。LEI 精确一致，仍需律师判断具体事项与义务。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC BANK PLC"
+              },
+              {
+                "id": "demo-3",
+                "clientName": "HSBC BANK SERVICES LIMITED",
+                "lei": null,
+                "matterName": "信息技术采购咨询（虚构）",
+                "matterRef": "DEMO-2026-027",
+                "role": "委托人",
+                "relationship": "待识别记录",
+                "status": "进行中",
+                "partner": "陈律师（虚构）",
+                "note": "完全虚构的近似名称记录，无 LEI，专门演示同名/近似名误报的人工排除。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC BANK PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "37782617-373e-46f8-adad-08416e39f507",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:55.458Z",
+          "durationMs": 451,
+          "status": "success",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "result": {
+            "relations": [
+              {
+                "type": "direct-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:55.906Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/direct-parent",
+                "fetchedAt": "2026-11-01T01:52:55.906Z"
+              },
+              {
+                "type": "ultimate-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:55.909Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/ultimate-parent",
+                "fetchedAt": "2026-11-01T01:52:55.909Z"
+              }
+            ],
+            "gaps": [],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:55.458Z",
+                    "durationMs": 448,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 448
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:55.459Z",
+                    "durationMs": 450,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 450
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "c63114a8-0d23-487d-b405-da4a063f4cd6",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "rules",
+          "startedAt": "2026-11-01T01:52:55.911Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "name": "HSBC HOLDINGS PLC",
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-2",
+                "clientName": "HSBC HOLDINGS PLC",
+                "lei": "MLU0ZO3ML4LN2LL2TL39",
+                "matterName": "集团治理专项（虚构）",
+                "matterRef": "DEMO-2025-038",
+                "role": "委托人",
+                "relationship": "既往客户",
+                "status": "已结案",
+                "partner": "周律师（虚构）",
+                "note": "纯演示委托。母子公司关系本身不自动构成法律利益冲突；既往事项和保密义务需人工核实。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC HOLDINGS PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "a1fdccc9-50ff-442b-9178-be88ff3a7cef",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:57.762Z",
+          "durationMs": 769,
+          "status": "success",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "result": {
+            "entity": {
+              "lei": "MP6I5ZYZBEU3UXPYFY54",
+              "name": "HSBC BANK PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "8 CANADA SQUARE, LONDON, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+              "fetchedAt": "2026-11-01T01:52:58.531Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:57.762Z",
+                    "durationMs": 769,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 769
+              }
+            ]
+          }
+        },
+        {
+          "id": "02411906-4385-4d81-a7d3-e91bb2ddfa76",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:58.534Z",
+          "durationMs": 1237,
+          "status": "success",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54"
+          },
+          "result": {
+            "relations": [
+              {
+                "type": "direct-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:58.976Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/direct-parent",
+                "fetchedAt": "2026-11-01T01:52:58.976Z"
+              },
+              {
+                "type": "ultimate-parent",
+                "entity": {
+                  "lei": "MLU0ZO3ML4LN2LL2TL39",
+                  "name": "HSBC HOLDINGS PLC",
+                  "jurisdiction": "GB",
+                  "status": "ACTIVE",
+                  "address": "8 CANADA SQUARE, LONDON, GB",
+                  "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                  "fetchedAt": "2026-11-01T01:52:59.771Z"
+                },
+                "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/ultimate-parent",
+                "fetchedAt": "2026-11-01T01:52:59.771Z"
+              }
+            ],
+            "gaps": [],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:58.534Z",
+                    "durationMs": 442,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 442
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MP6I5ZYZBEU3UXPYFY54/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:58.535Z",
+                    "durationMs": 1236,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 1236
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "3648a3da-93c7-4e0b-8416-c13b2f116769",
+          "connector": "gleif",
+          "tool": "get_entity",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:52:59.774Z",
+          "durationMs": 443,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "entity": {
+              "lei": "MLU0ZO3ML4LN2LL2TL39",
+              "name": "HSBC HOLDINGS PLC",
+              "jurisdiction": "GB",
+              "status": "ACTIVE",
+              "address": "8 CANADA SQUARE, LONDON, GB",
+              "sourceUrl": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+              "fetchedAt": "2026-11-01T01:53:00.216Z"
+            },
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:52:59.774Z",
+                    "durationMs": 442,
+                    "status": 200
+                  }
+                ],
+                "durationMs": 442
+              }
+            ]
+          }
+        },
+        {
+          "id": "ea015f95-0da5-4887-b2bc-f36c7e359491",
+          "connector": "gleif",
+          "tool": "get_relationships",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:00.218Z",
+          "durationMs": 1220,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39"
+          },
+          "result": {
+            "relations": [],
+            "gaps": [
+              "最终母公司查询未完成：GLEIF HTTP 404: 未提供该记录/关系",
+              "直接母公司查询未完成：GLEIF HTTP 404: 未提供该记录/关系"
+            ],
+            "network": [
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39/direct-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:53:00.218Z",
+                    "durationMs": 1220,
+                    "status": 404,
+                    "error": "Error"
+                  }
+                ],
+                "durationMs": 1220
+              },
+              {
+                "url": "https://api.gleif.org/api/v1/lei-records/MLU0ZO3ML4LN2LL2TL39/ultimate-parent",
+                "attempts": [
+                  {
+                    "number": 1,
+                    "startedAt": "2026-11-01T01:53:00.219Z",
+                    "durationMs": 420,
+                    "status": 404,
+                    "error": "Error"
+                  }
+                ],
+                "durationMs": 420
+              }
+            ],
+            "coverage": "仅 GLEIF 披露的会计合并口径母公司；不覆盖所有股东、自然人控制、董事或全部关联企业。"
+          }
+        },
+        {
+          "id": "734edc69-f3ff-48af-946d-d253e0cd9267",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:01.440Z",
+          "durationMs": 1,
+          "status": "success",
+          "args": {
+            "lei": "MP6I5ZYZBEU3UXPYFY54",
+            "name": "HSBC BANK PLC"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-1",
+                "clientName": "HSBC BANK PLC",
+                "lei": "MP6I5ZYZBEU3UXPYFY54",
+                "matterName": "银行监管咨询（虚构）",
+                "matterRef": "DEMO-2026-014",
+                "role": "委托人",
+                "relationship": "现有客户",
+                "status": "进行中",
+                "partner": "林律师（虚构）",
+                "note": "纯演示委托，不代表该企业与任何律所存在关系。LEI 精确一致，仍需律师判断具体事项与义务。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC BANK PLC"
+              },
+              {
+                "id": "demo-3",
+                "clientName": "HSBC BANK SERVICES LIMITED",
+                "lei": null,
+                "matterName": "信息技术采购咨询（虚构）",
+                "matterRef": "DEMO-2026-027",
+                "role": "委托人",
+                "relationship": "待识别记录",
+                "status": "进行中",
+                "partner": "陈律师（虚构）",
+                "note": "完全虚构的近似名称记录，无 LEI，专门演示同名/近似名误报的人工排除。",
+                "matchType": "similar-name",
+                "matchedName": "HSBC BANK PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        },
+        {
+          "id": "67cd7056-0258-4191-af6c-cc753ef0a2c8",
+          "connector": "ledger",
+          "tool": "search_matters",
+          "initiator": "model",
+          "startedAt": "2026-11-01T01:53:01.443Z",
+          "durationMs": 0,
+          "status": "success",
+          "args": {
+            "lei": "MLU0ZO3ML4LN2LL2TL39",
+            "name": "HSBC HOLDINGS PLC"
+          },
+          "result": {
+            "matches": [
+              {
+                "id": "demo-2",
+                "clientName": "HSBC HOLDINGS PLC",
+                "lei": "MLU0ZO3ML4LN2LL2TL39",
+                "matterName": "集团治理专项（虚构）",
+                "matterRef": "DEMO-2025-038",
+                "role": "委托人",
+                "relationship": "既往客户",
+                "status": "已结案",
+                "partner": "周律师（虚构）",
+                "note": "纯演示委托。母子公司关系本身不自动构成法律利益冲突；既往事项和保密义务需人工核实。",
+                "matchType": "exact-lei",
+                "matchedName": "HSBC HOLDINGS PLC"
+              }
+            ],
+            "synthetic": true,
+            "coverage": "仅比对本地演示台账；非完整律所客户数据库。"
+          }
+        }
+      ],
+      "hardenedVerified": true,
+      "context": "软件交付验收场景，交易、委托及内部事项全部虚构。拟代表 HSBC UK BANK PLC 提供融资文件审阅服务，对方为 HSBC BANK PLC。需核实本所既有事项与拟委托范围是否重叠，以及示例委托说明中的客户边界、集团关联和保密安排。公众企业名称仅用于真实身份检索，不代表存在实际委托或冲突。",
+      "modelBrief": {
+        "summary": "已按 exact-LEI 核对 HSBC BANK PLC（当前主体）与 HSBC HOLDINGS PLC（其直接及最终母公司）的公开身份、GLEIF 母公司关系及虚构台账。台账显示，当前主体有一件进行中的监管咨询事项，母公司有一件已结案事项，另有一条无 LEI 的近似名记录需人工排除。是否构成冲突及可收案性均待律师复核。",
+        "questions": [
+          {
+            "text": "拟委托对象为 HSBC UK BANK PLC，其与本次已核查主体 HSBC BANK PLC（LEI MP6I5ZYZBEU3UXPYFY54）是否为同一法律实体？该拟委托方本身在本轮未获核查，若为不同实体，其身份与台账匹配结果如何处理？",
+            "traceIds": [
+              "a1fdccc9-50ff-442b-9178-be88ff3a7cef"
+            ]
+          },
+          {
+            "text": "台账 DEMO-2026-014（HSBC BANK PLC，进行中，银行监管咨询，LEI 精确一致）的委托范围、所涉主体与保密义务是否覆盖本次融资文件审阅（交付验收、香港事项背景）？已结案事项 DEMO-2025-038（HSBC HOLDINGS PLC，集团治理专项）的既往信息是否构成本所使用限制？",
+            "traceIds": [
+              "734edc69-f3ff-48af-946d-d253e0cd9267",
+              "67cd7056-0258-4191-af6c-cc753ef0a2c8"
+            ]
+          },
+          {
+            "text": "近似名记录 HSBC BANK SERVICES LIMITED（无 LEI，事项 DEMO-2026-027，信息技术采购咨询，进行中）与本次主体、母公司及拟委托方之间的实际身份关系如何？其客户边界与保密安排是否与本次交易相关？",
+            "traceIds": [
+              "734edc69-f3ff-48af-946d-d253e0cd9267"
+            ]
+          }
+        ],
+        "nextSteps": [
+          {
+            "text": "取得拟委托人 HSBC UK BANK PLC 的注册资料与 LEI，确认其是否为独立法人，并在获授权的独立核查中单独比对台账。",
+            "traceIds": []
+          },
+          {
+            "text": "调取 DEMO-2026-014 与 DEMO-2025-038 的委托书、业务范围与利益冲突豁免或保密条款，交由承办合伙人与林律师、周律师确认范围是否重叠。",
+            "traceIds": [
+              "734edc69-f3ff-48af-946d-d253e0cd9267",
+              "67cd7056-0258-4191-af6c-cc753ef0a2c8"
+            ]
+          },
+          {
+            "text": "要求提供 HSBC BANK SERVICES LIMITED 的注册证明与 LEI，人工排除同名或近似名误报；并因 HSBC HOLDINGS PLC 母公司关系查询返回 404 缺口，补充集团架构资料以核实是否还有其他关联主体。",
+            "traceIds": [
+              "ea015f95-0da5-4887-b2bc-f36c7e359491",
+              "734edc69-f3ff-48af-946d-d253e0cd9267"
+            ]
+          }
+        ],
+        "citedTraceIds": [
+          "a1fdccc9-50ff-442b-9178-be88ff3a7cef",
+          "02411906-4385-4d81-a7d3-e91bb2ddfa76",
+          "3648a3da-93c7-4e0b-8416-c13b2f116769",
+          "ea015f95-0da5-4887-b2bc-f36c7e359491",
+          "734edc69-f3ff-48af-946d-d253e0cd9267",
+          "67cd7056-0258-4191-af6c-cc753ef0a2c8"
+        ],
+        "facts": [
+          {
+            "text": "登记主体：HSBC BANK PLC；LEI MP6I5ZYZBEU3UXPYFY54；辖区 GB；状态 ACTIVE。",
+            "traceIds": [
+              "a1fdccc9-50ff-442b-9178-be88ff3a7cef"
+            ]
+          },
+          {
+            "text": "直接会计合并母公司：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39。关系口径不等于全部法律关联。",
+            "traceIds": [
+              "02411906-4385-4d81-a7d3-e91bb2ddfa76"
+            ]
+          },
+          {
+            "text": "最终会计合并母公司：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39。关系口径不等于全部法律关联。",
+            "traceIds": [
+              "02411906-4385-4d81-a7d3-e91bb2ddfa76"
+            ]
+          },
+          {
+            "text": "登记主体：HSBC HOLDINGS PLC；LEI MLU0ZO3ML4LN2LL2TL39；辖区 GB；状态 ACTIVE。",
+            "traceIds": [
+              "3648a3da-93c7-4e0b-8416-c13b2f116769"
+            ]
+          },
+          {
+            "text": "DEMO-2026-014 · HSBC BANK PLC：LEI 一致；事项「银行监管咨询（虚构）」；现有客户，进行中。",
+            "traceIds": [
+              "734edc69-f3ff-48af-946d-d253e0cd9267"
+            ]
+          },
+          {
+            "text": "DEMO-2026-027 · HSBC BANK SERVICES LIMITED：仅名称匹配，身份未确认；事项「信息技术采购咨询（虚构）」；待识别记录，进行中。",
+            "traceIds": [
+              "734edc69-f3ff-48af-946d-d253e0cd9267"
+            ]
+          },
+          {
+            "text": "DEMO-2025-038 · HSBC HOLDINGS PLC：LEI 一致；事项「集团治理专项（虚构）」；既往客户，已结案。",
+            "traceIds": [
+              "67cd7056-0258-4191-af6c-cc753ef0a2c8"
+            ]
+          }
+        ]
+      },
+      "requiredLedgerLeis": [
+        "MP6I5ZYZBEU3UXPYFY54",
+        "MLU0ZO3ML4LN2LL2TL39"
+      ]
+    }
+  ]
+}
