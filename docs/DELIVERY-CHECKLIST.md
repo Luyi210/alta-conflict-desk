@@ -15,8 +15,9 @@
 | 律师审查流程 | 已实现原型范围 | PDF 版本、依据、AI 草稿、补证、问题、变更影响、意见、Word |
 | 审查总览 | 已实现 | 案件、待办、材料变化和调用记录；[验证](VISUAL-REFRESH-V9.1.md) |
 | 方案、启动和复用说明 | 已提供 | README、PROPOSAL、OPERATIONS、RESEARCH、THIRD-PARTY-NOTICES |
+| 图文使用说明 | 已提供 | [10 页 PDF](../output/pdf/Alta-Conflict-Desk-使用说明.pdf)与[可编辑文字版](USER-GUIDE.md)，含 7 步操作和 8 张配图 |
 | AI 沟通记录 | 已提供摘要与脱敏原文 | [摘要](AI-COLLABORATION.md)／[原文](AI-CONVERSATION-REDACTED.md) |
-| GitHub | 已有私有仓库 | [仓库](https://github.com/Luyi210/alta-conflict-desk)，接收方权限待确认 |
+| GitHub | 已公开并同步 | [仓库](https://github.com/Luyi210/alta-conflict-desk)，可直接查看和克隆 |
 | 最新连续演示视频 | **待完成，按用户要求暂缓** | [录制顺序](DEMO.md)；旧截图视频不能替代 |
 
 ## 验收范围
@@ -30,6 +31,6 @@
 代码与界面已在 2026-11-01 再检查一轮，当前 68 项自动测试通过；具体修复见[代码检查记录](CODE-REVIEW-2026-11-01.md)。上文的 65 项是此前独立干净安装验收时的数量，按原日期保留。
 
 1. 新版连续演示视频：用户已明确本轮不需要录制，继续暂缓。
-2. 指定评审访问：仓库仍私有，当前只有所有者账号有权限；待提供评审 GitHub 用户名。
-
 当前适合作为面试展示原型。账户与租户隔离、真实律所台账、生产部署和数据治理尚未实现。
+
+新克隆不含 `.env`、模型密钥或开发机案件数据。没有模型凭据时仍可运行规则核查；要重新演示 AI 发起 MCP 调用，须按[运行指南](OPERATIONS.md#可选模型配置)配置自己的模型，并使用演示资料新建案件。

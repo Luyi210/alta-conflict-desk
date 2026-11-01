@@ -20,7 +20,7 @@
 | Prettier | 3.6.2 | MIT | 源码格式化（开发工具） |
 | concurrently | 9.2.5 | MIT | 同时启动前后端 |
 
-`@types/*` 开发依赖来源于 DefinitelyTyped（MIT）。SQLite 使用 Node.js 内置模块；不另行打包数据库服务。字体使用本机可用字体，没有外部字体请求。视频生成可选使用本机 FFmpeg 与 Pillow，运行原型不依赖视频制作工具。
+`@types/*` 开发依赖来源于 DefinitelyTyped（MIT）。SQLite 使用 Node.js 内置模块；不另行打包数据库服务。网页字体使用本机可用字体，没有外部字体请求。图文说明书的 PDF 使用 [Droid Sans Fallback](https://android.googlesource.com/platform/frameworks/base/+/android10-release/data/fonts/) 的字符子集；该字体元数据声明 Apache-2.0。来源、修改范围和[许可证全文](../assets/fonts/LICENSE-DroidSansFallback.txt)保存在 `assets/fonts/`。视频生成可选使用本机 FFmpeg 与 Pillow，运行原型不依赖视频制作工具。
 
 业务代码为本次原型独立编写。Dify、MCP Inspector、OpenContracts 和 yente 只作为产品组织、证据审阅与主体匹配方法参考，没有移植它们的业务源码、图片或界面组件。研究和各自许可区别见 [RESEARCH.md](RESEARCH.md)。未接入或分发 OpenSanctions 数据。
 

@@ -38,29 +38,12 @@ COPPER = colors.HexColor("#A7794D")
 LINE = colors.HexColor("#DCE3E8")
 
 
-def register_chinese_font() -> None:
-    font_candidates = list(
-        Path("/System/Library/AssetsV2").rglob("STHEITI.ttf")
-    ) + [
-        Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
-        Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
-    ]
-    for path in font_candidates:
-        if path.exists():
-            try:
-                pdfmetrics.registerFont(TTFont("GuideChinese", str(path)))
-                return
-            except Exception:
-                continue
-    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-
-    pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
-    pdfmetrics.registerFontFamily("STSong-Light", normal="STSong-Light")
-    globals()["FONT"] = "STSong-Light"
-
-
-FONT = "GuideChinese"
-register_chinese_font()
+# The bundled subset is derived from Droid Sans Fallback under Apache 2.0. It keeps
+# the guide readable in any PDF viewer without embedding a system font.
+FONT = "AltaGuideSans"
+FONT_PATH = ROOT / "assets" / "fonts" / "AltaGuideSans-Regular.ttf"
+pdfmetrics.registerFont(TTFont(FONT, str(FONT_PATH)))
+pdfmetrics.registerFontFamily(FONT, normal=FONT)
 
 
 STYLES = {

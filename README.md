@@ -1,8 +1,26 @@
 # Alta Conflict Desk
 
+**律师收案前核查 · MCP 连接器与审查工作台**
+
 律师收案前，需要确认各方究竟是哪一个法律主体、律所是否已有相关事项，以及委托材料是否足以支持审查意见。这个工作台把公开企业信息、本机示例台账、委托材料和律师处理记录放在同一宗案件中，供律师逐项核对来源、补齐缺口并交接。
 
-当前为 **v0.9.1 本机原型**。页面右上角提供可随时重开的「7 步教程」；系统记录待核实线索和处理过程，是否承接委托由律师决定。[图文使用说明（PDF）](output/pdf/Alta-Conflict-Desk-使用说明.pdf) · [可编辑文字版](docs/USER-GUIDE.md) · [方案与取舍](docs/PROPOSAL.md) · [交付状态](docs/DELIVERY-CHECKLIST.md)
+当前为 **v0.9.1 本机原型**。页面右上角提供可随时重开的「7 步教程」；系统记录待核实线索和处理过程，是否承接委托由律师决定。
+
+![审查总览：案件、待办和连接状态](docs/screenshots/v9-1-ocean-desktop.png)
+
+*当前深蓝色审查总览；图中的案件与数字是截图时的演示记录。*
+
+## 评审从这里开始
+
+| 想看什么 | 入口 |
+| --- | --- |
+| 先看完整操作 | [10 页图文说明书（PDF）](output/pdf/Alta-Conflict-Desk-使用说明.pdf) · [文字版](docs/USER-GUIDE.md) |
+| 在本机跑起来 | 安装 Node.js 24+，执行 `npm ci`、`npm run dev`，打开 `http://127.0.0.1:5178/`；详见[运行指南](docs/OPERATIONS.md) |
+| 看场景、取舍与集成路径 | [简要方案](docs/PROPOSAL.md) |
+| 核对真实 MCP 与 AI 调用 | [验收记录](docs/FINAL-ACCEPTANCE-20261101.md) · [交付清单](docs/DELIVERY-CHECKLIST.md) |
+| 看参考与开发过程 | [开源研究](docs/RESEARCH.md) · [复用范围](docs/THIRD-PARTY-NOTICES.md) · [脱敏 AI 沟通记录](docs/AI-CONVERSATION-REDACTED.md) |
+
+代码、前后端、三个 MCP 服务、操作说明和验收凭证均已提交。**当前版本的连续演示视频尚未录制。**仓库不包含模型密钥和开发机案件数据；配置自己的模型后才能重新运行 AI 工具调用。历史验收凭证可用于核对已完成的真实调用。
 
 ## 一宗事项怎样处理
 
@@ -31,7 +49,7 @@
 | 示例台账 | MCP 服务查询本机 SQLite | 工具真实运行，客户及事项内容均为虚构 |
 | 案件材料 | MCP 服务读取本机 PDF | 保留页码、版本与授权；内置材料为虚构样本 |
 
-模型接口由本机 `.env` 配置；未配置时仍可进行规则核查和人工审查。2026-11-01 的虚构案件验收记录了 **12 次主体核查和 2 次材料读取的模型发起 MCP 调用**，另有 8 次规则调用。独立安装、65 项测试、构建和浏览器导出也已验证。[查看验收及限制](docs/FINAL-ACCEPTANCE-20261101.md)。这些是当次记录，不表示启动时会自动重跑。
+模型接口由本机 `.env` 配置；未配置时仍可进行规则核查和人工审查。2026-11-01 的虚构案件验收记录了 **12 次主体核查和 2 次材料读取的模型发起 MCP 调用**，另有 8 次规则调用。此前独立安装验收时 65 项测试通过；当前测试集为 **68 项，全部通过**，生产构建也通过。[查看验收及限制](docs/FINAL-ACCEPTANCE-20261101.md)。这些是当次记录，不表示启动时会自动重跑。
 
 ## 本机启动
 
@@ -68,6 +86,6 @@ npm run dev
 - [AI 沟通记录](docs/AI-COLLABORATION.md)与[脱敏原文](docs/AI-CONVERSATION-REDACTED.md)：项目过程说明与可见对话导出。
 - [开源研究](docs/RESEARCH.md)与[复用范围](docs/THIRD-PARTY-NOTICES.md)：学习范围、依赖和许可。
 - [演示顺序](docs/DEMO.md)：待录制的新版本核心流程。
-- [GitHub 私有仓库](https://github.com/Luyi210/alta-conflict-desk)：评审者需要访问权限。
+- [GitHub 公开仓库](https://github.com/Luyi210/alta-conflict-desk)：评审者可直接查看和克隆。
 
 独立运行，没有获取或修改 Alta Lex 源码。当前为单机单用户原型，尚未实现多租户鉴权、生产级权限与审计、真实律所系统接入、OCR 或自动法律结论。

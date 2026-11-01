@@ -1,0 +1,5 @@
+# User guide font
+
+`AltaGuideSans-Regular.ttf` is a character subset of [Droid Sans Fallback](https://android.googlesource.com/platform/frameworks/base/+/android10-release/data/fonts/), renamed for this guide. The source copy came from Ghostscript 10.07.0's `Resource/CIDFSubst/DroidSansFallback.ttf` (SHA-256 `378dd3c2eba2932639b98adcad726d03fbb34ec4c42b4936fa6cc4044ab976e0`). It contains the characters needed by `docs/USER-GUIDE.md` and the PDF cover. The font metadata declares the Apache License, Version 2.0, and reads “Digitized data copyright Google Corporation © 2006.”
+
+The subset is a modified font. The modification consists of character subsetting and a new family name; the font remains under Apache 2.0. The full license is in [LICENSE-DroidSansFallback.txt](LICENSE-DroidSansFallback.txt). The font is used only by `scripts/build_user_guide_pdf.py`; the web application does not load it. If the guide gains new characters, regenerate the subset from the licensed source font with `scripts/build_guide_font.py` before rebuilding the PDF.
