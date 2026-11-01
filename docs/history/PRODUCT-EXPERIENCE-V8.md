@@ -14,9 +14,9 @@
 
 视觉沿用森林绿、暖白和少量金色，用编号、留白和文字层次组织内容；没有新增外部字体、图片资源或 npm 依赖。
 
-![桌面](screenshots/v8-review-desk.png)
+![桌面](../screenshots/v8-review-desk.png)
 
-![原文核对侧栏](screenshots/v8-source-drawer.png)
+![原文核对侧栏](../screenshots/v8-source-drawer.png)
 
 ## 实际交互检查
 
@@ -32,7 +32,7 @@
 - 默认 1280px、1024px 平板、390×844 手机检查。手机行动目录可以内部横向滚动，整页宽度保持 390px，原文侧栏也是 390px；修复初次检查发现的 grid 最小宽度溢出，检查后恢复默认视口。
 - 浏览器未捕获 error；62 项现有回归测试及 TypeScript／生产构建通过。保留两条已有 Zod 上游 PURE 注释提示，不影响构建。
 
-![手机引用视图](screenshots/v8-mobile-review.png)
+![手机引用视图](../screenshots/v8-mobile-review.png)
 
 ## 实现与边界
 
@@ -40,4 +40,4 @@
 
 本轮使用 frontend-design 技能辅助设计与实现，没有复制 Alta Lex 源码或其他项目界面代码。未来仍作为宿主案件页插件嵌入；侧栏和行动目录可映射宿主设计系统，业务 API 的集成边界保持不变。
 
-截图来自本机实际运行页面，展示 v0.7 已保存的真实 AI 结果；没有重新调用模型、制造新建议或批准收案。旧版真实模型证据见 [v0.7 核验](V7-ASSISTANT-VERIFICATION.json)。本轮不是全浏览器无障碍认证，视频按用户要求继续暂缓。
+截图来自本机实际运行页面，展示 v0.7 已保存的真实 AI 结果；没有重新调用模型、制造新建议或批准收案。旧版真实模型证据见 [v0.7 核验](../V7-ASSISTANT-VERIFICATION.json)。本轮不是全浏览器无障碍认证，视频按用户要求继续暂缓。

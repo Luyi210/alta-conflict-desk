@@ -25,4 +25,4 @@
 
 `src/ToolDesk.tsx` 的默认组件接受 `onError(message)`、`onTrace(trace)`、`onConnections()` 三个回调，分别复用全局提示、原始追踪抽屉和连接器导航。组件自带 `src/tool-desk.css`，不引入新依赖。
 
-使用 `/api/tool-desk` 的目录、权限、创建调用、轮询、重试接口，完整端点约定见 [V2-CONTRACT.md](./V2-CONTRACT.md)。表单字段来自实际 schema，中文名称仅用于解释已发现工具，不会创建或补造工具。
+使用 `/api/tool-desk` 的目录、权限、创建调用、轮询、重试接口，完整端点约定见 [V2-CONTRACT.md](history/V2-CONTRACT.md)。表单字段来自实际 schema，中文名称仅用于解释已发现工具，不会创建或补造工具。

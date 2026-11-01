@@ -22,7 +22,7 @@
 - `npm run build`：TypeScript 和生产构建通过。
 - 浏览器：搜索无结果和清除、已结束筛选、离开向导查看连接器再返回并刷新恢复、两个真实身份查询与确认、三步创建、运行进度、补证标签页刷新恢复、主体详情刷新与返回父案件、报告实际下载、创建成功后草稿清空、使用指南折叠交互。
 - 390 × 844：工作台与新建首步 `scrollWidth === clientWidth === 390`。发现表格内无定位祖先的无障碍文本引发整页溢出，已通过定位滚动容器修复。宽表格仅在内部滚动。验收后恢复默认视口；本轮未声称覆盖所有手机步骤或辅助技术。
-- 浏览器检查未捕获 error / warn。截图：[工作台](screenshots/v4-dashboard.png)、[新建](screenshots/v4-intake.png)、[案件](screenshots/v4-case.png)、[移动工作台](screenshots/v4-mobile.png)。
+- 浏览器检查未捕获 error / warn。截图：[工作台](../screenshots/v4-dashboard.png)、[新建](../screenshots/v4-intake.png)、[案件](../screenshots/v4-case.png)、[移动工作台](../screenshots/v4-mobile.png)。
 
 ## 新版 UI 创建的 AI 案件
 
@@ -35,7 +35,7 @@
 
 共 12 次模型调用，另有 8 次规则预核查。公开身份与已披露母公司取自 GLEIF，台账查询真实执行但事项关系全部虚构。加固只读验证检查模型发起方、来源字段、当前主体及母公司的台账引用和 HTTP 回执，新增模型请求为零；它不验证服务商账单。404 关系缺口保留在返回中。
 
-证据：[V4-PRODUCT-VERIFICATION.json](V4-PRODUCT-VERIFICATION.json)、[V4-CASE-REPORT.md](V4-CASE-REPORT.md)。本次保留 6 条待复核线索与 4 项补证，未代替律师填写复核结论，未把 AI 完成当作收案批准。旧版失败和通过记录均保留。
+证据：[V4-PRODUCT-VERIFICATION.json](../V4-PRODUCT-VERIFICATION.json)、[V4-CASE-REPORT.md](../V4-CASE-REPORT.md)。本次保留 6 条待复核线索与 4 项补证，未代替律师填写复核结论，未把 AI 完成当作收案批准。旧版失败和通过记录均保留。
 
 ## 实现与取舍
 
