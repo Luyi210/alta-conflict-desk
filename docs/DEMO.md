@@ -18,8 +18,8 @@
 
 历史素材：
 
-- [52 秒 AI 截图演示](demo-ai-walkthrough.mp4)：2026-10-27 单主体真实 AI 结果，非连续录屏。
-- [72 秒 v0.2 截图演示](demo-v2-walkthrough.mp4)：规则与手动工具流程，无真实 AI 调用视频。
-- [80 秒 v0.1 截图草稿](demo-walkthrough.mp4)：旧版单主体规则流程。
+- [52 秒 AI 截图演示](history/media/demo-ai-walkthrough.mp4)：2026-10-27 单主体真实 AI 结果，非连续录屏。
+- [72 秒 v0.2 截图演示](history/media/demo-v2-walkthrough.mp4)：规则与手动工具流程，无真实 AI 调用视频。
+- [80 秒 v0.1 截图草稿](history/media/demo-walkthrough.mp4)：旧版单主体规则流程。
 
 旧视频、字幕、来源清单与渲染脚本用于历史追溯，不计作本版视频已完成。

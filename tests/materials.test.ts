@@ -15,10 +15,10 @@ import { validateMaterialOutput } from "../server/material-model.ts";
 import { explainMatch } from "../shared/match-explanation.ts";
 import type { Entity, LedgerMatch, RunInput, Run } from "../shared/types.ts";
 const original = readFileSync(
-  new URL("../output/pdf/fictional-engagement-original.pdf", import.meta.url),
+  new URL("../examples/pdf/fictional-engagement-original.pdf", import.meta.url),
 );
 const updated = readFileSync(
-  new URL("../output/pdf/fictional-engagement-updated.pdf", import.meta.url),
+  new URL("../examples/pdf/fictional-engagement-updated.pdf", import.meta.url),
 );
 const entity: Entity = {
   lei: "MP6I5ZYZBEU3UXPYFY54",

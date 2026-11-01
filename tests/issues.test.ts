@@ -15,10 +15,10 @@ import type { ScreeningService } from "../server/screening.ts";
 import type { Run, RunInput } from "../shared/types.ts";
 import type { ReviewIssue } from "../shared/issues.ts";
 const pdf = readFileSync(
-  new URL("../output/pdf/fictional-engagement-original.pdf", import.meta.url),
+  new URL("../examples/pdf/fictional-engagement-original.pdf", import.meta.url),
 );
 const revised = readFileSync(
-  new URL("../output/pdf/fictional-engagement-updated.pdf", import.meta.url),
+  new URL("../examples/pdf/fictional-engagement-updated.pdf", import.meta.url),
 );
 const quote =
   "Financing documentation and transaction negotiations are excluded.";

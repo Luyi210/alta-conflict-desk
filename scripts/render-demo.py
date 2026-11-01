@@ -20,6 +20,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 SHOTS = DOCS / "screenshots"
+MEDIA = DOCS / "history" / "media"
 WIDTH, HEIGHT, FPS = 1440, 900, 24
 BG, INK, MUTED, LINE = "#edf0e8", "#243e34", "#67735f", "#ced6c7"
 FONT_CANDIDATES = [
@@ -130,6 +131,7 @@ def stamp(seconds):
 
 
 def main():
+    MEDIA.mkdir(parents=True, exist_ok=True)
     captions = [(6, "本片基于实际浏览器操作截图串联。非连续录屏；规则模式，没有模型实际调用。")]
     captions += [(s["seconds"], s["caption"]) for s in STORY]
     captions += [(6, "当前已验证 UI 与两组真实 MCP。后续补齐模型 API 实跑与 AI 版连续操作演示。")]
@@ -137,15 +139,15 @@ def main():
     for index, (seconds, text) in enumerate(captions, 1):
         srt.append(f"{index}\n{stamp(at)} --> {stamp(at + seconds)}\n{text}\n")
         at += seconds
-    subtitle = DOCS / "demo-walkthrough.srt"
+    subtitle = MEDIA / "demo-walkthrough.srt"
     subtitle.write_text("\n".join(srt), encoding="utf-8")
-    output = DOCS / "demo-walkthrough.mp4"
+    output = MEDIA / "demo-walkthrough.mp4"
     with tempfile.TemporaryDirectory(prefix="alta-demo-") as work:
         work = Path(work)
         title, ending = work / "title.png", work / "ending.png"
         card(title)
         card(ending, ending=True)
-        shutil.copyfile(title, DOCS / "demo-poster.png")
+        shutil.copyfile(title, MEDIA / "demo-poster.png")
         segments = []
         common = ["-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", str(FPS), "-video_track_timescale", "24000"]
         for index, (image_path, seconds, item) in enumerate([(title, 6, None)] + [(SHOTS / s["image"], s["seconds"], s) for s in STORY] + [(ending, 6, None)]):
@@ -185,7 +187,7 @@ def main():
         "sourceScreenshots": [{"file": s["image"], "sha256": hashlib.sha256((SHOTS / s["image"]).read_bytes()).hexdigest(), "seconds": s["seconds"]} for s in STORY],
         "probe": probe,
     }
-    (DOCS / "demo-walkthrough.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (MEDIA / "demo-walkthrough.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), "duration": duration, "sizeBytes": output.stat().st_size, "continuousScreenRecording": False, "aiVerified": False}, ensure_ascii=False), flush=True)
 
 

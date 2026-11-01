@@ -69,11 +69,11 @@ npm run dev
 | --- | --- |
 | `src/`、`server/`、`mcp/`、`shared/` | 前端、后端、三个 MCP 服务与共享类型 |
 | `tests/`、`scripts/` | 自动测试、只读核验、接入验证及历史视频制作脚本 |
-| `output/pdf/` | 两版内置虚构材料；应用与测试需要，保留 |
+| `examples/pdf/` | 两版内置虚构材料；应用与测试需要，保留 |
 | `docs/` | 当前资料、凭证与截图，见 [资料索引](docs/README.md) |
-| `docs/history/` | 旧版说明与清理前文档 |
+| `docs/history/` | 旧版说明、旧演示媒体与清理前文档 |
 | `.env`、`data/` | 本机模型配置、案件数据库和导入材料；Git 忽略，清理时保留 |
-| `node_modules/`、`dist/` | 已安装依赖与构建产物；Git 忽略，本机运行所用 |
+| `node_modules/`、`dist/` | 前者是本机依赖；后者执行 `npm run build` 后生成，均不进入 Git |
 
 ## 交付导航
 

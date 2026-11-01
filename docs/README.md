@@ -28,4 +28,4 @@
 | [大屏](V9-OVERVIEW-VERIFICATION.json)／[视觉](VISUAL-REFRESH-V9.1.md) | 聚合口径与当前外观 |
 | [浏览器记录](BROWSER-VERIFICATION.md) | 各轮操作范围 |
 
-其余核验 JSON、报告、截图、Word 与旧视频均为历史证据，保留原日期和模式。截图在 `screenshots/`，旧版说明见 [history/](history/README.md)。新克隆不含开发机数据库，需建立自己的演示案件。
+其余核验 JSON、报告、截图、Word 与旧视频均为历史证据，保留原日期和模式。截图在 `screenshots/`，旧版说明见 [history/](history/README.md)，旧视频及配套文件见 [媒体索引](history/media/README.md)。脱敏对话原文中的旧文件路径记录保留当时写法，当前路径以本索引为准。新克隆不含开发机数据库，需建立自己的演示案件。

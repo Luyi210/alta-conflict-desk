@@ -33,7 +33,7 @@ export function materialRouter(service: MaterialService) {
     const bytes = readFileSync(
       fileURLToPath(
         new URL(
-          `../output/pdf/fictional-engagement-${input.variant}.pdf`,
+          `../examples/pdf/fictional-engagement-${input.variant}.pdf`,
           import.meta.url,
         ),
       ),

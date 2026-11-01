@@ -178,13 +178,13 @@ npm run verify:ai -- --case fe5bd2b5-c7e3-4440-835c-2a7729b6ff2e --hardened
 
 当前功能验收见上面的双主体记录，本轮未录制视频。
 
-[52 秒 AI 验收视频](../demo-ai-walkthrough.mp4)展示 2026-10-27 实跑的身份确认、完成状态、模型摘要、4 次模型发起的 MCP 调用及原始返回。视频为实际截图串联，**非连续录屏**；与之前纯规则视频分开保存。配套[字幕](../demo-ai-walkthrough.srt)、[截图来源及哈希清单](../demo-ai-walkthrough.json)，可选运行 `python3 scripts/render-ai-demo.py` 重建。
+[52 秒 AI 验收视频](media/demo-ai-walkthrough.mp4)展示 2026-10-27 实跑的身份确认、完成状态、模型摘要、4 次模型发起的 MCP 调用及原始返回。视频为实际截图串联，**非连续录屏**；与之前纯规则视频分开保存。配套[字幕](media/demo-ai-walkthrough.srt)、[截图来源及哈希清单](media/demo-ai-walkthrough.json)，可选运行 `python3 scripts/render-ai-demo.py` 重建。
 
 当时一个已确认主体的 AI 工具链路通过，案件中的拟委托人身份仍待补充，报告不是收案批准。模型复核后已通过浏览器保存演示人工意见并下载报告。
 
 ## 历史 v0.2 演示与验证（2026-10-27）
 
-[72 秒新版截图演示](../demo-v2-walkthrough.mp4)展示多主体案件、补证、总意见阻塞和工具调用台，配套[字幕](../demo-v2-walkthrough.srt)与[来源校验记录](../demo-v2-walkthrough.json)。它是实际页面截图串联，**非连续录屏、非真实 AI 演示**。可选执行 `python3 scripts/render-v2-demo.py` 重建。
+[72 秒新版截图演示](media/demo-v2-walkthrough.mp4)展示多主体案件、补证、总意见阻塞和工具调用台，配套[字幕](media/demo-v2-walkthrough.srt)与[来源校验记录](media/demo-v2-walkthrough.json)。它是实际页面截图串联，**非连续录屏、非真实 AI 演示**。可选执行 `python3 scripts/render-v2-demo.py` 重建。
 
 当时自动测试 **32 / 32 通过**，`npm run build` 通过；其中 mock、协议和记录核验测试与真实 DeepSeek 实跑分别计证。实际浏览器操作见[验收记录](../BROWSER-VERIFICATION.md)。两个新增实时脚本可独立复验：
 
@@ -197,7 +197,7 @@ npm run test:tools-live
 
 ## 演示草稿
 
-[80 秒截图演示 MP4](../demo-walkthrough.mp4)串联了 **v0.1 单主体流程**的九张真实操作截图，并通过纵向平移展示长页面。**这是旧版截图演示草稿，不是连续录屏，不代表 v0.2 案件与工具台功能；使用规则模式，没有真实模型调用。** 视频无配音，带画面说明及可选中文软字幕，[字幕文件](../demo-walkthrough.srt)可单独使用。
+[80 秒截图演示 MP4](media/demo-walkthrough.mp4)串联了 **v0.1 单主体流程**的九张真实操作截图，并通过纵向平移展示长页面。**这是旧版截图演示草稿，不是连续录屏，不代表 v0.2 案件与工具台功能；使用规则模式，没有真实模型调用。** 视频无配音，带画面说明及可选中文软字幕，[字幕文件](media/demo-walkthrough.srt)可单独使用。
 
 最终提交前，须按更新后的 [v0.2 演示脚本](../DEMO.md)录制案件、补证、总意见与工具台的实际操作；完整题目的视频还须包含模型真实调用证据。旧截图视频不能代替上述验收。
 

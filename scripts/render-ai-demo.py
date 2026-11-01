@@ -25,7 +25,7 @@ SPEC = importlib.util.spec_from_file_location("render_demo_base", Path(__file__)
 assert SPEC and SPEC.loader
 BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
-ROOT, DOCS, SHOTS = BASE.ROOT, BASE.DOCS, BASE.SHOTS
+ROOT, DOCS, SHOTS, MEDIA = BASE.ROOT, BASE.DOCS, BASE.SHOTS, BASE.MEDIA
 WIDTH, HEIGHT, FPS = BASE.WIDTH, BASE.HEIGHT, BASE.FPS
 DISCLOSURE = "真实 AI 验收 · 截图演示 · 非连续录屏"
 LIMITATION = "内部委托数据虚构 · 单主体核查完成，案件仍待补证与复核"
@@ -111,6 +111,7 @@ def validate_evidence():
 
 
 def main():
+    MEDIA.mkdir(parents=True, exist_ok=True)
     evidence, verified_run = validate_evidence()
     source_metadata = []
     for item in STORY:
@@ -132,14 +133,14 @@ def main():
     for index, (seconds, text) in enumerate(captions, 1):
         srt.append(f"{index}\n{BASE.stamp(at)} --> {BASE.stamp(at + seconds)}\n{text}\n")
         at += seconds
-    subtitle = DOCS / f"{OUTPUT_STEM}.srt"
+    subtitle = MEDIA / f"{OUTPUT_STEM}.srt"
     subtitle.write_text("\n".join(srt), encoding="utf-8")
-    output = DOCS / f"{OUTPUT_STEM}.mp4"
+    output = MEDIA / f"{OUTPUT_STEM}.mp4"
     with tempfile.TemporaryDirectory(prefix="alta-demo-ai-") as work_dir:
         work = Path(work_dir)
         title, ending = work / "title.png", work / "ending.png"
         card(title); card(ending, ending=True)
-        shutil.copyfile(title, DOCS / f"{OUTPUT_STEM}-poster.png")
+        shutil.copyfile(title, MEDIA / f"{OUTPUT_STEM}-poster.png")
         segments = []
         sequence = [(title, 5, None)] + [(SHOTS / s["image"], s["seconds"], s) for s in STORY] + [(ending, 6, None)]
         common = ["-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", str(FPS), "-video_track_timescale", "24000"]
@@ -183,7 +184,7 @@ def main():
         "method": "Native screenshot pixels, final one-pixel column removed for even-width encoding, then vertical crop/pan and external captions. No synthetic click, cursor animation, or sparse raw capture frames.",
         "sourceScreenshots": source_metadata, "chapters": STORY, "probe": probe,
     }
-    (DOCS / f"{OUTPUT_STEM}.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (MEDIA / f"{OUTPUT_STEM}.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), "duration": duration, "sizeBytes": output.stat().st_size, "continuousScreenRecording": False, "aiVerified": True, "caseHasBlockers": True}, ensure_ascii=False), flush=True)
 
 

@@ -2,11 +2,11 @@
 
 # v0.2 核心流程演示脚本
 
-现有 [80 秒截图演示草稿](../demo-walkthrough.mp4)及 [字幕](../demo-walkthrough.srt)仅展示 **v0.1 单主体规则流程**。九张源截图为 `screenshots/01-workspace.jpg` 至 `screenshots/09-history.jpg`。它不是连续录屏，没有配音或真实模型调用，**不代表 v0.2 案件、补证、总意见或工具台已被视频覆盖**。
+现有 [80 秒截图演示草稿](media/demo-walkthrough.mp4)及 [字幕](media/demo-walkthrough.srt)仅展示 **v0.1 单主体规则流程**。九张源截图为 `screenshots/01-workspace.jpg` 至 `screenshots/09-history.jpg`。它不是连续录屏，没有配音或真实模型调用，**不代表 v0.2 案件、补证、总意见或工具台已被视频覆盖**。
 
 旧视频可用 `python3 scripts/render-demo.py` 重建，需要已安装的 Pillow、FFmpeg 和中文字体；脚本不会安装系统包。`demo-walkthrough.json` 记录源截图哈希及媒体信息。重新渲染旧素材不会产生 v0.2 演示证据。
 
-另有 [72 秒 v0.2 截图草稿](../demo-v2-walkthrough.mp4)，覆盖案件、补证和工具台，但仍为规则/手动模式，非连续录屏、非 AI 运行视频。
+另有 [72 秒 v0.2 截图草稿](media/demo-v2-walkthrough.mp4)，覆盖案件、补证和工具台，但仍为规则/手动模式，非连续录屏、非 AI 运行视频。
 
 **真实 AI 流程已在本机完成一次。** `deepseek-flash` 对一个已确认主体完成 2 轮、4 次模型发起 MCP 调用，并引用返回结果；另有 4 次规则预核查。已保存 [AI 验收记录](../AI-LIVE-VERIFICATION.json) 与 [AI 报告](../SAMPLE-AI-REPORT.md)。这不表示已有 AI 视频；视频状态以 [交付清单](../DELIVERY-CHECKLIST.md) 为准。
 
@@ -93,4 +93,4 @@
 
 ## 已制作的 AI 截图演示
 
-[demo-ai-walkthrough.mp4](../demo-ai-walkthrough.mp4) 为 52 秒的真实 DeepSeek 运行截图演示，含身份确认、执行结果、模型摘要、主动工具调用和原始返回。它是截图串联，非连续录屏；字幕、封面、来源哈希与采集保存时点一起交付。原规则视频保留作历史素材。
+[demo-ai-walkthrough.mp4](media/demo-ai-walkthrough.mp4) 为 52 秒的真实 DeepSeek 运行截图演示，含身份确认、执行结果、模型摘要、主动工具调用和原始返回。它是截图串联，非连续录屏；字幕、封面、来源哈希与采集保存时点一起交付。原规则视频保留作历史素材。
