@@ -1,4 +1,4 @@
-> 历史归档：本文件保留清理前的说明。当前状态见 [交付清单](../DELIVERY-CHECKLIST.md)。
+> 历史归档：本文件保留清理前的说明；当时的 Word 功能和样本现已移除。当前状态见 [交付清单](../DELIVERY-CHECKLIST.md)。
 
 # Alta Conflict Desk · v0.9.1
 
@@ -14,7 +14,7 @@ v0.8 将 AI 审查助理改为「审查行动台」：左侧行动目录、右�
 
 ![v0.8 审查行动台](../screenshots/v8-review-desk.png)
 
-v0.7 新增真实 AI 审查助理：DeepSeek 经 2 轮、4 次模型 MCP 读取，生成 3 项带原文引用的行动；浏览器完成编辑、复制并采用到已有问题。首次失败记录保留，见 [功能说明](PRODUCT-EXPERIENCE-V7.md)与[只读核验](../V7-ASSISTANT-VERIFICATION.json)。v0.7 的 62 项回归测试和生产构建通过。v0.6 的问题建立、版本影响、人工处理与 [Word 下载](../V6-REVIEW-MEMO.docx)保留为历史验收，各版本调用数分别计证。
+v0.7 新增真实 AI 审查助理：DeepSeek 经 2 轮、4 次模型 MCP 读取，生成 3 项带原文引用的行动；浏览器完成编辑、复制并采用到已有问题。首次失败记录保留，见 [功能说明](PRODUCT-EXPERIENCE-V7.md)与[只读核验](../V7-ASSISTANT-VERIFICATION.json)。v0.7 的 62 项回归测试和生产构建通过。v0.6 的问题建立、版本影响与人工处理保留为历史验收；当时的 Word 样本现已移除，各版本调用数分别计证。
 
 v0.5 增加案件材料与原文复核：真实 PDF 导入、原文页预览、按版本授权 AI、带页码和 MCP 凭证的核实问题、不可覆盖的版本及摘录留存；主体匹配新增 LEI、名称、辖区逐字段解释。详见 [v0.5 功能与验收](PRODUCT-EXPERIENCE-V5.md)。
 

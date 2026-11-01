@@ -12,7 +12,7 @@
 
 ## 当前验收材料
 
-[2026-11-01 验收记录](FINAL-ACCEPTANCE-20261101.md)说明干净安装、模型发起的 MCP 调用、律师处理材料变更及实际导出范围。原始凭证分别见 [主体核查](FINAL-AI-VERIFICATION-20261101.json)、[材料审查](FINAL-ASSISTANT-VERIFICATION-20261101.json)和[流程汇总](FINAL-FLOW-VERIFICATION-20261101.json)；浏览器导出的文件见 [案件报告](FINAL-CASE-REPORT-20261101.md)与[Word 备忘录](FINAL-REVIEW-MEMO-20261101.docx)。
+[2026-11-01 验收记录](FINAL-ACCEPTANCE-20261101.md)说明干净安装、模型发起的 MCP 调用、律师处理材料变更及当时的导出范围。原始凭证分别见 [主体核查](FINAL-AI-VERIFICATION-20261101.json)、[材料审查](FINAL-ASSISTANT-VERIFICATION-20261101.json)和[流程汇总](FINAL-FLOW-VERIFICATION-20261101.json)；当前保留的浏览器导出文件为 [案件报告](FINAL-CASE-REPORT-20261101.md)。流程汇总 JSON 保留当时 Word 样本的路径记录，该文件现已移除。
 
 ## 实现与过程
 
