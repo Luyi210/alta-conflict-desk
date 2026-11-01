@@ -60,7 +60,7 @@ MCP 工具返回 JSON 文本，由客户端解析。GLEIF 无认证，外网失�
 
 模型可选 OpenAI-compatible API 环境变量。未配置时 `rules` 可实际调用 MCP，但不能称为 AI 验收通过。配置后通过 function calling 转发至同一权限和校验入口，检查允许工具、已确认主体边界、调用次数与真实引用。`Run.modelExecution` 记录状态、模型、轮次与工具调用数；配置存在不等于执行通过。
 
-当前 DeepSeek `deepseek-flash` 已完成一次实际验收：一个已确认企业、2 轮、4 次 `initiator:model` 成功 MCP 调用，另有 4 次 `rules` 预核查。证据见 [AI-LIVE-VERIFICATION.json](AI-LIVE-VERIFICATION.json)；案件仍存在未确认主体和补证缺口。`npm run verify:ai -- --case <id>` 只读检查已有记录，不新建任务、不请求模型、不读取 `.env`；mock 测试仅验证协议边界，原规则验收不因此改变模式。
+当前 DeepSeek `deepseek-flash` 已完成一次实际验收：一个已确认企业、2 轮、4 次 `initiator:model` 成功 MCP 调用，另有 4 次 `rules` 预核查。证据见 [AI-LIVE-VERIFICATION.json](history/evidence/AI-LIVE-VERIFICATION.json)；案件仍存在未确认主体和补证缺口。`npm run verify:ai -- --case <id>` 只读检查已有记录，不新建任务、不请求模型、不读取 `.env`；mock 测试仅验证协议边界，原规则验收不因此改变模式。
 
 ## v0.5 案件材料
 

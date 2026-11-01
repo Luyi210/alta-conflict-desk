@@ -15,4 +15,4 @@
 - [v0.8 行动台布局](PRODUCT-EXPERIENCE-V8.md)
 - [v0.9 大屏](PRODUCT-EXPERIENCE-V9.md)
 
-归档不把旧验收改写成新结果。旧视频、字幕、来源清单及海报集中在 [media/](media/)，调用 JSON、报告和来源截图仍按原路径保留。
+归档不把旧验收改写成新结果。[旧验收凭证](evidence/README.md)收纳各版本 JSON 与样例报告；旧视频、字幕、来源清单及海报在 [media/](media/)；截图见[图片索引](../screenshots/README.md)。

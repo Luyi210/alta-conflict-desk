@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -179,8 +179,9 @@ try {
       "Temporary isolated SQLite table renamed then restored to verify an actual MCP error and successful retry. Production data was not modified.",
     calls: [gleif, failure, retry],
   };
+  mkdirSync(resolve("docs/history/evidence"), { recursive: true });
   writeFileSync(
-    resolve("docs/TOOL-LIVE-VERIFICATION.json"),
+    resolve("docs/history/evidence/TOOL-LIVE-VERIFICATION.json"),
     JSON.stringify(artifact, null, 2) + "\n",
   );
   console.log(
@@ -194,7 +195,7 @@ try {
         gleifDurationMs: gleif.trace?.durationMs,
         retryOf: retry.retryOf,
         retryStatus: retry.status,
-        report: "docs/TOOL-LIVE-VERIFICATION.json",
+        report: "docs/history/evidence/TOOL-LIVE-VERIFICATION.json",
       },
       null,
       2,

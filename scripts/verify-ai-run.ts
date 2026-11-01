@@ -5,14 +5,16 @@ import { fileURLToPath } from "node:url";
 import type { CaseView, Run, Trace } from "../shared/types.ts";
 import { evidenceFacts } from "../shared/evidence-facts.ts";
 
-const outputDir = fileURLToPath(new URL("../docs/", import.meta.url));
+const outputDir = fileURLToPath(
+  new URL("../docs/history/evidence/", import.meta.url),
+);
 const usage = `只读验收已有 AI 核查，不新建任务、不调用模型、不读取 .env。
 用法：
   node --import tsx scripts/verify-ai-run.ts <runId>
   node --import tsx scripts/verify-ai-run.ts --case <caseId>
   可选：--base-url http://127.0.0.1:4318
   加固验收：--hardened（逐主体台账引用、事实卡与网络回执；另存 V3-AI-* 文件）
-输出：docs/AI-LIVE-VERIFICATION.json、docs/SAMPLE-AI-REPORT.md`;
+输出：docs/history/evidence/AI-LIVE-VERIFICATION.json、docs/history/evidence/SAMPLE-AI-REPORT.md`;
 const sensitiveKeys = new Set([
   "apikey",
   "modelapikey",

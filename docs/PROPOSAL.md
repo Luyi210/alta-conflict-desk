@@ -35,7 +35,7 @@ flowchart LR
 
 React／Vite 前端，Express／Node 24 SQLite 后端；官方 MCP TypeScript SDK 经 stdio 运行独立服务。记录实际调用的参数、来源、状态、耗时、发起方与错误，区分模型、规则和人工调用。
 
-GLEIF 使用有限超时预算、IPv4 优先与有限重试；失败保留，不用预设结果替换请求。详见 [修复说明](GLEIF-RECOVERY.md)。
+GLEIF 使用有限超时预算、IPv4 优先与有限重试；失败保留，不用预设结果替换请求。详见 [修复说明](notes/GLEIF-RECOVERY.md)。
 
 ## 实现取舍
 

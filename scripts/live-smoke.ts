@@ -115,9 +115,9 @@ try {
     disconnectEnforced: true,
     aiVerified: false,
   };
-  mkdirSync(resolve("docs"), { recursive: true });
+  mkdirSync(resolve("docs/history/evidence"), { recursive: true });
   writeFileSync(
-    resolve("docs/LIVE-VERIFICATION.json"),
+    resolve("docs/history/evidence/LIVE-VERIFICATION.json"),
     JSON.stringify(artifact, null, 2) + "\n",
   );
   console.log(JSON.stringify(artifact, null, 2));

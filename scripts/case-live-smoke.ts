@@ -242,7 +242,8 @@ try {
     finalDecision: file.decision.status,
   };
   const output = resolve(
-    process.env.CASE_VERIFICATION_OUTPUT || "docs/CASE-LIVE-VERIFICATION.json",
+    process.env.CASE_VERIFICATION_OUTPUT ||
+      "docs/history/evidence/CASE-LIVE-VERIFICATION.json",
   );
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, JSON.stringify(artifact, null, 2) + "\n");

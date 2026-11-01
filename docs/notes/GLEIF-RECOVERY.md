@@ -48,9 +48,9 @@ npm run verify:ai -- --case fe5bd2b5-c7e3-4440-835c-2a7729b6ff2e --hardened
 
 脚本只读检查全部身份已确认、子核查与模型完成、两类模型来源、逐主体台账及引用、来源卡与实际字段一致、HTTP 回执。404 仅在关系端点且明确记录缺口时被接受；网络错误、5xx、响应体错误不冒充完整返回。脚本不调用模型、不读取密钥；新克隆需先运行自己的案件后替换编号。
 
-- [加固验收 JSON](V3-AI-VERIFICATION.json)：完整工具结果、回执与结构化简报。
-- [调用报告](V3-AI-REPORT.md)：模型摘要、引用和原始工具记录。
-- [页面下载的案件报告](V3-AI-CASE-REPORT.md)：背景、各方结果、补证与历史。
-- [双主体完成截图](screenshots/v3-ai-complete.png)、[引用凭证截图](screenshots/v3-ai-receipt.png)。
+- [加固验收 JSON](../history/evidence/V3-AI-VERIFICATION.json)：完整工具结果、回执与结构化简报。
+- [调用报告](../history/evidence/V3-AI-REPORT.md)：模型摘要、引用和原始工具记录。
+- [页面下载的案件报告](../history/evidence/V3-AI-CASE-REPORT.md)：背景、各方结果、补证与历史。
+- [双主体完成截图](../screenshots/v3-ai-complete.png)、[引用凭证截图](../screenshots/v3-ai-receipt.png)。
 
 最终 npm test **46/46** 通过，npm run build 通过。自动测试中的模型为 mock；上面两条 run 才是真实模型证据。案件还有 6 条线索与 4 项范围/保密补证，未代替律师作出结论；AI 流程完成不等于材料完备、无冲突或批准收案，摘要与建议仍须人工核对。

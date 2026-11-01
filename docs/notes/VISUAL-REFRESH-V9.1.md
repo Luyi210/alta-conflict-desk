@@ -22,8 +22,8 @@
 
 本轮为前端视觉更新，没有新模型调用、案件数据写入或后端变更。v0.9 的 65 项测试记录保留为历史结果，本轮未重复执行整套后端回归。动态效果请运行页面查看，PNG 只呈现静态外观。
 
-![大屏](screenshots/v9-1-ocean-screen.png)
+![大屏](../screenshots/v9-1-ocean-screen.png)
 
-![默认桌面](screenshots/v9-1-ocean-desktop.png)
+![默认桌面](../screenshots/v9-1-ocean-desktop.png)
 
-![手机](screenshots/v9-1-ocean-mobile.png)
+![手机](../screenshots/v9-1-ocean-mobile.png)

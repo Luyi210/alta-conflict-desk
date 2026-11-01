@@ -30,7 +30,7 @@ WIDTH, HEIGHT, FPS = BASE.WIDTH, BASE.HEIGHT, BASE.FPS
 DISCLOSURE = "真实 AI 验收 · 截图演示 · 非连续录屏"
 LIMITATION = "内部委托数据虚构 · 单主体核查完成，案件仍待补证与复核"
 OUTPUT_STEM = "demo-ai-walkthrough"
-VERIFICATION = DOCS / "AI-LIVE-VERIFICATION.json"
+VERIFICATION = DOCS / "history" / "evidence" / "AI-LIVE-VERIFICATION.json"
 
 STORY = [
     {"image": "ai-01-confirmed.jpg", "seconds": 8, "start": 480, "end": 710,

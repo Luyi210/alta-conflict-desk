@@ -99,7 +99,7 @@ npm run verify:ai -- --case fe5bd2b5-c7e3-4440-835c-2a7729b6ff2e --hardened
 
 对应两个 run 为 `6c62eeac-7faf-41ee-adee-d5afc830d0d6` 与 `32b3a553-a2e6-4b38-9e19-c811f345ce8a`。上述编号属于本机已有数据库；全新克隆不包含 `data/`，须先实际运行自己的 AI 案件，再传入其编号。该命令只重新检查已有证据，不重新消费模型调用。
 
-实时脚本将当次结果写入 [LIVE-VERIFICATION.json](LIVE-VERIFICATION.json)。该记录按脚本实际覆盖范围解释；基础规则流程通过不自动证明所有 v0.2 交互均已验收。外网失败会导致测试失败或明确缺口，不会切换成假数据。
+实时脚本将当次结果写入 [LIVE-VERIFICATION.json](history/evidence/LIVE-VERIFICATION.json)。该记录按脚本实际覆盖范围解释；基础规则流程通过不自动证明所有 v0.2 交互均已验收。外网失败会导致测试失败或明确缺口，不会切换成假数据。
 
-安装构建、模型实跑、v0.2 浏览器验证、仓库同步和视频录制的最新证据见 [交付清单](DELIVERY-CHECKLIST.md) 与 [浏览器验收记录](BROWSER-VERIFICATION.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
+安装构建、模型实跑、v0.2 浏览器验证、仓库同步和视频录制的最新证据见 [交付清单](DELIVERY-CHECKLIST.md) 与 [浏览器验收记录](notes/BROWSER-VERIFICATION.md)。清单中待完成项目不应在演示或提交说明中被描述为已完成。
 

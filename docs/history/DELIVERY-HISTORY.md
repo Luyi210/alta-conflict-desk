@@ -2,7 +2,7 @@
 
 # 交付与验收清单
 
-当前版本 **v0.6，2026-10-31**。新增审查问题工作台、材料变更影响和可编辑 Word 备忘录。59 项自动测试通过；实际 DeepSeek 双版本分析为 4 次模型 MCP 调用、3 个带验证引用的问题，之前两次格式失败仍保留。浏览器完成问题与引用录入、人工确认变更、AI 建议转问题、真实 Word 下载和 390px 检查。见 [v0.6 验收](PRODUCT-EXPERIENCE-V6.md)、[运行记录](../V6-WORKBENCH-VERIFICATION.json)及 [Word 样本](../V6-REVIEW-MEMO.docx)。本轮仍未制作视频，原始聊天需另行脱敏导出，评审访问权限沿用私有仓库设置。
+当前版本 **v0.6，2026-10-31**。新增审查问题工作台、材料变更影响和可编辑 Word 备忘录。59 项自动测试通过；实际 DeepSeek 双版本分析为 4 次模型 MCP 调用、3 个带验证引用的问题，之前两次格式失败仍保留。浏览器完成问题与引用录入、人工确认变更、AI 建议转问题、真实 Word 下载和 390px 检查。见 [v0.6 验收](PRODUCT-EXPERIENCE-V6.md)、[运行记录](evidence/V6-WORKBENCH-VERIFICATION.json)及 [Word 样本](evidence/V6-REVIEW-MEMO.docx)。本轮仍未制作视频，原始聊天需另行脱敏导出，评审访问权限沿用私有仓库设置。
 
 历史版本 **v0.5，2026-10-31**。新增匹配解释、真实 PDF 材料库、第三个 MCP 工具、案件/版本授权边界、真实模型材料复核与旧版依据保留。53 项自动测试通过；真实 DeepSeek 产生 2 次材料 MCP 调用及 5 个待核实问题，全部引用和版本哈希核验通过。详细范围见 [v0.5 验收](PRODUCT-EXPERIENCE-V5.md)。
 
@@ -54,7 +54,7 @@ npm run dev
 npm run verify:ai -- --case 4ad98a01-f9bd-46c2-bee8-4276924e2396
 ```
 
-`data/` 不进入 Git；新克隆需先实际运行自己的 AI 案件，再使用相应编号。核验脚本读取已有应用记录并生成 [AI-LIVE-VERIFICATION.json](../AI-LIVE-VERIFICATION.json) 和 [SAMPLE-AI-REPORT.md](../SAMPLE-AI-REPORT.md)，不会读取 `.env` 或核验服务商账单。
+`data/` 不进入 Git；新克隆需先实际运行自己的 AI 案件，再使用相应编号。核验脚本读取已有应用记录并生成 [AI-LIVE-VERIFICATION.json](evidence/AI-LIVE-VERIFICATION.json) 和 [SAMPLE-AI-REPORT.md](evidence/SAMPLE-AI-REPORT.md)，不会读取 `.env` 或核验服务商账单。
 
 ## 本次真实 AI 验收范围
 
@@ -81,7 +81,7 @@ npm run verify:ai -- --case 4ad98a01-f9bd-46c2-bee8-4276924e2396
 
 - GLEIF 采用隔离子进程 IPv4 优先与有限重试；真实运行捕获一次超时后自动恢复。
 - 双主体均确认并完成 AI 核查：各 6 次模型 MCP 调用、2 轮；共 12 次模型调用及 8 次规则调用。
-- 加固验收、页面引用追溯与实际报告下载通过；证据见 [GLEIF-RECOVERY.md](../GLEIF-RECOVERY.md)。
+- 加固验收、页面引用追溯与实际报告下载通过；证据见 [GLEIF-RECOVERY.md](../notes/GLEIF-RECOVERY.md)。
 - 最终自动测试 46/46 通过，TypeScript 与生产构建通过。
 - 6 条线索及 4 项补证留待律师，未自动决定收案；旧失败记录保留。
 - 按本轮要求优先功能，没有制作新视频。仓库评审访问权限与连续视频仍属最终交付的后续事项。

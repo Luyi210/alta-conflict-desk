@@ -2,7 +2,7 @@
 
 本文件记录原型制作中的主要讨论、判断与分工，便于评审理解 AI 使用范围。它是整理后的决策摘要，**不是原始聊天逐字导出**。未包含账号密码、密钥或其他不宜提交到仓库的信息。
 
-整理日期：2026-10-27。当前方案对应 v0.2 案件工作台与工具调用台。
+本记录始于 2026-10-27 的 v0.2 工作台，后续按日期续录至 v0.9.1。文中省略目录的旧版 JSON 与样例报告现归档在 [历史验收目录](history/evidence/README.md)；最终验收在 [2026-11-01 目录](evidence/2026-11-01/README.md)。
 
 ## 需求如何收敛
 
@@ -50,7 +50,7 @@
 
 ## 验证与待完成事项
 
-“代码已实现”“测试通过”“浏览器验证”“模型实跑”“视频录制”“上传 GitHub”是不同状态。最新证据以 [DELIVERY-CHECKLIST.md](DELIVERY-CHECKLIST.md) 与 [BROWSER-VERIFICATION.md](BROWSER-VERIFICATION.md) 为准；本摘要不推定全部完成，也不固定可能过时的测试数量。
+“代码已实现”“测试通过”“浏览器验证”“模型实跑”“视频录制”“上传 GitHub”是不同状态。最新证据以 [DELIVERY-CHECKLIST.md](DELIVERY-CHECKLIST.md) 与 [BROWSER-VERIFICATION.md](notes/BROWSER-VERIFICATION.md) 为准；本摘要不推定全部完成，也不固定可能过时的测试数量。
 
 制作期间，GitHub CLI 曾在网络受限环境报告登录失败。进一步核验后确认凭据可用，创建了私有交付仓库。普通 Git 传输随后超时，改用 GitHub 官方 Git 数据 API 上传并核对远端文件树；不将初步误报描述为账号失效。各版本是否已同步，以最新交付记录为准。
 
@@ -66,7 +66,7 @@
 
 主实现通过 UI 只创建了一次 AI 案件 `4ad98a01-f9bd-46c2-bee8-4276924e2396`，已确认交易对方 HSBC BANK PLC 的 run `091f6e1e-ab98-4541-9e42-e3ff6f730245` 实际完成。DeepSeek `deepseek-flash` 经 2 轮交互发起 4 次成功 MCP 调用，覆盖 GLEIF 和 ledger，并在摘要中引用该 4 条真实调用编号。另有 4 次规则预核查，总追踪数 8，未将规则调用冒充模型调用。
 
-之后运行只读核验脚本检查本机已有应用记录，输出 [AI-LIVE-VERIFICATION.json](AI-LIVE-VERIFICATION.json) 与 [SAMPLE-AI-REPORT.md](SAMPLE-AI-REPORT.md)。核验不新建任务、不调用模型、不读取 `.env`，也不提供独立服务商账单证明。密钥仅在 Git 忽略的本机配置中，不随沟通摘要或仓库交付。
+之后运行只读核验脚本检查本机已有应用记录，输出 [AI-LIVE-VERIFICATION.json](history/evidence/AI-LIVE-VERIFICATION.json) 与 [SAMPLE-AI-REPORT.md](history/evidence/SAMPLE-AI-REPORT.md)。核验不新建任务、不调用模型、不读取 `.env`，也不提供独立服务商账单证明。密钥仅在 Git 忽略的本机配置中，不随沟通摘要或仓库交付。
 
 这次通过只说明已确认主体的真实 AI 工具链路。另一虚构拟委托人仍未确认身份，案件还有线索及补证待处理，状态为 `needs-attention`；没有把模型成功描述为案件完备或允许收案。旧规则验收 JSON 与 v0.1/v0.2 规则视频均保持原有模式，不因后来的补验而改成 AI 证据。
 
@@ -82,7 +82,7 @@
 
 用户要求先解决 GLEIF 超时并跑通完整 AI 调用，视频暂缓。通过同端点 Node/curl、IPv4 与双栈连接对照，定位本机 Node 连接路径问题；仅为 GLEIF MCP 子进程使用 IPv4 优先，加入有限重试和真实 HTTP 回执。没有改系统网络、绕过 TLS 或替换成静态结果。
 
-双主体实跑发现模型尝试当前子核查以外的主体，先保留失败记录，再用明确 LEI enum 和有预算的 OUT_OF_SCOPE 回馈修复，不扩大权限。仅重跑失败主体。最终两方都完成，每方实际模型工具调用 6 次，共 12 次；加固验收检查父公司台账引用、来源卡字段与 HTTP 回执。404 关系缺口保留，不能冒充网络成功或“无关联”。46 项测试与生产构建通过，真实运行证据与 mock 测试分开记录。详见 [修复记录](GLEIF-RECOVERY.md)。
+双主体实跑发现模型尝试当前子核查以外的主体，先保留失败记录，再用明确 LEI enum 和有预算的 OUT_OF_SCOPE 回馈修复，不扩大权限。仅重跑失败主体。最终两方都完成，每方实际模型工具调用 6 次，共 12 次；加固验收检查父公司台账引用、来源卡字段与 HTTP 回执。404 关系缺口保留，不能冒充网络成功或“无关联”。46 项测试与生产构建通过，真实运行证据与 mock 测试分开记录。详见 [修复记录](notes/GLEIF-RECOVERY.md)。
 
 ## 2026-10-30 · v0.4 整体产品体验
 

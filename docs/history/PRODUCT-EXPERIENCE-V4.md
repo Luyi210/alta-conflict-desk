@@ -35,7 +35,7 @@
 
 共 12 次模型调用，另有 8 次规则预核查。公开身份与已披露母公司取自 GLEIF，台账查询真实执行但事项关系全部虚构。加固只读验证检查模型发起方、来源字段、当前主体及母公司的台账引用和 HTTP 回执，新增模型请求为零；它不验证服务商账单。404 关系缺口保留在返回中。
 
-证据：[V4-PRODUCT-VERIFICATION.json](../V4-PRODUCT-VERIFICATION.json)、[V4-CASE-REPORT.md](../V4-CASE-REPORT.md)。本次保留 6 条待复核线索与 4 项补证，未代替律师填写复核结论，未把 AI 完成当作收案批准。旧版失败和通过记录均保留。
+证据：[V4-PRODUCT-VERIFICATION.json](evidence/V4-PRODUCT-VERIFICATION.json)、[V4-CASE-REPORT.md](evidence/V4-CASE-REPORT.md)。本次保留 6 条待复核线索与 4 项补证，未代替律师填写复核结论，未把 AI 完成当作收案批准。旧版失败和通过记录均保留。
 
 ## 实现与取舍
 

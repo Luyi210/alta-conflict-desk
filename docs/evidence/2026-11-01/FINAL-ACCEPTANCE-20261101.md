@@ -30,16 +30,16 @@
 
 本轮真实模型发起的 MCP 调用合计 **14 次**：主体 12 次＋材料助理 2 次。UI 查看原文、连接测试、规则核查和人工比较单独计数。已通过来源、网络回执、PDF 哈希、页文本、引用与采用正文的只读校验。[完整流程凭证](FINAL-FLOW-VERIFICATION-20261101.json)
 
-![原文核对](screenshots/final-source-20261101.png)
+![原文核对](../../screenshots/final-source-20261101.png)
 
-![已采用工作草稿](screenshots/final-assistant-20261101.png)
+![已采用工作草稿](../../screenshots/final-assistant-20261101.png)
 
 ## 文件与复验入口
 
 - [主体 AI 核验](FINAL-AI-VERIFICATION-20261101.json)与[模型报告](FINAL-AI-REPORT-20261101.md)
 - [材料助理核验](FINAL-ASSISTANT-VERIFICATION-20261101.json)与[问题引用核验](FINAL-ISSUES-VERIFICATION-20261101.json)
 - [实际下载案件报告](FINAL-CASE-REPORT-20261101.md)与[Word 备忘录](FINAL-REVIEW-MEMO-20261101.docx)
-- [脱敏沟通原文](AI-CONVERSATION-REDACTED.md)：34 回合／210 条用户及助手公开消息，不含系统配置、内部推理和工具原始输出；与协作摘要分开保存
+- [脱敏沟通原文](../../AI-CONVERSATION-REDACTED.md)：34 回合／210 条用户及助手公开消息，不含系统配置、内部推理和工具原始输出；与协作摘要分开保存
 
 这些凭证独立命名，未覆盖旧版本。新克隆不含本机数据库，需要自己建立案件；以下链接仅适用于开发机现有数据：[打开本轮验收案件](http://127.0.0.1:5178/#/cases/a0f550f6-2bbe-42b8-9c04-f14ebd746f3d?tab=assistant)。
 

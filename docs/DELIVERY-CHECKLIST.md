@@ -1,6 +1,6 @@
 # 当前交付清单 · v0.9.1
 
-以下状态以 2026-11-01 的验收为准。具体操作、调用和文件导出见 [验收记录](FINAL-ACCEPTANCE-20261101.md)；早期版本见 [交付历史](history/DELIVERY-HISTORY.md)。
+以下状态以 2026-11-01 的验收为准。具体操作、调用和文件导出见 [验收记录](evidence/2026-11-01/FINAL-ACCEPTANCE-20261101.md)；早期版本见 [交付历史](history/DELIVERY-HISTORY.md)。
 
 ## 对照题目
 
@@ -9,11 +9,11 @@
 | 律师具体工作场景 | 已完成 | 收案前主体、潜在线索与材料复核；[方案](PROPOSAL.md) |
 | MCP 接入管理和使用流程 | 已完成 | 三个连接器、发现、权限、测试、调用、重试；[工具台](TOOLS.md) |
 | 前后端本机可运行 | 已完成 | React、Express、Node 24 SQLite；[运行指南](OPERATIONS.md) |
-| 一个外部服务真实接入 | 验收通过 | GLEIF；[来源凭证](FINAL-AI-VERIFICATION-20261101.json) |
-| AI 实际调用 MCP | 验收通过 | 主体 12 次＋材料 2 次；[流程凭证](FINAL-FLOW-VERIFICATION-20261101.json) |
+| 一个外部服务真实接入 | 验收通过 | GLEIF；[来源凭证](evidence/2026-11-01/FINAL-AI-VERIFICATION-20261101.json) |
+| AI 实际调用 MCP | 验收通过 | 主体 12 次＋材料 2 次；[流程凭证](evidence/2026-11-01/FINAL-FLOW-VERIFICATION-20261101.json) |
 | 第二个服务或工具 | 已实现并实跑 | 本机台账 MCP；另有第三个材料 MCP，内部数据虚构 |
 | 律师审查流程 | 已实现原型范围 | PDF 版本、依据、AI 草稿、补证、问题、变更影响、意见、Word |
-| 审查总览 | 已实现 | 案件、待办、材料变化和调用记录；[验证](VISUAL-REFRESH-V9.1.md) |
+| 审查总览 | 已实现 | 案件、待办、材料变化和调用记录；[验证](notes/VISUAL-REFRESH-V9.1.md) |
 | 方案、启动和复用说明 | 已提供 | README、PROPOSAL、OPERATIONS、RESEARCH、THIRD-PARTY-NOTICES |
 | 图文使用说明 | 已提供 | [10 页 PDF](../output/pdf/Alta-Conflict-Desk-使用说明.pdf)与[可编辑文字版](USER-GUIDE.md)，含 7 步操作和 8 张配图 |
 | AI 沟通记录 | 已提供摘要与脱敏原文 | [摘要](AI-COLLABORATION.md)／[原文](AI-CONVERSATION-REDACTED.md) |
@@ -22,13 +22,13 @@
 
 ## 验收范围
 
-- 从 Git 导出的空环境安装依赖，65 项自动测试和生产构建通过；无密钥、空案件的实例可启动，并实际连接本机台账 MCP。[安装记录](FINAL-CLEAN-INSTALL-20261101.json)
-- 新建虚构融资案件，两个主体分别完成模型核查，合计 12 次模型发起 MCP 调用；材料助理另发起 2 次。8 次规则调用单独统计。律师编辑并采用草稿、处理材料换版，实际下载 Word 与 Markdown。[流程记录](FINAL-ACCEPTANCE-20261101.md)
+- 从 Git 导出的空环境安装依赖，65 项自动测试和生产构建通过；无密钥、空案件的实例可启动，并实际连接本机台账 MCP。[安装记录](evidence/2026-11-01/FINAL-CLEAN-INSTALL-20261101.json)
+- 新建虚构融资案件，两个主体分别完成模型核查，合计 12 次模型发起 MCP 调用；材料助理另发起 2 次。8 次规则调用单独统计。律师编辑并采用草稿、处理材料换版，实际下载 Word 与 Markdown。[流程记录](evidence/2026-11-01/FINAL-ACCEPTANCE-20261101.md)
 - 自动测试中的模型响应含 mock；真实模型调用以案件执行记录和来源凭证为依据。重新启动后 MCP 需要再次连接，配置了模型也仍需实跑确认可用。旧版运行记录保留在 [历史交付记录](history/DELIVERY-HISTORY.md)，不与本次次数合并。
 
 ## 剩余交付事项
 
-代码与界面已在 2026-11-01 再检查一轮，当前 68 项自动测试通过；具体修复见[代码检查记录](CODE-REVIEW-2026-11-01.md)。上文的 65 项是此前独立干净安装验收时的数量，按原日期保留。
+代码与界面已在 2026-11-01 再检查一轮，当前 68 项自动测试通过；具体修复见[代码检查记录](notes/CODE-REVIEW-2026-11-01.md)。上文的 65 项是此前独立干净安装验收时的数量，按原日期保留。
 
 1. 新版连续演示视频：用户已明确本轮不需要录制，继续暂缓。
 当前适合作为面试展示原型。账户与租户隔离、真实律所台账、生产部署和数据治理尚未实现。
