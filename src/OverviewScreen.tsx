@@ -62,9 +62,11 @@ type Filter =
 export default function OverviewScreen({
   onNavigate,
   onOpen,
+  onTutorial,
 }: {
   onNavigate: (page: Page) => void;
   onOpen: (id: string, tab?: CaseTab) => void;
+  onTutorial: () => void;
 }) {
   const [data, setData] = useState<Overview>();
   const [days, setDays] = useState<7 | 30>(7);
@@ -229,6 +231,14 @@ export default function OverviewScreen({
         </nav>
         <div className="obs-top-actions">
           <span className="obs-local">本地演示空间</span>
+          <button
+            className="obs-icon"
+            onClick={onTutorial}
+            aria-label="打开 7 步教程"
+            title="打开 7 步教程"
+          >
+            <CircleHelp size={17} />
+          </button>
           <button
             className="obs-motion-toggle"
             onClick={toggleMotion}

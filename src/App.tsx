@@ -47,6 +47,7 @@ import CaseResults from "./CaseResults";
 import MatterDashboard from "./MatterDashboard";
 import { useAppRoute, type Page, type CaseTab } from "./navigation";
 import ToolDesk from "./ToolDesk";
+import TutorialDialog from "./TutorialDialog";
 import ReviewBrief from "./ReviewBrief";
 import MatchExplanation from "./MatchExplanation";
 import "./materials.css";
@@ -92,6 +93,7 @@ const statusLabel = {
   partial: "部分完成",
   failed: "核查失败",
 };
+const tutorialSeenKey = "alta:tutorial:seven:v1";
 const connectorInfo = {
   documents: {
     eyebrow: "本案材料",
@@ -164,6 +166,9 @@ function Empty({
 export default function App() {
   const { route, go } = useAppRoute();
   const page = route.page;
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const autoTutorialChecked = useRef(false);
   const [routeLoading, setRouteLoading] = useState(
     Boolean(route.caseId || route.runId),
   );
@@ -196,6 +201,23 @@ export default function App() {
     void refresh().catch((e) => setError(e.message));
     return () => clearTimeout(noticeTimer.current);
   }, []);
+  useEffect(() => {
+    if (
+      autoTutorialChecked.current ||
+      !status ||
+      route.page !== "workspace" ||
+      route.caseId ||
+      route.runId
+    )
+      return;
+    autoTutorialChecked.current = true;
+    try {
+      if (localStorage.getItem(tutorialSeenKey) !== "seen")
+        setTutorialOpen(true);
+    } catch {
+      /* Manual entry remains available when storage is blocked. */
+    }
+  }, [status, route.page, route.caseId, route.runId]);
   useEffect(() => {
     if (!activeRun || activeRun.status !== "running") return;
     let cancelled = false;
@@ -353,6 +375,41 @@ export default function App() {
   function navigate(next: Page) {
     go({ page: next });
     setError("");
+  }
+  function openTutorial() {
+    setTutorialStep(0);
+    setTutorialOpen(true);
+  }
+  function closeTutorial() {
+    setTutorialOpen(false);
+    try {
+      localStorage.setItem(tutorialSeenKey, "seen");
+    } catch {
+      /* The tutorial remains available from the page controls. */
+    }
+  }
+  function visitTutorialStep(step: number) {
+    const caseId =
+      route.caseId && activeCase?.id === route.caseId
+        ? activeCase.id
+        : undefined;
+    closeTutorial();
+    if (step === 0) navigate("connectors");
+    else if (step === 1 || (!caseId && !cases.length)) navigate("new");
+    else if (!caseId) navigate("workspace");
+    else {
+      const tabs: CaseTab[] = [
+        "parties",
+        "parties",
+        "parties",
+        "materials",
+        "assistant",
+        "issues",
+        "review",
+      ];
+      go({ page: "workspace", caseId, tab: tabs[step] });
+      setError("");
+    }
   }
   function openRun(id: string) {
     go({
@@ -515,6 +572,14 @@ export default function App() {
           <div className="topbar-right">
             <span className="prototype-tag">本地演示空间</span>
             <button
+              className="tutorial-trigger"
+              aria-label="打开 7 步教程"
+              onClick={openTutorial}
+            >
+              <BookOpen size={15} />
+              <span>7 步教程</span>
+            </button>
+            <button
               className="model-state"
               disabled={!status}
               onClick={() => setModelHelp(true)}
@@ -565,7 +630,11 @@ export default function App() {
                     </div>
                   }
                 >
-                  <OverviewScreen onNavigate={navigate} onOpen={openCase} />
+                  <OverviewScreen
+                    onNavigate={navigate}
+                    onOpen={openCase}
+                    onTutorial={openTutorial}
+                  />
                 </Suspense>
               )}
               {page === "workspace" &&
@@ -1000,6 +1069,7 @@ export default function App() {
                   onModelHelp={() => setModelHelp(true)}
                   onNew={() => navigate("new")}
                   onSettings={() => navigate("connectors")}
+                  onTutorial={openTutorial}
                 />
               )}
             </>
@@ -1099,6 +1169,16 @@ export default function App() {
             “已配置”只表示本机存在配置，实际成功状态请以案件中的调用记录为准。模型摘要与建议仍需律师复核。
           </div>
         </Modal>
+      )}
+      {tutorialOpen && status && (
+        <TutorialDialog
+          step={tutorialStep}
+          hasCases={cases.length > 0}
+          caseContext={Boolean(route.caseId && activeCase?.id === route.caseId)}
+          onStep={setTutorialStep}
+          onClose={closeTutorial}
+          onVisit={visitTutorialStep}
+        />
       )}
     </div>
   );
@@ -1667,10 +1747,12 @@ function About({
   onModelHelp,
   onNew,
   onSettings,
+  onTutorial,
 }: {
   onModelHelp: () => void;
   onNew: () => void;
   onSettings: () => void;
+  onTutorial: () => void;
 }) {
   return (
     <div className="page-enter about-page">
@@ -1689,9 +1771,14 @@ function About({
             可以填入融资示例体验完整流程；示例只填写表单，公开身份仍需实际查询确认。
           </p>
         </div>
-        <button className="btn primary" onClick={onNew}>
-          新建收案审查 <ArrowRight size={16} />
-        </button>
+        <div className="tutorial-guide-action">
+          <button className="btn secondary" onClick={onTutorial}>
+            <BookOpen size={16} /> 打开 7 步教程
+          </button>
+          <button className="btn primary" onClick={onNew}>
+            新建收案审查 <ArrowRight size={16} />
+          </button>
+        </div>
       </div>
       <ol className="guide-steps">
         <li>
