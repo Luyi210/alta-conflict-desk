@@ -1,7 +1,7 @@
 .issue-desk {
   display: grid;
   gap: 24px;
-  color: #284a40;
+  color: #26394c;
 }
 .issue-heading,
 .issue-editor-heading,
@@ -26,18 +26,18 @@
 .comparison-heading p {
   font-size: 12px;
   line-height: 1.8;
-  color: #73806f;
+  color: #586a7e;
 }
 .issue-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr) 1.6fr;
-  border: 1px solid #e0e6db;
+  border: 1px solid #dae0e7;
   border-radius: 10px;
-  background: #f4f7ef;
+  background: #f0f3f6;
 }
 .issue-stats > div {
   padding: 22px 26px;
-  border-right: 1px solid #e0e6db;
+  border-right: 1px solid #dae0e7;
   display: grid;
   gap: 8px;
 }
@@ -49,7 +49,7 @@
 .issue-stats span,
 .issue-stats p {
   font-size: 11px;
-  color: #73806f;
+  color: #526a80;
 }
 .issue-stats p {
   padding: 12px 22px;
@@ -58,25 +58,25 @@
 .issue-mode {
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #dfe6da;
+  border-bottom: 1px solid #dae0e6;
 }
 .issue-mode button {
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 12px 0;
-  color: #7c876e;
+  color: #586b7f;
   border-bottom: 2px solid transparent;
 }
 .issue-mode button.active {
-  border-color: #3d654b;
-  color: #284a40;
+  border-color: #2f7f9f;
+  color: #26394c;
 }
 .issue-intake,
 .issue-editor,
 .issue-list,
 .issue-changes {
-  border: 1px solid #e0e6db;
+  border: 1px solid #dae0e7;
   border-radius: 10px;
   background: white;
 }
@@ -110,9 +110,9 @@
 .issue-desk select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #dce4d7;
+  border: 1px solid #d7dee4;
   border-radius: 6px;
-  color: #284a40;
+  color: #26394c;
   background: #fff;
   font: inherit;
   box-sizing: border-box;
@@ -123,7 +123,7 @@
   line-height: 1.8;
 }
 .issue-desk input[type="checkbox"] {
-  accent-color: #496b51;
+  accent-color: #2f7f9f;
   width: 14px;
   height: 14px;
   min-height: 0;
@@ -148,16 +148,16 @@
   padding: 12px 0;
   font-size: 11px;
   line-height: 1.8;
-  border-bottom: 1px solid #e8ede3;
+  border-bottom: 1px solid #e3e8ed;
 }
 .issue-imports button span {
   flex-shrink: 0;
-  color: #718462;
+  color: #576a7d;
   margin-left: auto;
 }
 .issue-imports p {
   font-size: 12px;
-  color: #7c876e;
+  color: #586b7f;
 }
 .issue-imports summary {
   font-size: 11px;
@@ -186,19 +186,19 @@
   gap: 11px;
   width: 100%;
   text-align: left;
-  border: 1px solid #e2e8dc;
+  border: 1px solid #dce2e8;
   padding: 17px 14px;
   border-radius: 7px;
   margin-top: 12px;
 }
 .issue-list-item.selected {
-  border-color: #648369;
-  background: #f4f7ef;
+  border-color: #2f7f9f;
+  background: #f0f6f9;
 }
 .issue-list-item > span,
 .issue-list-item small {
   font-size: 10px;
-  color: #7a876b;
+  color: #586b7e;
 }
 .issue-list-item strong {
   font-size: 13px;
@@ -206,12 +206,12 @@
   overflow-wrap: anywhere;
 }
 .issue-alert {
-  color: #97622c !important;
+  color: #896638 !important;
 }
 .issue-empty {
   font-size: 12px;
   line-height: 1.9;
-  color: #7a876b;
+  color: #586b7e;
   padding: 24px;
   text-align: center;
 }
@@ -224,7 +224,7 @@
 .issue-editor-heading small,
 .issue-save span {
   font-size: 10px;
-  color: #879177;
+  color: #576a7e;
 }
 .issue-editor h3 {
   font-size: 14px;
@@ -268,7 +268,7 @@
 }
 .issue-impact strong {
   font-size: 13px;
-  color: #95642d;
+  color: #896638;
 }
 .issue-impact p {
   font-size: 12px;
@@ -279,12 +279,12 @@
   justify-self: start;
 }
 .issue-citation {
-  border-left: 3px solid #86957c;
-  background: #f6f8f2;
+  border-left: 3px solid #73889e;
+  background: #f3f5f7;
   padding: 14px 16px;
 }
 .issue-citation.support {
-  border-color: #537251;
+  border-color: #2f7f9f;
 }
 .issue-citation.contradict {
   border-color: #b0764d;
@@ -316,7 +316,7 @@
 .issue-add-source,
 .issue-history,
 .comparison-ai {
-  border: 1px solid #e1e7da;
+  border: 1px solid #dae0e7;
   border-radius: 7px;
   padding: 16px;
 }
@@ -331,21 +331,21 @@
   margin: 14px 0;
 }
 .issue-history article {
-  border-top: 1px solid #e6ebdf;
+  border-top: 1px solid #dfe5eb;
   margin-top: 16px;
   padding-top: 16px;
   font-size: 11px;
   line-height: 1.9;
 }
 .issue-history small {
-  color: #7a876b;
+  color: #586b7e;
 }
 .issue-fineprint {
   margin: 0;
   font-size: 10px;
 }
 .issue-save {
-  border-top: 1px solid #e3e8dd;
+  border-top: 1px solid #dce2e9;
   padding-top: 18px;
 }
 .issue-changes {
@@ -369,12 +369,12 @@
 }
 .comparison-summary {
   font-size: 12px;
-  background: #f1f5eb;
+  background: #edf0f3;
   padding: 16px;
 }
 .comparison-summary span {
   font-size: 10px;
-  color: #73806f;
+  color: #586a7e;
 }
 .comparison-affected {
   display: grid;
@@ -396,12 +396,12 @@
 .comparison-page-nav button {
   font-size: 11px;
   padding: 9px 12px;
-  background: #f5f7f1;
+  background: #f2f4f6;
   border-radius: 5px;
 }
 .comparison-page-nav button.active {
-  background: #dfe8d8;
-  color: #284a40;
+  background: #dae0e6;
+  color: #26394c;
 }
 .comparison-columns {
   display: grid;
@@ -409,7 +409,7 @@
   gap: 15px;
 }
 .comparison-columns article {
-  border: 1px solid #dfe5d9;
+  border: 1px solid #d9dfe5;
   border-radius: 6px;
   min-width: 0;
 }
@@ -419,7 +419,7 @@
   padding: 14px;
   font-size: 12px;
   margin: 0;
-  border-bottom: 1px solid #e2e7db;
+  border-bottom: 1px solid #dae1e8;
 }
 .comparison-columns h4 button {
   font-size: 10px;
@@ -430,7 +430,7 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   background: white;
-  color: #435343;
+  color: #324b64;
   font:
     12px/1.9 ui-monospace,
     monospace;
@@ -443,7 +443,7 @@
   text-decoration-color: #b27861;
 }
 .diff-added {
-  background: #e1efd8;
+  background: #e2f1f6;
 }
 .comparison-ai p {
   font-size: 12px;
@@ -456,7 +456,7 @@
 }
 .issue-ai-result article {
   padding: 16px 0;
-  border-bottom: 1px solid #e1e7da;
+  border-bottom: 1px solid #dae0e7;
 }
 .issue-ai-result h4 {
   font-size: 13px;
@@ -464,13 +464,13 @@
 .issue-ai-history {
   margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid #d8e0d2;
+  border-top: 1px solid #d2d9e0;
 }
 .issue-source-overlay {
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: #20322988;
+  background: #1b293788;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -488,7 +488,7 @@
   top: 0;
   background: white;
   padding: 18px 22px;
-  border-bottom: 1px solid #e2e7db;
+  border-bottom: 1px solid #dae1e8;
   z-index: 1;
 }
 .issue-source-heading h3 {

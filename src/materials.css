@@ -1,7 +1,7 @@
 .material-desk {
   display: grid;
   gap: 24px;
-  color: #284a40;
+  color: #26394c;
 }
 .material-heading,
 .material-connection,
@@ -25,14 +25,14 @@
 }
 .material-heading p,
 .material-limit {
-  color: #788374;
+  color: #546b80;
   font-size: 11px;
   line-height: 1.8;
 }
 .material-connection {
   padding: 18px 22px;
-  background: #eef2e8;
-  border: 1px solid #dce4d7;
+  background: #e9edf1;
+  border: 1px solid #d7dee4;
   border-radius: 9px;
 }
 .material-connection strong,
@@ -41,7 +41,7 @@
 }
 .material-connection small {
   font-size: 10px;
-  color: #75816e;
+  color: #586a7e;
   margin-top: 5px;
 }
 .material-library-layout {
@@ -55,7 +55,7 @@
 .material-ai,
 .material-evidence {
   background: #fff;
-  border: 1px solid #e1e7dd;
+  border: 1px solid #dce2e8;
   border-radius: 10px;
   min-width: 0;
 }
@@ -74,7 +74,7 @@
   font-size: 10px;
   font-weight: 400;
   margin-top: 6px;
-  color: #79856f;
+  color: #576b7e;
 }
 .material-library-title .btn {
   padding: 9px;
@@ -82,13 +82,13 @@
 }
 .material-card {
   padding: 14px 12px;
-  border: 1px solid #e4e9e0;
+  border: 1px solid #dfe4ea;
   border-radius: 7px;
   margin-top: 12px;
 }
 .material-card.selected {
-  border-color: #668775;
-  background: #f7faf3;
+  border-color: #2f7f9f;
+  background: #f0f6f9;
 }
 .material-select {
   padding: 0;
@@ -105,7 +105,7 @@
 .material-select small,
 .material-version {
   font-size: 10px;
-  color: #75836b;
+  color: #576a7d;
 }
 .material-grant {
   display: flex;
@@ -117,7 +117,7 @@
 .material-grant input {
   width: 14px;
   height: 14px;
-  accent-color: #315b49;
+  accent-color: #2f7f9f;
 }
 .material-card-actions {
   display: flex;
@@ -128,11 +128,11 @@
 .material-card-actions button,
 .material-card-actions a {
   padding: 0;
-  color: #466c56;
+  color: #425970;
 }
 .material-card details {
   font-size: 9px;
-  color: #929b88;
+  color: #566b80;
   margin-top: 12px;
 }
 .material-card code {
@@ -144,18 +144,18 @@
 .material-sample-update {
   font-size: 10px;
   padding: 9px 0 0;
-  color: #6c7f5d;
+  color: #576a7d;
 }
 .material-empty {
   padding: 40px 20px;
   text-align: center;
-  color: #89937e;
+  color: #586b7f;
   line-height: 1.8;
   font-size: 12px;
 }
 .material-empty h3 {
   font-size: 15px;
-  color: #4b6453;
+  color: #485767;
   margin: 14px 0;
 }
 .material-empty .btn {
@@ -167,7 +167,7 @@
 }
 .material-viewer-title {
   padding: 20px 23px;
-  border-bottom: 1px solid #e4e8e0;
+  border-bottom: 1px solid #dee4ea;
 }
 .material-viewer-title h3 {
   font-size: 14px;
@@ -176,11 +176,11 @@
 }
 .material-viewer-title span {
   font-size: 10px;
-  color: #8c957d;
+  color: #576a7d;
 }
 .material-page-controls {
   padding: 11px 18px;
-  border-bottom: 1px solid #e4e8e0;
+  border-bottom: 1px solid #dee4ea;
   font-size: 11px;
 }
 .material-page-controls .btn {
@@ -188,13 +188,13 @@
   font-size: 10px;
 }
 .pdf-page {
-  background: #e9ede5;
+  background: #e4e9ee;
   padding: 16px;
 }
 .pdf-page canvas {
   width: 100%;
   height: auto;
-  box-shadow: 0 2px 10px #2c493822;
+  box-shadow: 0 2px 10px #273a4e22;
 }
 .material-transcript {
   padding: 20px 23px;
@@ -207,20 +207,20 @@
   font-family: inherit;
   line-height: 1.9;
   font-size: 11px;
-  color: #526249;
+  color: #465665;
   max-height: 250px;
   overflow: auto;
-  background: #f8faf5;
+  background: #fbfaf7;
   padding: 15px;
   border-radius: 6px;
   overflow-wrap: anywhere;
 }
 .material-transcript mark {
   background: #f3e9a9;
-  color: #374b2a;
+  color: #273a4e;
 }
 .material-record {
-  border-top: 1px solid #e3e8dd;
+  border-top: 1px solid #dce2e9;
   padding-top: 17px;
   margin-top: 18px;
 }
@@ -243,14 +243,14 @@
   width: 100%;
   font-size: 12px;
   padding: 11px;
-  background: #fcfdfb;
-  border: 1px solid #dbe2d5;
+  background: #fbfaf7;
+  border: 1px solid #d5dce2;
   border-radius: 6px;
-  color: #354d3b;
+  color: #2c4156;
 }
 .material-record p {
   font-size: 10px;
-  color: #839077;
+  color: #586b7f;
   line-height: 1.7;
 }
 .material-ai,
@@ -266,7 +266,7 @@
 }
 .material-disclosure {
   align-items: flex-start;
-  color: #748067;
+  color: #586a7d;
   max-width: 780px;
   font-size: 11px;
   line-height: 1.8;
@@ -281,7 +281,7 @@
 }
 .material-review {
   margin-top: 22px;
-  border-top: 1px solid #e1e7db;
+  border-top: 1px solid #dae1e8;
   padding-top: 18px;
 }
 .material-review > summary {
@@ -291,7 +291,7 @@
 }
 .material-review > summary small {
   margin-left: 10px;
-  color: #89947b;
+  color: #576a7d;
   font-size: 10px;
 }
 .material-question {
@@ -300,21 +300,21 @@
 .material-question h3 {
   font-size: 13px;
   line-height: 1.9;
-  color: #3d5748;
+  color: #324a62;
 }
 .material-citation {
   display: block;
   width: 100%;
   text-align: left;
-  border: 1px solid #e1e8d9;
+  border: 1px solid #dae0e7;
   border-radius: 6px;
-  background: #f8faf5;
+  background: #fbfaf7;
   padding: 14px;
   margin-top: 10px;
 }
 .material-citation > span {
   font-size: 10px;
-  color: #638053;
+  color: #4e6984;
   display: flex;
   gap: 7px;
   align-items: center;
@@ -323,12 +323,12 @@
 .material-evidence blockquote {
   margin: 10px 0 0;
   padding-left: 12px;
-  border-left: 2px solid #abc299;
+  border-left: 2px solid #9daebe;
   font-size: 12px;
   line-height: 1.8;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: #4c5d45;
+  color: #36516c;
 }
 .material-traces {
   display: flex;
@@ -341,11 +341,11 @@
 .material-evidence > p {
   font-size: 12px;
   line-height: 1.8;
-  color: #8a947d;
+  color: #586b7f;
 }
 .material-evidence article {
   padding: 20px 0;
-  border-top: 1px solid #e6ebdf;
+  border-top: 1px solid #dfe5eb;
 }
 .material-evidence-link {
   display: flex;
@@ -354,18 +354,18 @@
   gap: 10px;
   font-size: 12px;
   padding: 0;
-  color: #496e3c;
+  color: #375573;
 }
 .material-evidence article p {
   font-size: 12px;
   line-height: 1.8;
 }
 .material-evidence article small {
-  color: #8b957e;
+  color: #566a7d;
   font-size: 10px;
 }
 .material-stale {
-  color: #98713e;
+  color: #896638;
   font-size: 11px;
   display: block;
   line-height: 1.8;
@@ -376,13 +376,13 @@
   align-items: center;
   gap: 8px;
   padding: 13px;
-  background: #eef5e8;
-  color: #48703d;
+  background: #ebeef2;
+  color: #385675;
   font-size: 12px;
 }
 .match-explanation {
   margin: 24px 0;
-  border-top: 1px solid #e4e9de;
+  border-top: 1px solid #dde3ea;
   padding-top: 22px;
 }
 .match-explanation h3 {
@@ -391,7 +391,7 @@
 }
 .match-explanation > p {
   font-size: 11px;
-  color: #879177;
+  color: #576a7e;
   line-height: 1.8;
 }
 .match-comparison-scroll {
@@ -419,19 +419,19 @@
 .match-explanation td small {
   display: block;
   font-size: 9px;
-  color: #849071;
+  color: #586a7e;
   line-height: 1.7;
   margin-top: 6px;
 }
 .compare-state {
   font-size: 10px;
-  color: #527742;
+  color: #3d5c7c;
 }
 .compare-state.different {
-  color: #a06e30;
+  color: #896638;
 }
 .compare-state.missing {
-  color: #828b78;
+  color: #576a7e;
 }
 @media (max-width: 1150px) {
   .material-library-layout {

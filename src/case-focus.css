@@ -26,7 +26,7 @@
 .case-results-focus .page-heading p {
   margin-top: 6px;
   font-size: 11px;
-  color: #7b8975;
+  color: #576b7e;
 }
 .case-heading-actions {
   display: flex;
@@ -46,7 +46,7 @@
   align-items: center;
   gap: 5px;
   font-size: 10px;
-  color: #7e8d71;
+  color: #576b7e;
   padding: 8px 0;
 }
 .case-results-focus .case-tabs {
@@ -65,7 +65,7 @@
 }
 .case-results-focus .case-progress-rail {
   margin: 0 0 14px;
-  background: #f0f4e9;
+  background: #ebeef2;
   border-radius: 6px;
 }
 .case-results-focus .case-progress-rail button {

@@ -1,5 +1,5 @@
 .tool-desk {
-  --td-subtle: #677a6e;
+  --td-subtle: #5c7085;
   font-size: 13px;
 }
 .tool-desk .btn,
@@ -19,11 +19,11 @@
   flex-wrap: wrap;
   gap: 14px;
   padding: 17px 20px;
-  background: #edf2eb;
-  border: 1px solid #e0e8dc;
+  background: #ebeef2;
+  border: 1px solid #dce2e8;
   border-radius: 8px;
   margin-bottom: 22px;
-  color: #45614f;
+  color: #425364;
 }
 .td-intro > div {
   display: flex;
@@ -33,7 +33,7 @@
 .td-intro strong {
   display: block;
   margin-bottom: 5px;
-  color: var(--green);
+  color: #17324b;
 }
 .td-intro span,
 .td-intro-note {
@@ -41,7 +41,7 @@
   line-height: 1.7;
 }
 .td-intro-note {
-  color: #647663;
+  color: #586b7e;
 }
 .td-layout {
   display: grid;
@@ -79,7 +79,7 @@
   color: var(--td-subtle);
 }
 .td-refresh:hover:not(:disabled) {
-  background: #f0f4ed;
+  background: #edf0f4;
 }
 .td-source {
   padding: 18px 10px 2px;
@@ -89,7 +89,7 @@
   align-items: center;
   gap: 8px;
   padding: 0 10px 10px;
-  color: #6a7b6e;
+  color: #586a7e;
   font-size: 12px;
   font-weight: 500;
 }
@@ -106,12 +106,12 @@
     border-color 0.15s;
 }
 .td-tool:hover {
-  background: #f5f7f2;
+  background: #f2f4f7;
 }
 .td-tool.selected {
-  background: #edf3e9;
-  border-color: #dce7d5;
-  color: #2b553f;
+  background: #edf4f8;
+  border-color: #88b7ca;
+  color: #17324b;
 }
 .td-tool > div {
   display: flex;
@@ -126,24 +126,24 @@
 .td-tool > span {
   display: block;
   font-size: 12px;
-  color: #6d7e6e;
+  color: #576a7d;
   margin-top: 7px;
 }
 .td-tool > svg {
   position: absolute;
   right: 10px;
   top: calc(50% - 7px);
-  color: #8a9a83;
+  color: #556a80;
 }
 .td-dot {
   width: 6px;
   height: 6px;
   border-radius: 100%;
-  background: #b5bdb1;
+  background: #a9b7c5;
   flex-shrink: 0;
 }
 .td-dot.on {
-  background: #68865c;
+  background: #2f7f9f;
 }
 .td-source-empty {
   display: flex;
@@ -152,7 +152,7 @@
   text-align: left;
   line-height: 1.7;
   padding: 12px 10px;
-  color: #64765f;
+  color: #576a7e;
   font-size: 12px;
 }
 .td-catalog-foot {
@@ -194,8 +194,8 @@
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: #f0f4eb;
-  color: #57734e;
+  background: #ecf0f3;
+  color: #4a6077;
   flex-shrink: 0;
 }
 .td-policy {
@@ -205,7 +205,7 @@
   justify-content: space-between;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: #fafbf8;
+  background: #fbfaf7;
   padding: 17px 27px;
 }
 .td-policy strong {
@@ -222,7 +222,7 @@
   height: 25px;
   padding: 3px;
   border-radius: 20px;
-  background: #b9c4b7;
+  background: #b0becb;
   flex-shrink: 0;
   transition: background 0.15s;
 }
@@ -233,11 +233,11 @@
   height: 19px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 1px 3px #223b2526;
+  box-shadow: 0 1px 3px #1f2e3e26;
   transition: transform 0.15s;
 }
 .td-switch.on {
-  background: #476f52;
+  background: #435b73;
 }
 .td-switch.on > span {
   transform: translateX(18px);
@@ -263,8 +263,8 @@
 }
 .td-mode {
   display: flex;
-  border: 1px solid #e2e8dc;
-  background: #f5f7f2;
+  border: 1px solid #dce2e8;
+  background: #f2f4f7;
   border-radius: 5px;
   padding: 3px;
   gap: 2px;
@@ -273,12 +273,12 @@
   padding: 5px 12px;
   font-size: 12px;
   border-radius: 3px;
-  color: #73836b;
+  color: #576a7d;
 }
 .td-mode button.active {
-  color: #2c563e;
+  color: #2a4158;
   background: #fff;
-  box-shadow: 0 1px 3px #203c2414;
+  box-shadow: 0 1px 3px #1f2e3d14;
 }
 .td-field {
   margin-bottom: 19px;
@@ -295,10 +295,10 @@
 .td-optional {
   font-size: 12px;
   font-weight: 400;
-  color: #7b866e;
+  color: #576b7e;
 }
 .td-required {
-  color: #967944;
+  color: #896638;
 }
 .td-field-note {
   margin-top: 7px;
@@ -315,7 +315,7 @@
   align-items: center;
   gap: 7px;
   font-size: 12px;
-  color: #456a4a;
+  color: #41576e;
   padding: 2px 0 8px;
 }
 .td-example:hover:not(:disabled) {
@@ -325,9 +325,9 @@
   display: flex;
   gap: 9px;
   padding: 13px 14px;
-  background: #f7f8f4;
+  background: #f4f6f8;
   border-radius: 5px;
-  color: #687860;
+  color: #586b7e;
   margin-top: 15px;
 }
 .td-data-note svg {
@@ -371,7 +371,7 @@
 .td-technical-body {
   padding: 0 27px 21px;
   font-size: 12px;
-  color: #60735f;
+  color: #56697c;
 }
 .td-technical-body p {
   overflow-wrap: anywhere;
@@ -383,8 +383,8 @@
 }
 .td-technical pre {
   padding: 14px;
-  background: #f1f4ee;
-  border: 1px solid #e5eadf;
+  background: #eef1f4;
+  border: 1px solid #dfe4ea;
   border-radius: 5px;
   max-height: 290px;
   overflow: auto;
@@ -422,14 +422,14 @@
 }
 .td-no-args {
   padding: 15px;
-  background: #f6f8f2;
-  border: 1px dashed #dce5d3;
+  background: #f3f5f7;
+  border: 1px dashed #d6dce2;
   border-radius: 6px;
 }
 .td-no-args p,
 .td-source-warning p {
   font-size: 12px;
-  color: #718063;
+  color: #586b7e;
   margin-top: 3px;
 }
 .td-no-args > svg,
@@ -443,7 +443,7 @@
   padding: 15px 27px;
   background: #fbf7ec;
   border-bottom: 1px solid #ece4cf;
-  color: #897243;
+  color: #896638;
 }
 .td-source-warning .btn {
   margin-left: auto;
@@ -472,7 +472,7 @@
 .td-result {
   border-top: 1px solid var(--line);
   padding: 22px 27px;
-  background: #f4f7f0;
+  background: #f1f3f6;
 }
 .td-result.error {
   background: #fcf6f1;
@@ -480,10 +480,10 @@
 .td-result p {
   font-size: 12px;
   margin-top: 11px;
-  color: #65775e;
+  color: #576a7e;
 }
 .td-result .td-call-meta {
-  color: #7b896f;
+  color: #576a7d;
   margin-top: 9px;
 }
 .td-result .td-result-error {
@@ -502,7 +502,7 @@
 .td-record-id {
   display: block;
   font-family: "SFMono-Regular", Consolas, monospace;
-  color: #819075;
+  color: #576a7d;
   margin-top: 14px;
   font-size: 12px;
   overflow-wrap: anywhere;
@@ -537,7 +537,7 @@
 }
 .td-history-empty strong {
   font-weight: 500;
-  color: #4a634c;
+  color: #475666;
 }
 .td-history-empty p {
   font-size: 12px;
@@ -549,7 +549,7 @@
   gap: 20px;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #edf0e9;
+  border-bottom: 1px solid #e8ecf1;
 }
 .td-history-row:last-child {
   border-bottom: none;
@@ -578,7 +578,7 @@
   overflow-wrap: anywhere;
 }
 .td-history-tool .td-history-input {
-  color: #45634b;
+  color: #425466;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -589,14 +589,14 @@
   width: 36px;
   height: 36px;
   border-radius: 6px;
-  background: #f3f6ee;
-  color: #718a60;
+  background: #eff2f5;
+  color: #546b82;
   flex-shrink: 0;
 }
 .td-retry-label {
   display: inline-block;
   font-size: 12px;
-  color: #8c774e;
+  color: #896638;
   margin-top: 5px;
 }
 .td-history-status {

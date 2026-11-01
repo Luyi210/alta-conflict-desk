@@ -5,10 +5,10 @@
   gap: 24px;
   padding: 22px 26px;
   margin: 18px 0;
-  border: 1px solid #dce5db;
-  border-left: 3px solid var(--green);
+  border: 1px solid #dae0e6;
+  border-left: 3px solid #2f7f9f;
   border-radius: 8px;
-  background: #f0f4ed;
+  background: #edf0f4;
 }
 .case-next-action strong {
   display: block;
@@ -17,7 +17,7 @@
   font-weight: 550;
 }
 .case-next-action p {
-  color: #66766d;
+  color: #576a7d;
   line-height: 1.8;
 }
 .case-next-action .btn {
@@ -34,7 +34,7 @@
 }
 .task-party-names {
   font-size: 12px;
-  color: #66766d;
+  color: #576a7d;
   padding-bottom: 14px;
   line-height: 1.8;
   overflow-wrap: anywhere;
@@ -51,7 +51,7 @@
 .draft-status {
   display: block;
   padding: 9px 0;
-  color: #896a35;
+  color: #896638;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -60,7 +60,7 @@
 }
 .review-brief {
   margin: 22px 0 28px;
-  border: 1px solid #dce5db;
+  border: 1px solid #dae0e6;
   border-radius: 10px;
   background: white;
   overflow: hidden;
@@ -83,7 +83,7 @@
   font-size: 14px;
   line-height: 1.9;
   padding: 16px 25px 22px;
-  color: #42594e;
+  color: #344d67;
   white-space: pre-line;
   overflow-wrap: anywhere;
   max-width: 100ch;
@@ -91,16 +91,16 @@
 .brief-grid {
   display: grid;
   grid-template-columns: 1.15fr 1fr 1fr;
-  border-top: 1px solid #e4e9e1;
+  border-top: 1px solid #dfe5eb;
 }
 .brief-grid > div {
   padding: 23px 24px;
 }
 .brief-grid > div + div {
-  border-left: 1px solid #e4e9e1;
+  border-left: 1px solid #dfe5eb;
 }
 .brief-grid > div:first-child {
-  background: #f7f9f5;
+  background: #fbfaf7;
 }
 .brief-grid h3 {
   display: flex;
@@ -116,13 +116,13 @@
 .brief-grid li {
   padding: 0 0 16px 3px;
   line-height: 1.9;
-  color: #52665b;
+  color: #4b5c6d;
 }
 .brief-grid li:last-child {
   padding-bottom: 0;
 }
 .brief-grid li::marker {
-  color: #8c9a8d;
+  color: #556a80;
   font-size: 11px;
 }
 .brief-sources {
@@ -135,27 +135,27 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #eef3eb;
-  border: 1px solid #dce5d8;
+  background: #ebeff3;
+  border: 1px solid #d9dee4;
   border-radius: 4px;
   padding: 4px 7px;
-  color: #48634e;
+  color: #455666;
   font-size: 11px;
   line-height: 1.4;
 }
 .brief-source:hover {
-  background: #e0eade;
-  border-color: #8da78e;
+  background: #dee4ea;
+  border-color: #869aae;
 }
 .review-brief footer {
-  border-top: 1px solid #e4e9e1;
+  border-top: 1px solid #dfe5eb;
   padding: 15px 25px;
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
   font-size: 12px;
-  color: #718074;
+  color: #576a7d;
 }
 .review-brief footer .brief-sources {
   margin-top: 0;
@@ -169,7 +169,7 @@
   }
   .brief-grid > div + div {
     border-left: 0;
-    border-top: 1px solid #e4e9e1;
+    border-top: 1px solid #dfe5eb;
   }
 }
 @media (max-width: 640px) {
@@ -210,7 +210,7 @@
 }
 .brief-summary-label {
   display: block;
-  color: #8b743e;
+  color: #896638;
   font-size: 11px;
   margin-bottom: 5px;
   letter-spacing: 0.3px;
@@ -225,7 +225,7 @@
 }
 .brief-legacy {
   margin: 16px 25px;
-  color: #718074;
+  color: #576a7d;
 }
 .brief-legacy summary {
   cursor: pointer;
